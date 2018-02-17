@@ -1,0 +1,7 @@
+prebuilt_jar(
+    name = "jsonrpc4j",
+    binary_jar = "jsonrpc4j-1.5.3.jar",
+    visibility = [
+        "PUBLIC",
+    ],
+)

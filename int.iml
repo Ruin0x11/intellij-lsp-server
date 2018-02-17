@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PLUGIN_MODULE" version="4">
-  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/META-INF/plugin.xml" />
+  <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/plugin/META-INF/plugin.xml" />
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -11,11 +11,14 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/integration" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests/testdata" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/plugin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugin/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/plugin/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/buck-out" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="intel-lib" level="project" />
     <orderEntry type="module" module-name="intel" />
+    <orderEntry type="library" name="jsonrpc4j-1.5.3" level="project" />
   </component>
 </module>

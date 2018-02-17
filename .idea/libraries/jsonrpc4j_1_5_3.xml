@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="jsonrpc4j-1.5.3">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/third-party/java/jsonrpc4j/jsonrpc4j-1.5.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third-party/java/jackson/jackson-annotations-2.8.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third-party/java/jackson/jackson-core-2.8.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third-party/java/jackson/jackson-databind-2.8.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third-party/java/base64/base64-2.3.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

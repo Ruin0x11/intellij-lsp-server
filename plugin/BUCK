@@ -6,6 +6,14 @@ kotlin_library(
     ],
     source = "1.8",
     target = "1.8",
+    deps = [
+        "//third-party/java/jsonrpc4j:jsonrpc4j",
+        "//third-party/java/jackson:jackson-core",
+        "//third-party/java/jackson:jackson-databind",
+        "//third-party/java/jackson:jackson-annotations",
+        "//third-party/java/base64:base64",
+    ],
+
 )
 
 java_library(

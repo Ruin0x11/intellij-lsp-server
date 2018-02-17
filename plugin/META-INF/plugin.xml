@@ -20,8 +20,7 @@
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <applicationService serviceInterface="com.ruin.intel.model.LanguageServerService"
-                    serviceImplementation="com.ruin.intel.model.impl.LanguageServerServiceImpl"/>
+    <applicationService serviceImplementation="com.ruin.intel.model.LanguageServerService"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.android.project">
@@ -32,6 +31,9 @@
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
       <action id="Intel.Textboxes" class="com.ruin.intel.actions.TestAction" text="Hello" description="Says hello"/>
     </group>
+
+    <action id="Intel.server.start" class="com.ruin.intel.actions.StartServerAction" text="Start LSP Server"/>
+    <action id="Intel.server.stop" class="com.ruin.intel.actions.StopServerAction" text="Stop LSP Server"/>
   </actions>
 
   <application-components>
