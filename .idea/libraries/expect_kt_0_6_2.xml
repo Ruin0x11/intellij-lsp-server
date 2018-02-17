@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="expect.kt-0.6.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/third-party/java/expect.kt/expect.kt-0.6.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
