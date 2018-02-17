@@ -12,6 +12,10 @@ import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import java.io.ByteArrayOutputStream
+import java.io.BufferedReader
+import java.io.InputStreamReader
+
+
 
 
 
@@ -22,13 +26,12 @@ open class LanguageServerService {
 
     private val jsonRpcServer: JsonRpcBasicServer
     private var server: HttpServer
-    private var isAlive: Boolean = true
+    private var isAlive: Boolean = false
 
     init {
         val service = LanguageServerHandlerImpl()
         this.jsonRpcServer = JsonRpcBasicServer(service, LanguageServerHandler::class.java)
         this.server = createServer()
-        this.server.start()
     }
 
     private fun createServer(): HttpServer {
@@ -36,25 +39,25 @@ open class LanguageServerService {
         httpServer.executor = Executors.newFixedThreadPool(5)
 
 
-        httpServer.createContext("/json-rpc") {
+        httpServer.createContext("/") {
             val bos = ByteArrayOutputStream()
             this.jsonRpcServer.handleRequest(it.requestBody, bos)
             it.sendResponseHeaders(HttpURLConnection.HTTP_OK, bos.size().toLong())
             it.responseBody.write(bos.toByteArray())
-            it.close()
+            it.responseBody.close()
         }
 
         return httpServer
     }
 
     fun startServer() {
-        this.server = createServer()
         this.server.start()
         this.isAlive = true
     }
 
     fun stopServer() {
         this.server.stop(0)
+        this.server = createServer()
         this.isAlive = false
     }
 

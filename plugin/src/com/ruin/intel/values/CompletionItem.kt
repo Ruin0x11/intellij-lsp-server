@@ -1,4 +1,3 @@
 package com.ruin.intel.values
 
-class CompletionItem(label: String) {
-}
+data class CompletionItem(val label: String)

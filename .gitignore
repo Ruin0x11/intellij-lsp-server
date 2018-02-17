@@ -15,6 +15,7 @@
 /.idea/workspace.xml
 /.idea/misc.xml
 /.idea/copyright/profiles_settings.xml
+/out/
 
 # OS X
 .DS_Store
