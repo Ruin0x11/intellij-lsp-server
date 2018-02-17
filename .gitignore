@@ -1,0 +1,27 @@
+# Ant
+/build/
+
+# Buck
+/buck-out
+/.buckconfig.local
+/.buckd
+
+# IntelliJ, based on http://devnet.jetbrains.net/docs/DOC-1186
+/.idea/ant.xml
+/.idea/dictionaries
+/.idea/inspectionProfiles
+/.idea/tasks.xml
+/.idea/uiDesigner.xml
+/.idea/workspace.xml
+/.idea/misc.xml
+/.idea/copyright/profiles_settings.xml
+
+# OS X
+.DS_Store
+
+# vim swp files
+.*.sw[a-p]
+
+# Emacs backup files
+*~
+\#*

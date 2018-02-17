@@ -1,0 +1,30 @@
+kotlin_library(
+    name = "intel-lib",
+    srcs = glob(['src/**/*.kt']),
+    provided_deps = [
+        "//third-party/java/intellij:intellij-plugin-sdk",
+    ],
+    source = "1.8",
+    target = "1.8",
+)
+
+java_library(
+    name = "resources",
+    srcs = [],
+    resources = glob([
+        "**/*.png",
+    ]),
+    resources_root = "resources/",
+    visibility = [
+        "PUBLIC",
+    ],
+)
+
+java_binary(
+    name = "intel",
+    meta_inf_directory = "META-INF",
+    deps = [
+        ":intel-lib",
+        ":resources",
+    ],
+)
