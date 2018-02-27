@@ -9,40 +9,42 @@ import com.ruin.intel.values.*
  */
 interface LanguageServerHandler {
     @JsonRpcMethod("initialize")
-    fun doInitialize(@JsonRpcParam(value="processId") processId: Int,
+    fun onInitialize(@JsonRpcParam(value="processId") processId: Int,
                      @JsonRpcParam(value="rootUri") rootUri: DocumentUri,
                      @JsonRpcParam(value="capabilities") capabilities: ClientCapabilities) : InitializeResult
 
     @JsonRpcMethod("textDocument/completion")
-    fun doCompletion(
+    fun onTextDocumentCompletion(
             @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
             @JsonRpcParam(value="position") position: Position,
             @JsonRpcParam(value="triggerKind") triggerKind: Int,
             @JsonRpcParam(value="triggerCharacter") triggerCharacter: String?) : List<CompletionItem>
 
+    @JsonRpcMethod("textDocument/hover")
+    fun onTextDocumentHover(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position) : Hover?
+
     @JsonRpcMethod("shutdown")
-    fun doShutdown()
+    fun onShutdown()
 
     @JsonRpcMethod("exit")
-    fun doExit()
+    fun onExit()
 
 
     @JsonRpcMethod("initialized")
-    fun notifyInitialized()
+    fun onNotifyInitialized()
 
     @JsonRpcMethod("textDocument/didOpen")
-    fun notifyDidOpen(
-        @JsonRpcParam(value="textDocument") textDocument: TextDocumentItem
-    )
+    fun onNotifyTextDocumentDidOpen(
+        @JsonRpcParam(value="textDocument") textDocument: TextDocumentItem)
 
     @JsonRpcMethod("textDocument/didClose")
-    fun notifyDidClose(
-        @JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier
-    )
+    fun onNotifyTextDocumentDidClose(
+        @JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier)
 
     @JsonRpcMethod("textDocument/didChange")
-    fun notifyDidChange(
+    fun onNotifyTextDocumentDidChange(
         @JsonRpcParam(value="textDocument") textDocument: VersionedTextDocumentIdentifier,
-        @JsonRpcParam(value="contentChanges") contentChanges:List<TextDocumentContentChangeEvent>
-    )
+        @JsonRpcParam(value="contentChanges") contentChanges:List<TextDocumentContentChangeEvent>)
 }

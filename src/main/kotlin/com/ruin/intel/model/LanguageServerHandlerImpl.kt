@@ -4,7 +4,9 @@ import com.googlecode.jsonrpc4j.ErrorResolver
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.Computable
 import com.ruin.intel.commands.CompletionCommand
+import com.ruin.intel.commands.HoverCommand
 import com.ruin.intel.values.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
@@ -28,21 +30,29 @@ fun defaultServerCapabilities() : ServerCapabilities {
             experimental = null)
 }
 
-fun workspace() = ServiceManager.getService<WorkspaceManager>(WorkspaceManager::class.java)!!
-
 class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     val LOG = Logger.getInstance(LanguageServerHandlerImpl::class.java)
 
-    override fun doInitialize(processId: Int, rootUri: DocumentUri, capabilities: ClientCapabilities) : InitializeResult {
+    override fun onInitialize(processId: Int, rootUri: DocumentUri, capabilities: ClientCapabilities) : InitializeResult {
         context.wasInitialized = true
         LOG.info("INIT LSP")
         return InitializeResult(defaultServerCapabilities())
     }
 
-    override fun doCompletion(textDocumentIdentifier: TextDocumentIdentifier,
-                              position: Position,
-                              triggerKind: Int,
-                              triggerCharacter: String?): List<CompletionItem> {
+    override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Hover? {
+        checkInitialized()
+        var result = HoverCommand(textDocumentIdentifier, position).execute()
+
+        return result.fold({ value -> Hover(value, null)
+        }, { error ->
+            throw error
+        })
+    }
+
+    override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
+                                          position: Position,
+                                          triggerKind: Int,
+                                          triggerCharacter: String?): List<CompletionItem> {
         checkInitialized()
 
         val result = CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter).execute()
@@ -53,35 +63,30 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         })
     }
 
-    override fun doShutdown() {
+    override fun onShutdown() {
         checkInitialized()
     }
 
-    override fun doExit() {
+    override fun onExit() {
         checkInitialized()
     }
 
-    override fun notifyInitialized() {
+    override fun onNotifyInitialized() {
+        context.wasInitialized = true
+    }
+
+    override fun onNotifyTextDocumentDidOpen(textDocument: TextDocumentItem) {
         checkInitialized()
     }
 
-    override fun notifyDidOpen(textDocument: TextDocumentItem) {
-        checkInitialized()
-
-        ApplicationManager.getApplication().invokeAndWait {
-            val ws = workspace()
-            ws.getExistingPsiFile(textDocument.uri)
-        }
-    }
-
-    override fun notifyDidClose(textDocument: TextDocumentIdentifier) {
+    override fun onNotifyTextDocumentDidClose(textDocument: TextDocumentIdentifier) {
         checkInitialized()
 
         //val ws = workspace()
         //ws.closePsiFile(textDocument.uri)
     }
 
-    override fun notifyDidChange(textDocument: VersionedTextDocumentIdentifier, contentChanges: List<TextDocumentContentChangeEvent>) {
+    override fun onNotifyTextDocumentDidChange(textDocument: VersionedTextDocumentIdentifier, contentChanges: List<TextDocumentContentChangeEvent>) {
         //val ws = workspace()
         //val changedFile = ws.getExistingPsiFile(textDocument.uri)
         //contentChanges.forEach {

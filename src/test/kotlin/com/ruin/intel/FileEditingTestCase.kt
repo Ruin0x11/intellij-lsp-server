@@ -39,10 +39,7 @@ abstract class FileEditingTestCase : BaseTestCase() {
             return getPsiFile(proj, filePath)!!
         }
 
-
-
-    private// won't actually get here
-    val currentFileContentsSafely: String?
+    private val currentFileContentsSafely: String?
         get() {
             try {
                 return String(file.contentsToByteArray())

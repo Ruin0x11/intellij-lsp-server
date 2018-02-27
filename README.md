@@ -6,5 +6,7 @@ output. It could either be "out/test/classes" or "out/test". Go to `Project Stru
 directories for all modules so they match. It's probably a bug in the Gradle import.
 
 ## Bugs
-- Opening a project through the LSP if it's already been opened before the LSP was started causes an error about the
+- Opening a project through the LSP after it's already been opened before the LSP was started causes an error about the
 project being disposed already.
+- `Disposer` doesn't release editors created by `createEditor` for some reason, so they have to be released manually
+every time.

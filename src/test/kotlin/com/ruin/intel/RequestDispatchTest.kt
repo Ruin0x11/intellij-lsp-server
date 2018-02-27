@@ -39,28 +39,28 @@ class RequestDispatchTest {
                 "capabilities", capabilities
         )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
-        verify(mockLanguageServerHandler).doInitialize(1, "file:///", capabilities)
+        verify(mockLanguageServerHandler).onInitialize(1, "file:///", capabilities)
     }
 
     @Test
     fun `responds to initialized`() {
         val request = messageWithMapParamsStream("initialized" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
-        verify(mockLanguageServerHandler).notifyInitialized()
+        verify(mockLanguageServerHandler).onNotifyInitialized()
     }
 
     @Test
     fun `responds to shutdown`() {
         val request = messageWithMapParamsStream("shutdown" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
-        verify(mockLanguageServerHandler).doShutdown()
+        verify(mockLanguageServerHandler).onShutdown()
     }
 
     @Test
     fun `responds to exit`() {
         val request = messageWithMapParamsStream("exit" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
-        verify(mockLanguageServerHandler).doExit()
+        verify(mockLanguageServerHandler).onExit()
     }
 
     @Test

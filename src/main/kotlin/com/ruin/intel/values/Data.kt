@@ -1,6 +1,7 @@
 package com.ruin.intel.values
 
 typealias DocumentUri = String
+typealias MarkedString = String
 
 data class ClientCapabilities(val workspace: WorkspaceClientCapabilities?,
                               val textDocument: TextDocumentClientCapabilities?)
@@ -22,7 +23,7 @@ data class ExecuteCommand(val dynamicRegistration: Boolean?)
 
 data class TextDocumentClientCapabilities(val synchronization: Synchronization?,
                                           val completion: Completion?,
-                                          val hover: Hover?,
+                                          val hover: HoverCapability?,
                                           val signatureHelp: SignatureHelp?,
                                           val references: References?,
                                           val documentHighlight: DocumentHighlight?,
@@ -54,8 +55,8 @@ data class CompletionItemCapability(val snippetSupport: Boolean?,
                                     val documentationFormat: List<String>?)
 data class CompletionItemKindCapability(val valueSet: List<Int>?)
 
-data class Hover(val dynamicRegistration: Boolean?,
-                 val contentFormat: List<String>?)
+data class HoverCapability(val dynamicRegistration: Boolean?,
+                           val contentFormat: List<String>?)
 
 data class SignatureHelp(val dynamicRegistration: Boolean?,
                          val signatureInformation: SignatureInformation?)
@@ -128,6 +129,9 @@ data class TextDocumentItem(val uri: DocumentUri,
                             val languageId: String,
                             val version: Int,
                             val text: String)
+
+data class Hover(val contents: MarkedString,
+                 val range: Range?)
 
 data class CompletionContext(val triggerKind: Int?,
                              val triggerCharacters: List<String>?)
