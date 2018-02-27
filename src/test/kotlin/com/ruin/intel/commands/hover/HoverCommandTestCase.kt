@@ -2,7 +2,7 @@ package com.ruin.intel.commands.hover
 
 class HoverCommandTestCase : HoverCommandTestBase() {
     fun `test hover finds class info`() = checkHoverEquals(8, 16,
-        "org.intellivim.javaproject public class Dummy extends java.lang.Object ")
+        "package org.intellivim.javaproject; public class Dummy extends java.lang.Object ")
 
     fun `test hover finds method info`() = checkHoverEquals(46, 25,
         "static int answerQuestion(String question)")

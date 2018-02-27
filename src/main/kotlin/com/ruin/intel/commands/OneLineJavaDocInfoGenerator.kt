@@ -49,11 +49,11 @@ private fun generateClassJavaDoc(buffer: StringBuilder, aClass: PsiClass) {
     if (file is PsiJavaFile) {
         val packageName = (file).packageName
         if (!packageName.isEmpty()) {
+            buffer.append("package ")
             buffer.append(packageName)
+            buffer.append("; ")
         }
     }
-
-    buffer.append(" ")
 
     generateClassSignature(buffer, aClass)
 }
