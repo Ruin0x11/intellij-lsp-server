@@ -1,0 +1,44 @@
+<idea-plugin>
+    <id>com.ruin.intel</id>
+    <name>Intelligence</name>
+
+    <vendor>Ruin0x11</vendor>
+
+    <description><![CDATA[
+        Internal LSP server
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="173" until-build="181.*"/>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.ruin.intel.model.LanguageServerService" />
+        <applicationService serviceImplementation="com.ruin.intel.model.WorkspaceManager" />
+    </extensions>
+
+    <application-components>
+    </application-components>
+
+    <actions>
+        <action id="LSP.StartServer"
+                class="com.ruin.intel.actions.StartServerAction"
+                text="Start LSP Server"
+                description="Start the internal LSP server">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="GenerateJavadoc"/>
+        </action>
+
+        <action id="LSP.StopServer"
+                class="com.ruin.intel.actions.StopServerAction"
+                text="Stop LSP Server"
+                description="Stop the internal LSP server">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="GenerateJavadoc"/>
+        </action>
+    </actions>
+
+</idea-plugin>
