@@ -1,7 +1,0 @@
-prebuilt_jar(
-    name = "base64",
-    binary_jar = "base64-2.3.9.jar",
-    visibility = [
-        "PUBLIC",
-    ],
-)
