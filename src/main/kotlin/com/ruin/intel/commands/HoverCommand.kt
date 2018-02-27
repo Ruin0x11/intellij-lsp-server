@@ -1,16 +1,13 @@
 package com.ruin.intel.commands
 
 import com.github.kittinunf.result.Result
-import com.googlecode.jsonrpc4j.ErrorResolver
 import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.lang.java.JavaDocumentationProvider
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.util.Computable
 import com.ruin.intel.Util.createEditor
 import com.ruin.intel.Util.resolvePsiFromUri
-import com.ruin.intel.model.LanguageServerException
 import com.ruin.intel.values.MarkedString
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
@@ -34,7 +31,7 @@ class HoverCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                 val originalElement = file.findElementAt(editor.caretModel.offset)
                 val element = DocumentationManager.getInstance(project).findTargetElement(editor, file)
                 result = if (element != null) {
-                    JavaDocumentationProvider().generateDoc(element, originalElement)
+                    HoverDocumentationProvider().generateDoc(element, originalElement) ?: ""
                 } else {
                     ""
                 }
@@ -43,9 +40,6 @@ class HoverCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                 editorFactory.releaseEditor(editor)
             }
         }
-
-        if (result == null)
-            return Result.error(LanguageServerException(ErrorResolver.JsonError.BULK_ERROR))
 
         return Result.of(result)
     }

@@ -11,7 +11,8 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
     override val filePath: String
         get() = DUMMY_FILE_PATH
 
-    override fun getProjectName() = JAVA_PROJECT
+    override val projectName: String
+        get() = JAVA_PROJECT
 
     protected fun checkContainsCompletion(line: Int, char: Int, expected: String) {
         val command = CompletionCommand(TextDocumentIdentifier(file.url), Position(line, char), null, null)

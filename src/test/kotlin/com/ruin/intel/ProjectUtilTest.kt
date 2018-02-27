@@ -7,16 +7,17 @@ import java.io.File
 
 class ProjectUtilTest : BaseTestCase() {
 
-    override fun getProjectName() = TESTABLE_PROJECT
+    override val projectName: String
+        get() = TESTABLE_PROJECT
 
     fun `test finds project`() {
-        val project= com.ruin.intel.Util.getProject(getProjectIml())
+        val project = com.ruin.intel.Util.getProject(getProjectIml())
         assertNotNull(project)
         assertEquals(TESTABLE_PROJECT, project!!.name)
     }
 
     fun `test doesn't find nonexistent project`() {
-        val project= com.ruin.intel.Util.getProject("blah")
+        val project = com.ruin.intel.Util.getProject("blah")
         assertNull(project)
     }
 

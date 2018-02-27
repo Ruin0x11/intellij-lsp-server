@@ -7,6 +7,7 @@ import java.util.ArrayList;
  * @author dhleong
  */
 public class Dummy {
+    private int thingy = 42;
     public void boring() {
         System.out.println("Hi");
         new ArrayList<String>();
@@ -14,6 +15,7 @@ public class Dummy {
         ArrayList<String> list = new ArrayList<String>();
         list.add("hi");
         notBoring(42);
+        thingy = 12;
     }
 
     /** I promise it's not boring */

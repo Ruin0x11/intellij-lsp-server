@@ -43,7 +43,10 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         checkInitialized()
         var result = HoverCommand(textDocumentIdentifier, position).execute()
 
-        return result.fold({ value -> Hover(value, null)
+        return result.fold({ value -> if (value.isEmpty())
+            null
+        else
+            Hover(value, null)
         }, { error ->
             throw error
         })

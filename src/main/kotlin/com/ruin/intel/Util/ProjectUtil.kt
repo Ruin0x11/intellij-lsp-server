@@ -40,6 +40,9 @@ fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
 }
 
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
+    // otherwise it gets confusing to have to look up the line and column being tested in the test project
+
     // has to have three slashes on windows
     val newUri = uri.replace("file://", "file:///")
     val uri_b = URI(newUri)

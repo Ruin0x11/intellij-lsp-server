@@ -18,7 +18,7 @@ val PROBLEMATIC_TWICE_FILE_PATH = "src/org/intellivim/javaproject/ProblematicTwi
 abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
 
     /** Which example project does this test reference?  */
-    protected abstract fun getProjectName(): String
+    protected abstract val projectName: String
 
     protected fun getProjectIml(projectName: String): String {
         val root = File(".")
@@ -32,8 +32,8 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
         return File(root, pathToProject).canonicalFile.absolutePath
     }
 
-    protected fun getProjectPath() = getProjectPath(getProjectName())
-    protected fun getProjectIml() = getProjectIml(getProjectName())
+    protected fun getProjectPath() = getProjectPath(projectName)
+    protected fun getProjectIml() = getProjectIml(projectName)
 
     override fun tearDown() {
         ProjectUtil.closeAndDispose(getProject())
@@ -41,7 +41,7 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     override fun getProject(): Project {
-        val path = getProjectIml(getProjectName())
+        val path = getProjectIml(projectName)
         return ensureProject(path)
     }
 
