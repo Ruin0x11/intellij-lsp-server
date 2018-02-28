@@ -205,16 +205,16 @@ fun generateType(buffer: StringBuilder, type: PsiType, context: PsiElement, gene
  * @return Length of the generated label.
  */
 fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, generateLink: Boolean, useShortNames: Boolean): Int {
-    var type = type
-    if (type is PsiPrimitiveType) {
-        val text = type.canonicalText
+    var typeToGen = type
+    if (typeToGen is PsiPrimitiveType) {
+        val text = typeToGen.canonicalText
         buffer.append(text)
         return text.length
     }
 
-    if (type is PsiArrayType) {
-        val rest = generateType(buffer, type.componentType, context, generateLink, useShortNames)
-        if (type is PsiEllipsisType) {
+    if (typeToGen is PsiArrayType) {
+        val rest = generateType(buffer, typeToGen.componentType, context, generateLink, useShortNames)
+        if (typeToGen is PsiEllipsisType) {
             buffer.append("...")
             return rest + 3
         } else {
@@ -223,12 +223,12 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         }
     }
 
-    if (type is PsiCapturedWildcardType) {
-        type = type.wildcard
+    if (typeToGen is PsiCapturedWildcardType) {
+        typeToGen = typeToGen.wildcard
     }
 
-    if (type is PsiWildcardType) {
-        val wt = type as PsiWildcardType?
+    if (typeToGen is PsiWildcardType) {
+        val wt = typeToGen as PsiWildcardType?
         buffer.append("?")
         val bound = wt!!.bound
         if (bound != null) {
@@ -240,13 +240,13 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         }
     }
 
-    if (type is PsiClassType) {
+    if (typeToGen is PsiClassType) {
         val result: PsiClassType.ClassResolveResult
         try {
-            result = type.resolveGenerics()
+            result = typeToGen.resolveGenerics()
         } catch (e: IndexNotReadyException) {
             LOG.debug(e)
-            val text = type.className
+            val text = typeToGen.className
             buffer.append(text)
             return text.length
         }
@@ -255,7 +255,7 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         val psiSubst = result.substitutor
 
         if (psiClass == null) {
-            val canonicalText = type.canonicalText
+            val canonicalText = typeToGen.canonicalText
             val text = canonicalText
             buffer.append(text)
             return canonicalText.length
@@ -264,12 +264,12 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         val qName = psiClass.qualifiedName
 
         if (qName == null || psiClass is PsiTypeParameter) {
-            val text = if (useShortNames) type.presentableText else type.canonicalText
+            val text = if (useShortNames) typeToGen.presentableText else typeToGen.canonicalText
             buffer.append(text)
             return text.length
         }
 
-        val name = if (useShortNames) type.rawType().presentableText else qName
+        val name = if (useShortNames) typeToGen.rawType().presentableText else qName
 
         buffer.append(name)
         var length = buffer.length
@@ -309,19 +309,19 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         return length
     }
 
-    if (type is PsiDisjunctionType || type is PsiIntersectionType) {
+    if (typeToGen is PsiDisjunctionType || typeToGen is PsiIntersectionType) {
         if (!generateLink) {
-            val canonicalText = if (useShortNames) type.presentableText else type.canonicalText
+            val canonicalText = if (useShortNames) typeToGen.presentableText else typeToGen.canonicalText
             val text = canonicalText
             buffer.append(text)
             return canonicalText.length
         } else {
-            val separator = if (type is PsiDisjunctionType) " | " else " & "
+            val separator = if (typeToGen is PsiDisjunctionType) " | " else " & "
             val componentTypes: List<PsiType>
-            if (type is PsiIntersectionType) {
-                componentTypes = Arrays.asList(*type.conjuncts)
+            if (typeToGen is PsiIntersectionType) {
+                componentTypes = Arrays.asList(*typeToGen.conjuncts)
             } else {
-                componentTypes = (type as PsiDisjunctionType).disjunctions
+                componentTypes = (typeToGen as PsiDisjunctionType).disjunctions
             }
             var length = 0
             for (psiType in componentTypes) {

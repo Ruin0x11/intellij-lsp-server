@@ -30,6 +30,8 @@ fun defaultServerCapabilities() : ServerCapabilities {
             experimental = null)
 }
 
+fun workspace() = ServiceManager.getService<WorkspaceManager>(WorkspaceManager::class.java)!!
+
 class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     val LOG = Logger.getInstance(LanguageServerHandlerImpl::class.java)
 
@@ -84,18 +86,22 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
     override fun onNotifyTextDocumentDidOpen(textDocument: TextDocumentItem) {
         checkInitialized()
+        workspace().onTextDocumentOpened(textDocument)
     }
 
     override fun onNotifyTextDocumentDidClose(textDocument: TextDocumentIdentifier) {
         checkInitialized()
+        workspace().onTextDocumentClosed(textDocument)
     }
 
     override fun onNotifyTextDocumentDidChange(textDocument: VersionedTextDocumentIdentifier, contentChanges: List<TextDocumentContentChangeEvent>) {
-        //val ws = workspace()
-        //val changedFile = ws.getExistingPsiFile(textDocument.uri)
-        //contentChanges.forEach {
-        //    // applyChangeToPsi(changedFile, it)
-        //}
+        checkInitialized()
+        workspace().onTextDocumentChanged(textDocument, contentChanges)
+    }
+
+    override fun onNotifyTextDocumentDidSave(textDocument: TextDocumentIdentifier, text: String?) {
+        checkInitialized()
+        workspace().onTextDocumentSaved(textDocument, text)
     }
 
     fun checkInitialized() {

@@ -3,6 +3,7 @@ package com.ruin.intel.Util
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ex.EditorEx
@@ -144,26 +145,8 @@ fun getPsiFile(@NotNull project: Project, @NotNull virtual: VirtualFile): PsiFil
                     return@Computable null
                 }
 
-                var doc = FileDocumentManager.getInstance()
-                        .getDocument(virtual)
-                if (doc == null) {
-                    FileDocumentManagerImpl.registerDocument(
-                            DocumentImpl(file.viewProvider.contents),
-                            virtual)
-                    doc = FileDocumentManager.getInstance()
-                            .getDocument(virtual)
-
-                    if (doc == null) {
-                        LOG.warn("Unable to find document for virtual file ${virtual.name}")
-                        return@Computable null
-                    }
-                    doc ?: return@Computable null
-                }
-
-                FileDocumentManager.getInstance().reloadFromDisk(doc)
-                PsiDocumentManager.getInstance(project).commitDocument(doc)
-
-                mgr.reloadFromDisk(file)
+                // TODO: reload doc here?
+                val doc = getDocument(file) ?: return@Computable null
 
                 PsiUtilCore.ensureValid(file)
                 file
@@ -187,12 +170,57 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     return virtual
 }
 
-fun getDocument(file: PsiFile) =
-    FileDocumentManager.getInstance()
-            .getDocument(file.virtualFile)!!
+fun getDocument(uri: String): Document? {
+    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
+    val virtual = getVirtualFile(project, filePath)
+    return invokeAndWaitIfNeeded(asWriteAction(
+        Computable<Document> {
+            val mgr = PsiManager.getInstance(project)
+            val file = mgr.findFile(virtual)
+
+            if (file == null) {
+                LOG.warn("Unable to find PSI file for virtual file ${virtual.name}")
+                return@Computable null
+            }
+
+            val doc = getDocument(file) ?: return@Computable null
+            doc
+        }))
+}
+
+fun getDocument(file: PsiFile): Document? {
+    val virtual = file.virtualFile
+    var doc = FileDocumentManager.getInstance()
+        .getDocument(virtual)
+    if (doc == null) {
+        FileDocumentManagerImpl.registerDocument(
+            DocumentImpl(file.viewProvider.contents),
+            virtual)
+        doc = FileDocumentManager.getInstance()
+            .getDocument(virtual)
+
+        if (doc == null) {
+            LOG.warn("Unable to find Document for virtual file ${virtual.name}")
+            return null
+        }
+    }
+
+    return doc
+}
+
+fun reloadDocumentAtUri(uri: String) {
+    LOG.debug("Reloading document at $uri")
+    val pair = resolvePsiFromUri(uri) ?: return
+    val (project, file) = pair
+    val doc = getDocument(file) ?: return
+
+    LOG.debug("Everything found for $uri, proceeding with reload")
+    FileDocumentManager.getInstance().reloadFromDisk(doc)
+    PsiDocumentManager.getInstance(project).commitDocument(doc)
+}
 
 fun createEditor(context: Disposable, file: PsiFile, line: Int, column: Int) : EditorEx {
-    val doc = getDocument(file)
+    val doc = getDocument(file)!!
     val editorFactory = EditorFactory.getInstance()
     val created = editorFactory.createEditor(doc, file.project) as EditorEx
     created.caretModel.moveToLogicalPosition(LogicalPosition(line, column))

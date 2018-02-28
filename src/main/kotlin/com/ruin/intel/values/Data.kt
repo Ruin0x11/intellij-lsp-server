@@ -115,8 +115,8 @@ data class CancelParams(val id: String)
 
 data class Position(val line: Int,
                     val character: Int)
-data class Range(val start: Int,
-                 val end: Int)
+data class Range(val start: Position,
+                 val end: Position)
 data class TextDocumentIdentifier(val uri: DocumentUri)
 data class TextDocumentPositionParams(val textDocument: TextDocumentIdentifier,
                                       val position: Position)
@@ -126,6 +126,11 @@ data class VersionedTextDocumentIdentifier(val uri: DocumentUri,
 data class TextDocumentContentChangeEvent(val range: Range?,
                                           val rangeLength: Int?,
                                           val text: String)
+
+data class TextEdit(val range: Range,
+                    val newText: String)
+data class TextDocumentEdit(val textDocument: VersionedTextDocumentIdentifier,
+                            val edits: List<TextEdit>)
 
 data class TextDocumentItem(val uri: DocumentUri,
                             val languageId: String,

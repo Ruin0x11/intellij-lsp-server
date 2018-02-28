@@ -12,24 +12,24 @@ import com.intellij.psi.util.PsiTreeUtil
 
 class HoverDocumentationProvider : JavaDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        var element = element
-        var originalElement = originalElement
+        var anElement = element
+        var anOriginalElement = originalElement
         // for new Class(<caret>) or methodCall(<caret>) proceed from method call or new expression
         // same for new Cl<caret>ass() or method<caret>Call()
-        if (element is PsiExpressionList || element is PsiReferenceExpression && element.getParent() is PsiMethodCallExpression) {
-            element = element.parent
-            originalElement = null
+        if (anElement is PsiExpressionList || anElement is PsiReferenceExpression && anElement.getParent() is PsiMethodCallExpression) {
+            anElement = anElement.parent
+            anOriginalElement = null
         }
-        if (element is PsiMethodCallExpression) {
-            val method = CompletionMemory.getChosenMethod(element)
+        if (anElement is PsiMethodCallExpression) {
+            val method = CompletionMemory.getChosenMethod(anElement)
             if (method == null)
-                return getMethodCandidateInfo(element)
+                return getMethodCandidateInfo(anElement)
             else
-                element = method
+                anElement = method
         }
 
         // Try hard for documentation of incomplete new Class instantiation
-        var elt = if (originalElement != null && originalElement !is PsiPackage) PsiTreeUtil.prevLeaf(originalElement) else element
+        var elt = if (anOriginalElement != null && anOriginalElement !is PsiPackage) PsiTreeUtil.prevLeaf(anOriginalElement) else anElement
         if (elt is PsiErrorElement)
             elt = elt.prevSibling
         else if (elt != null && elt !is PsiNewExpression) {
@@ -38,13 +38,13 @@ class HoverDocumentationProvider : JavaDocumentationProvider() {
         if (elt is PsiNewExpression) {
             var targetClass: PsiClass? = null
 
-            if (element is PsiJavaCodeReferenceElement) {     // new Class<caret>
-                val resolve = element.resolve()
+            if (anElement is PsiJavaCodeReferenceElement) {     // new Class<caret>
+                val resolve = anElement.resolve()
                 if (resolve is PsiClass) targetClass = resolve
-            } else if (element is PsiClass) { //Class in completion
-                targetClass = element
-            } else if (element is PsiNewExpression) { // new Class(<caret>)
-                val reference = element.classReference
+            } else if (anElement is PsiClass) { //Class in completion
+                targetClass = anElement
+            } else if (anElement is PsiNewExpression) { // new Class(<caret>)
+                val reference = anElement.classReference
                 if (reference != null) {
                     val resolve = reference.resolve()
                     if (resolve is PsiClass) targetClass = resolve
@@ -54,7 +54,7 @@ class HoverDocumentationProvider : JavaDocumentationProvider() {
             if (targetClass != null) {
                 val constructors = targetClass.constructors
                 if (constructors.isNotEmpty()) {
-                    if (constructors.size == 1) return generateDoc(constructors[0], originalElement)
+                    if (constructors.size == 1) return generateDoc(constructors[0], anOriginalElement)
                     val sb = StringBuilder()
 
                     for (constructor in constructors) {
@@ -71,7 +71,7 @@ class HoverDocumentationProvider : JavaDocumentationProvider() {
             }
         }
 
-        return generateOneLineJavadoc(element!!)
+        return generateOneLineJavadoc(anElement!!)
     }
 
     private fun generateOneLineJavadoc(element: PsiElement): String? {

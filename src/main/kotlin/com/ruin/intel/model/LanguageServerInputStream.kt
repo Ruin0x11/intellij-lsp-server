@@ -104,10 +104,10 @@ class LanguageServerInputStream(stream: InputStream) : FilterInputStream(stream)
 
     @Throws(IOException::class)
     override fun skip(n: Long): Long {
-        var n = n
-        if (n > bytesLeft)
-            n = bytesLeft.toLong()
-        val bytesSkipped = `in`.skip(n)
+        var count = n
+        if (count > bytesLeft)
+            count = bytesLeft.toLong()
+        val bytesSkipped = `in`.skip(count)
         bytesLeft -= bytesSkipped.toInt()
         return bytesSkipped
     }

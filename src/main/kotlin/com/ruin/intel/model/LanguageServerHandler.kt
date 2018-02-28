@@ -50,5 +50,10 @@ interface LanguageServerHandler {
     @JsonRpcMethod("textDocument/didChange")
     fun onNotifyTextDocumentDidChange(
         @JsonRpcParam(value="textDocument") textDocument: VersionedTextDocumentIdentifier,
-        @JsonRpcParam(value="contentChanges") contentChanges:List<TextDocumentContentChangeEvent>)
+        @JsonRpcParam(value="contentChanges") contentChanges: List<TextDocumentContentChangeEvent>)
+
+    @JsonRpcMethod("textDocument/didSave")
+    fun onNotifyTextDocumentDidSave(
+        @JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier,
+        @JsonRpcParam(value="text") text: String?)
 }

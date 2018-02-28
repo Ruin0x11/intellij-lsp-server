@@ -10,6 +10,8 @@ import com.ruin.intel.BaseTestCase
 import com.ruin.intel.Util.getDocument
 import com.ruin.intel.Util.getPsiFile
 import com.ruin.intel.Util.getVirtualFile
+import com.ruin.intel.values.TextDocumentItem
+import com.ruin.intel.values.VersionedTextDocumentIdentifier
 import junit.framework.TestCase
 import java.io.IOException
 
@@ -24,6 +26,8 @@ import java.io.IOException
 abstract class FileEditingTestCase : BaseTestCase() {
 
     private var originalContents: ByteArray? = null
+    private var psiOriginalContents: ByteArray? = null
+
 
     protected abstract val filePath: String
 
@@ -57,13 +61,14 @@ abstract class FileEditingTestCase : BaseTestCase() {
         val project = project
         val file = getVirtualFile(project, filePath)
         originalContents = file.contentsToByteArray()
+        psiOriginalContents = psiFile.text.toByteArray()
     }
 
     @Throws(Exception::class)
     public override fun tearDown() {
         super.tearDown()
 
-        if (fileContentsChanged())
+        if (virtualFileContentsChanged())
             restoreFile()
     }
 
@@ -71,18 +76,22 @@ abstract class FileEditingTestCase : BaseTestCase() {
      * Methods
      */
 
-    fun fileContentsChanged(): Boolean {
+    fun textDocumentItem(version: Int = 0) =
+        TextDocumentItem(file.url, "java", version, currentFileContentsSafely!!)
+
+    fun versionedTextDocumentIdentifier(version: Int) =
+        VersionedTextDocumentIdentifier(file.url, version)
+
+    fun contentsChanged(original: ByteArray, updatedContents: ByteArray): Boolean {
         try {
-            val file = file
-            val updatedContents = file.contentsToByteArray()
             val len = updatedContents.size
-            if (len != originalContents!!.size) {
+            if (len != original.size) {
                 // definitely not same
                 return true
             } else {
                 // is it the same?
                 for (i in 0 until len) {
-                    if (originalContents!![i] != updatedContents[i]) {
+                    if (original[i] != updatedContents[i]) {
                         return true
                     }
                 }
@@ -95,27 +104,38 @@ abstract class FileEditingTestCase : BaseTestCase() {
         return false
     }
 
+    fun virtualFileContentsChanged() = contentsChanged(originalContents!!, file.contentsToByteArray())
+    fun psiContentsChanged() = contentsChanged(psiOriginalContents!!, psiFile.text.toByteArray())
+
     /*
      * Assertions
      */
 
-    protected fun assertFileContentsChanged() {
-       assertTrue("Expected file contents to have changed", fileContentsChanged())
+    protected fun assertVirtualFileContentsChanged() {
+       assertTrue("Expected file contents to have changed", virtualFileContentsChanged())
     }
 
-    protected fun assertFileContentsUnchanged() {
-        if (!fileContentsChanged())
+    protected fun assertVirtualFileContentsUnchanged() {
+        if (!virtualFileContentsChanged())
             return
 
         assertSame(String(originalContents!!), currentFileContentsSafely)
     }
 
-    protected fun assertFileDoesNotContain(expectedContents: CharSequence) {
+    protected fun assertPsiContentsChanged() {
+        assertTrue("Expected PSI contents to have changed", psiContentsChanged())
+    }
+
+    protected fun assertPsiContentsUnchanged() {
+        assertFalse("Expected PSI contents to be unchanged", psiContentsChanged())
+    }
+
+    protected fun assertVirtualFileDoesNotContain(expectedContents: CharSequence) {
         val actualContents = currentFileContentsSafely
         assertFalse(actualContents?.contains(expectedContents)!!)
     }
 
-    protected fun assertFileContains(expectedContents: CharSequence) {
+    protected fun assertVirtualFileContains(expectedContents: CharSequence) {
         val actualContents = currentFileContentsSafely
         assert(actualContents?.contains(expectedContents)!!)
     }
@@ -125,9 +145,9 @@ abstract class FileEditingTestCase : BaseTestCase() {
      * and that they've changed in the way you expect---by "now" containing
      * something they (presumably) didn't before
      */
-    protected fun assertFileNowContains(expectedContents: CharSequence) {
-        assertFileContentsChanged()
-        assertFileContains(expectedContents)
+    protected fun assertVirtualFileNowContains(expectedContents: CharSequence) {
+        assertVirtualFileContentsChanged()
+        assertVirtualFileContains(expectedContents)
     }
 
 
@@ -155,16 +175,20 @@ abstract class FileEditingTestCase : BaseTestCase() {
                 file.setBinaryContent(originalContents!!)
 
                 val psi = getPsiFile(project, file)!!
-                val doc = getDocument(psi)
+                val doc = getDocument(psi) ?: throw IOException("No document found!")
 
                 FileDocumentManager.getInstance().reloadFromDisk(doc)
-                assertEquals(doc.getText(), originalString)
+
+                // reloadFromDisk() seems to convert CRLF to LF, but loading the byte array from the VirtualFile
+                // correctly gives the CRLF as on disk.
+                assertEquals(originalString.replace("\r\n", "\n"), doc.text)
 
                 // now, commit changes so the PsiFile is updated
                 PsiDocumentManager.getInstance(project).commitDocument(doc)
                 psi
             })
 
-        assertEquals(psi.text, originalString)
+        // Same issue as above.
+        assertEquals(psi.text, originalString.replace("\r\n", "\n"))
     }
 }
