@@ -2,6 +2,7 @@ package com.ruin.intel.Util
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ex.EditorEx
@@ -25,6 +26,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
 import com.intellij.util.ui.UIUtil
+import com.ruin.intel.commands.HoverCommand
 import org.jdom.JDOMException
 import org.jetbrains.annotations.NotNull
 import java.io.File
@@ -32,6 +34,7 @@ import java.io.IOException
 import java.net.URI
 import java.util.*
 
+private val LOG = Logger.getInstance("ProjectUtil")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     val (project, filePath) = resolveProjectFromUri(uri) ?: return null
@@ -58,6 +61,7 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         directory = directory.parentFile
     }
 
+    LOG.warn("Unable to resolve project from URI $uri")
     return null
 }
 
@@ -76,13 +80,19 @@ fun getProject(projectPath: String): Project? {
     val mgr = ProjectManagerEx.getInstanceEx()
 
     val cached = sProjectCache[projectPath]
-    if (cached != null && !cached.isDisposed) {
-        return cached
+    if (cached != null ) {
+        if (!cached.isDisposed) {
+            return cached
+        } else {
+            LOG.info("Cached project at $projectPath was disposed, reopening.")
+        }
     }
 
     try {
-        if (!File(projectPath).exists())
+        if (!File(projectPath).exists()) {
+            LOG.warn("Project at $projectPath doesn't exist.")
             return null
+        }
 
         val projectRef = Ref<Project>()
         ApplicationManager.getApplication().runWriteAction {
@@ -108,12 +118,14 @@ fun getProject(projectPath: String): Project? {
 
         val project = projectRef.get() ?: throw IOException("Failed to obtain project " + projectPath)
 
+        LOG.info("Caching project that was found at $projectPath.")
         sProjectCache[projectPath] = project
         return project
     } catch (e: IOException) {
         e.printStackTrace()
     }
 
+    LOG.warn("Exception occurred trying to find project for path $projectPath")
     return null
 }
 
@@ -125,7 +137,12 @@ fun getPsiFile(@NotNull project: Project, @NotNull virtual: VirtualFile): PsiFil
     return invokeAndWaitIfNeeded(asWriteAction(
             Computable<PsiFile> {
                 val mgr = PsiManager.getInstance(project)
-                val file = mgr.findFile(virtual) ?: return@Computable null
+                val file = mgr.findFile(virtual)
+
+                if (file == null) {
+                    LOG.warn("Unable to find PSI file for virtual file ${virtual.name}")
+                    return@Computable null
+                }
 
                 var doc = FileDocumentManager.getInstance()
                         .getDocument(virtual)
@@ -136,6 +153,10 @@ fun getPsiFile(@NotNull project: Project, @NotNull virtual: VirtualFile): PsiFil
                     doc = FileDocumentManager.getInstance()
                             .getDocument(virtual)
 
+                    if (doc == null) {
+                        LOG.warn("Unable to find document for virtual file ${virtual.name}")
+                        return@Computable null
+                    }
                     doc ?: return@Computable null
                 }
 

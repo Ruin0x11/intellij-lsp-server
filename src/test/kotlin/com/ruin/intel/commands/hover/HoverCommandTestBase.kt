@@ -11,9 +11,7 @@ import org.intellivim.FileEditingTestCase
 import java.io.PrintWriter
 import java.io.StringWriter
 
-
-
-open class HoverCommandTestBase : FileEditingTestCase() {
+abstract class HoverCommandTestBase : FileEditingTestCase() {
     override val projectName: String
         get() = JAVA_PROJECT
 

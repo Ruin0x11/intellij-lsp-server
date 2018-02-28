@@ -8,6 +8,7 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
@@ -32,23 +33,29 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
     }
 
     override fun execute(): Result<List<CompletionItem>, Exception> {
-        val pair = resolvePsiFromUri(textDocumentIdentifier.uri)
-            ?: return Result.error(LanguageServerException(ErrorResolver.JsonError.BULK_ERROR))
-        val (project, file) = pair
+        var result: List<CompletionItem> = listOf()
 
-        val editor = createEditor(this, file, position.line, position.character)
-        val noCompletionsFound = invokeCompletion(editor, file, project)
+        ApplicationManager.getApplication().invokeAndWait {
+            val pair = resolvePsiFromUri(textDocumentIdentifier.uri)
+            if (pair != null) {
+                val (project, file) = pair
 
-        val elements = getLookupElements(editor, noCompletionsFound)
-            ?: return Result.error(LanguageServerException(ErrorResolver.JsonError.BULK_ERROR))
+                val editor = createEditor(this, file, position.line, position.character)
+                val noCompletionsFound = invokeCompletion(editor, file, project)
 
-        val items = elements.map { CompletionItem(it.lookupString) }
+                val elements = getLookupElements(editor, noCompletionsFound)
 
-        // Disposer doesn't release editor after registering in createEditor?
-        val editorFactory = EditorFactory.getInstance()
-        editorFactory.releaseEditor(editor)
+                if (elements != null) {
+                    result = elements.map { CompletionItem(it.lookupString) }
+                }
 
-        return Result.of(items)
+                // Disposer doesn't release editor after registering in createEditor?
+                val editorFactory = EditorFactory.getInstance()
+                editorFactory.releaseEditor(editor)
+            }
+        }
+
+        return Result.of(result)
     }
 
     private fun getCompletionEditor(editor: Editor, file: PsiFile): Editor? {

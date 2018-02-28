@@ -35,6 +35,10 @@ interface LanguageServerHandler {
     @JsonRpcMethod("initialized")
     fun onNotifyInitialized()
 
+    @JsonRpcMethod("\$/cancelRequest")
+    fun onNotifyCancelRequest(
+        @JsonRpcParam(value="params") params: CancelParams)
+
     @JsonRpcMethod("textDocument/didOpen")
     fun onNotifyTextDocumentDidOpen(
         @JsonRpcParam(value="textDocument") textDocument: TextDocumentItem)

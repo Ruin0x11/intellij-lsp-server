@@ -111,6 +111,8 @@ data class ServerCapabilities(val textDocumentSync: TextDocumentSyncOptions?,
 
 data class InitializeResult(val capabilities: ServerCapabilities)
 
+data class CancelParams(val id: String)
+
 data class Position(val line: Int,
                     val character: Int)
 data class Range(val start: Int,

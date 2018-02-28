@@ -78,15 +78,16 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         context.wasInitialized = true
     }
 
+    override fun onNotifyCancelRequest(params: CancelParams) {
+        checkInitialized()
+    }
+
     override fun onNotifyTextDocumentDidOpen(textDocument: TextDocumentItem) {
         checkInitialized()
     }
 
     override fun onNotifyTextDocumentDidClose(textDocument: TextDocumentIdentifier) {
         checkInitialized()
-
-        //val ws = workspace()
-        //ws.closePsiFile(textDocument.uri)
     }
 
     override fun onNotifyTextDocumentDidChange(textDocument: VersionedTextDocumentIdentifier, contentChanges: List<TextDocumentContentChangeEvent>) {

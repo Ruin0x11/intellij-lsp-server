@@ -74,12 +74,12 @@ class HoverDocumentationProvider : JavaDocumentationProvider() {
         return generateOneLineJavadoc(element!!)
     }
 
-    fun generateOneLineJavadoc(element: PsiElement): String? {
+    private fun generateOneLineJavadoc(element: PsiElement): String? {
         val docURLs = getExternalJavaDocUrl(element)
         return generateOneLineJavadoc(element, docURLs)
     }
 
-    fun generateOneLineJavadoc(element: PsiElement, docURLs: List<String>?): String? {
+    private fun generateOneLineJavadoc(element: PsiElement, docURLs: List<String>?): String? {
         val javaDocInfoGenerator = OneLineJavaDocInfoGeneratorFactory.create(element.project, element)
         return generateOneLineJavadoc(javaDocInfoGenerator, docURLs)
     }
