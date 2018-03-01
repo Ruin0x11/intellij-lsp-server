@@ -1,12 +1,7 @@
-# LSP
+# intellij-lsp-server
+A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowing other editors to use IntelliJ's features.
 
-## Contributing
-If you try running the tests in IDEA but get "Class not found" errors, check the "out" directory for where classes are
-output. It could either be "out/test/classes" or "out/test". Go to `Project Structure...` and set the module output
-directories for all modules so they match. It's probably a bug in the Gradle import.
-
-## Bugs
-- Opening a project through the LSP after it's already been opened before the LSP was started causes an error about the
-project being disposed already.
-- `Disposer` doesn't release editors created by `createEditor` for some reason, so they have to be released manually
-every time.
+## Caveats
+- Alpha-quality, and probably really unstable.
+- Only targets Java for now, though there is no reason awareness of other languages can't be added.
+- Tested primarily with Emacs' [lsp-mode](https://github.com/emacs-lsp/lsp-mode). There are apparently some differences in the way `lsp-mode` implements the specification, so those are currently reflected in the code.
