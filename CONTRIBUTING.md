@@ -51,7 +51,7 @@ and launch all code generation tasks. Unfortunately during import IDEA may delet
 `.idea/runConfigurations`, just revert changes in the directory if this happens.
 
 
-## Contributing
+## Troubleshooting
 
 If you try running the tests in IDEA but get "Class not found" errors, check the "out" directory for where classes are
 output. It could either be "out/test/classes" or "out/test". Go to `Project Structure...` and set the module output
