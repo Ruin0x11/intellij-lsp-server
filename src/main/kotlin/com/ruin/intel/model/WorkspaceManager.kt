@@ -46,7 +46,7 @@ class WorkspaceManager {
 
     fun onTextDocumentClosed(textDocument: VersionedTextDocumentIdentifier) {
         if(!managedFiles.containsKey(textDocument.uri)) {
-            LOG.warn("Attempted to close text document at ${textDocument.uri} without opening it")
+            LOG.warn("Attempted to close insertText document at ${textDocument.uri} without opening it")
             return
         }
 
@@ -175,7 +175,7 @@ fun applyChange(doc: Document, change: TextEdit) {
 fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
     LOG.debug("Applying change: $change")
     if(change.range == null) {
-        // Change is the full text of the document
+        // Change is the full insertText of the document
         doc.setText(change.text)
     } else {
         val textRange = rangeToTextRange(doc, change.range)

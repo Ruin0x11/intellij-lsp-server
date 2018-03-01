@@ -31,15 +31,17 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
         ApplicationManager.getApplication().invokeAndWait {
             val pair = resolvePsiFromUri(textDocumentIdentifier.uri)
             if (pair != null) {
-                val (project, file) = pair
+                val (_, file) = pair
 
                 val editor = createEditor(this, file, position.line, position.character)
                 val params = makeCompletionParameters(editor, file, position)
 
                 performCompletion(params!!, prefix, Consumer { completionResult ->
                     val el = completionResult.lookupElement
-                    val info = CompletionItem.from(el)
-                    result.add(info)
+                    val dec = CompletionDecorator.from(el)
+                    if (dec != null) {
+                        result.add(dec.completionItem)
+                    }
                 })
 
                 // Disposer doesn't release editor after registering in createEditor?

@@ -43,7 +43,7 @@ interface LanguageServerHandler {
 
     @JsonRpcMethod("\$/cancelRequest")
     fun onNotifyCancelRequest(
-        @JsonRpcParam(value="params") params: CancelParams)
+        @JsonRpcParam(value="id") id: String)
 
     @JsonRpcMethod("textDocument/didOpen")
     fun onNotifyTextDocumentDidOpen(
@@ -66,5 +66,5 @@ interface LanguageServerHandler {
         // lsp-mode sends VersionedTextDocumentIdentifier instead
         //@JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier,
         @JsonRpcParam(value="textDocument") textDocument: VersionedTextDocumentIdentifier,
-        @JsonRpcParam(value="text") text: String?)
+        @JsonRpcParam(value="insertText") text: String?)
 }

@@ -31,14 +31,14 @@
                 class="com.ruin.intel.actions.StartServerAction"
                 text="Start LSP Server"
                 description="Start the internal LSP server">
-            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="GenerateJavadoc"/>
+            <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>
         </action>
 
         <action id="LSP.StopServer"
                 class="com.ruin.intel.actions.StopServerAction"
                 text="Stop LSP Server"
                 description="Stop the internal LSP server">
-            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="GenerateJavadoc"/>
+            <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>
         </action>
     </actions>
 

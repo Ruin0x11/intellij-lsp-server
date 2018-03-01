@@ -59,7 +59,7 @@ private fun isCopyUpToDate(document: Document, file: PsiFile): Boolean {
     if (!file.isValid) {
         return false
     }
-    // the psi file cache might have been cleared by some external activity,
+    // the elt file cache might have been cleared by some external activity,
     // in which case PSI-document sync may stop working
     val current = PsiDocumentManager.getInstance(file.project).getPsiFile(document)
     return current != null && current.viewProvider.getPsi(file.language) === file

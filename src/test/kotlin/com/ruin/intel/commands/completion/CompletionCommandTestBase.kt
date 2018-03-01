@@ -17,8 +17,8 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
         val command = CompletionCommand(TextDocumentIdentifier(file.url), Position(line, char), null, null)
         val result = command.execute()
         assertNull(result.component2())
-        assertTrue("Expected $expected to be included but got: \n${result.get().map{ it.label }}",
-            result.get().any { it.label == expected })
+        assertTrue("Expected $expected to be included but got: \n${result.get().items.map{ it.label }}",
+            result.get().items.any { it.label == expected })
         command.dispose()
     }
 }

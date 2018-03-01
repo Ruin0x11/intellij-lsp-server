@@ -90,7 +90,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         context.wasInitialized = true
     }
 
-    override fun onNotifyCancelRequest(params: CancelParams) {
+    override fun onNotifyCancelRequest(id: String) {
         checkInitialized()
     }
 

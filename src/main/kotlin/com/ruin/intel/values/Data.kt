@@ -114,8 +114,6 @@ data class ServerCapabilities(val textDocumentSync: TextDocumentSyncOptions?,
 
 data class InitializeResult(val capabilities: ServerCapabilities)
 
-data class CancelParams(val id: String)
-
 data class Position(val line: Int,
                     val character: Int)
 data class Range(val start: Position,
@@ -150,7 +148,10 @@ data class Hover(val contents: MarkedString,
 
 data class CompletionContext(val triggerKind: Int?,
                              val triggerCharacters: List<String>?)
-typealias InsertTextFormat = Int
+enum class InsertTextFormat(val i: Int) {
+    PLAIN_TEXT(1),
+    SNIPPET(2),
+}
 data class CompletionList(val isIncomplete: Boolean,
                           val items: List<CompletionItem>)
 data class CompletionItem(val label: String,
