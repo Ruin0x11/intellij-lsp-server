@@ -1,4 +1,4 @@
-(I basically ripped off the basic project structure from intellij-rust, so the build process is similar. Most of the following is appropriated from their `CONTRIBUTING.md`.)
+(I basically ripped off the basic project structure from `intellij-rust`, so the build process is similar. Most of the following is appropriated from their `CONTRIBUTING.md`.)
 
 # Kotlin
 
