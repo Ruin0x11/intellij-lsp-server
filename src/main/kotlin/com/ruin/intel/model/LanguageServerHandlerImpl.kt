@@ -89,7 +89,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         workspace().onTextDocumentOpened(textDocument)
     }
 
-    override fun onNotifyTextDocumentDidClose(textDocument: TextDocumentIdentifier) {
+    override fun onNotifyTextDocumentDidClose(textDocument: VersionedTextDocumentIdentifier) {
         checkInitialized()
         workspace().onTextDocumentClosed(textDocument)
     }
@@ -99,7 +99,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         workspace().onTextDocumentChanged(textDocument, contentChanges)
     }
 
-    override fun onNotifyTextDocumentDidSave(textDocument: TextDocumentIdentifier, text: String?) {
+    override fun onNotifyTextDocumentDidSave(textDocument: VersionedTextDocumentIdentifier, text: String?) {
         checkInitialized()
         workspace().onTextDocumentSaved(textDocument, text)
     }

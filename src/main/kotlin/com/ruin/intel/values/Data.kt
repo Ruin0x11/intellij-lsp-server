@@ -28,8 +28,8 @@ data class TextDocumentClientCapabilities(val synchronization: Synchronization?,
                                           val references: References?,
                                           val documentHighlight: DocumentHighlight?,
 
-    // because lsp-mode doesn't follow the spec
-                                          //val documentSymbol: DocumentSymbol?,
+                                          // because lsp-mode doesn't follow the spec
+                                          // val documentSymbol: DocumentSymbol?,
                                           val symbol: DocumentSymbol?,
 
                                           val formatting: Formatting?,

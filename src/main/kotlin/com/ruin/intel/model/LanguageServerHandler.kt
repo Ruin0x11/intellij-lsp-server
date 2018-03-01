@@ -45,7 +45,10 @@ interface LanguageServerHandler {
 
     @JsonRpcMethod("textDocument/didClose")
     fun onNotifyTextDocumentDidClose(
-        @JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier)
+        // lsp-mode sends VersionedTextDocumentIdentifier instead
+        //@JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier,
+        @JsonRpcParam(value="textDocument") textDocument: VersionedTextDocumentIdentifier
+    )
 
     @JsonRpcMethod("textDocument/didChange")
     fun onNotifyTextDocumentDidChange(
@@ -54,6 +57,8 @@ interface LanguageServerHandler {
 
     @JsonRpcMethod("textDocument/didSave")
     fun onNotifyTextDocumentDidSave(
-        @JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier,
+        // lsp-mode sends VersionedTextDocumentIdentifier instead
+        //@JsonRpcParam(value="textDocument") textDocument: TextDocumentIdentifier,
+        @JsonRpcParam(value="textDocument") textDocument: VersionedTextDocumentIdentifier,
         @JsonRpcParam(value="text") text: String?)
 }

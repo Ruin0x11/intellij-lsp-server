@@ -4,19 +4,13 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiManager
-import com.intellij.util.FileContentUtil
 import com.intellij.util.diff.Diff
 import com.ruin.intel.Util.*
 import com.ruin.intel.values.*
 import groovy.util.GroovyTestCase.assertEquals
 import com.intellij.openapi.command.UndoConfirmationPolicy
-import com.sun.javafx.scene.CameraHelper.project
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.editor.Editor
-
+import com.intellij.openapi.util.TextRange
 
 
 val LOG = Logger.getInstance(WorkspaceManager::class.java)
@@ -49,13 +43,20 @@ class WorkspaceManager {
             )
     }
 
-    fun onTextDocumentClosed(textDocument: TextDocumentIdentifier) {
+    fun onTextDocumentClosed(textDocument: VersionedTextDocumentIdentifier) {
         if(!managedFiles.containsKey(textDocument.uri)) {
             LOG.warn("Attempted to close text document at ${textDocument.uri} without opening it")
             return
         }
 
         LOG.debug("Handling textDocument/didClose for ${textDocument.uri}")
+
+        val managedTextDoc = managedFiles[textDocument.uri]!!
+
+        if(managedTextDoc.identifier.version != textDocument.version) {
+            LOG.warn("Document version differed on close - " +
+                "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
+        }
 
         managedFiles.remove(textDocument.uri)
     }
@@ -71,7 +72,6 @@ class WorkspaceManager {
         LOG.debug("textDocument: $textDocument")
         LOG.debug("contentChanges: $contentChanges")
         LOG.debug("Version before: ${managedFiles[textDocument.uri]!!.identifier.version}")
-        LOG.debug("Truth before:\n\n${managedFiles[textDocument.uri]!!.contents}\n\n")
 
         val managedTextDoc = managedFiles[textDocument.uri]!!
 
@@ -89,13 +89,16 @@ class WorkspaceManager {
             return
         }
 
-        val (project, file) = pair
+        val (project, _) = pair
 
         ApplicationManager.getApplication().invokeAndWait {
             CommandProcessor.getInstance().executeCommand(project, asWriteAction( Runnable {
                 val doc = getDocument(textDocument.uri)
 
                 if (doc != null) {
+                    assertEquals("Document and ground truth don't match!" +
+                    "\n\n${doc.text}\n\n=====\n\n${managedTextDoc.contents}",
+                        doc.text, managedTextDoc.contents)
                     LOG.debug("Doc before:\n\n${doc.text}\n\n")
 
                     assert(doc.isWritable, { "Document at ${textDocument.uri} wasn't writable!" })
@@ -105,9 +108,6 @@ class WorkspaceManager {
 
                     // Commit changes to the PSI tree, but not to disk
                     PsiDocumentManager.getInstance(project).commitDocument(doc)
-
-                    // Force a reparse of the file.
-                    FileContentUtil.reparseFiles(file.virtualFile)
 
                     // Update the ground truth
                     val newDoc =
@@ -124,10 +124,9 @@ class WorkspaceManager {
 
 
         LOG.debug("Version after: ${managedFiles[textDocument.uri]!!.identifier.version}")
-        LOG.debug("Truth after:\n\n${managedFiles[textDocument.uri]!!.contents}\n\n")
     }
 
-    fun onTextDocumentSaved(textDocument: TextDocumentIdentifier, text: String?) {
+    fun onTextDocumentSaved(textDocument: VersionedTextDocumentIdentifier, text: String?) {
         if (!managedFiles.containsKey(textDocument.uri)) {
             LOG.warn("Tried handling didSave for ${textDocument.uri}, but it wasn't open")
             return
@@ -136,6 +135,10 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didSave for ${textDocument.uri}")
 
         val managedTextDoc = managedFiles[textDocument.uri]!!
+
+        assertEquals("Document version differed on save - " +
+            "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}",
+            textDocument.version, managedTextDoc.identifier.version)
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {
@@ -148,13 +151,13 @@ class WorkspaceManager {
 
 data class ManagedTextDocument(var identifier: VersionedTextDocumentIdentifier, var contents: String)
 
-fun rangeToStartEndOffset(doc: Document, range: Range): Pair<Int, Int> {
+fun rangeToTextRange(doc: Document, range: Range): TextRange {
     val startLineOffset = doc.getLineStartOffset(range.start.line)
     val startOffset = startLineOffset + range.start.character
     val endLineOffset = doc.getLineStartOffset(range.end.line)
-    val endOffset = endLineOffset + range.start.character
+    val endOffset = endLineOffset + range.end.character
 
-    return Pair(startOffset, endOffset)
+    return TextRange(startOffset, endOffset)
 }
 
 fun applyChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>) =
@@ -162,8 +165,8 @@ fun applyChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEv
 
 fun applyChange(doc: Document, change: TextEdit) {
     LOG.debug("Applying change: $change")
-    val (startOffset, endOffset) = rangeToStartEndOffset(doc, change.range)
-    doc.replaceString(startOffset, endOffset, change.newText)
+    val textRange = rangeToTextRange(doc, change.range)
+    doc.replaceString(textRange.startOffset, textRange.endOffset, change.newText)
 }
 fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
     LOG.debug("Applying change: $change")
@@ -171,7 +174,7 @@ fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
         // Change is the full text of the document
         doc.setText(change.text)
     } else {
-        val (startOffset, endOffset) = rangeToStartEndOffset(doc, change.range)
-        doc.replaceString(startOffset, endOffset, change.text)
+        val textRange = rangeToTextRange(doc, change.range)
+        doc.replaceString(textRange.startOffset, textRange.endOffset, change.text)
     }
 }

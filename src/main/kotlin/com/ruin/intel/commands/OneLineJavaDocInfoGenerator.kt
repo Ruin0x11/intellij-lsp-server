@@ -29,7 +29,10 @@ class OneLineJavaDocInfoGenerator(val myProject: Project, val myElement: PsiElem
             is PsiMethod -> generateMethodJavaDoc(buffer, myElement)
             is PsiField -> generateFieldJavaDoc(buffer, myElement)
             is PsiVariable -> generateVariableJavaDoc(buffer, myElement)
-            else -> return false
+            else -> {
+                LOG.debug("Documentation not handled for $myElement")
+                return false
+            }
         }
 
         return true
@@ -123,29 +126,24 @@ private fun generateMethodJavaDoc(buffer: StringBuilder, method: PsiMethod) {
 
 private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
     val modifiers = PsiFormatUtil.formatModifiers(method, PsiFormatUtilBase.JAVADOC_MODIFIERS_ONLY)
-    var indent = 0
     if (!modifiers.isEmpty()) {
         buffer.append(modifiers)
         buffer.append(NBSP)
-        indent += modifiers.length + 1
     }
 
     val typeParamsString = generateTypeParameters(method, true)
-    indent += StringUtil.unescapeXml(StringUtil.stripHtml(typeParamsString, true)).length
+    StringUtil.unescapeXml(StringUtil.stripHtml(typeParamsString, true)).length
     if (!typeParamsString.isEmpty()) {
         buffer.append(typeParamsString)
         buffer.append(NBSP)
-        indent++
     }
 
     if (method.returnType != null) {
-        indent += generateType(buffer, method.returnType!!, method)
+        generateType(buffer, method.returnType!!, method)
         buffer.append(NBSP)
-        indent++
     }
     val name = method.name
     buffer.append(name)
-    indent += name.length
 
     buffer.append("(")
 
@@ -159,7 +157,7 @@ private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
         }
         if (i < parameters.size - 1) {
             buffer.append(", ")
-            buffer.append(StringUtil.repeat(" ", indent))
+            buffer.append(" ")
         }
     }
     buffer.append(")")
@@ -167,20 +165,14 @@ private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
     val refs = method.throwsList.referencedTypes
     if (refs.isNotEmpty()) {
         buffer.append("\n")
-        indent -= THROWS_KEYWORD.length + 1
-        for (i in 0 until indent) {
             buffer.append(" ")
-        }
-        indent += THROWS_KEYWORD.length + 1
         buffer.append(THROWS_KEYWORD)
         buffer.append(" ")
         for (i in refs.indices) {
             buffer.append(refs[i].presentableText)
             if (i < refs.size - 1) {
                 buffer.append(",")
-                for (j in 0 until indent) {
-                    buffer.append(" ")
-                }
+                buffer.append(" ")
             }
         }
     }

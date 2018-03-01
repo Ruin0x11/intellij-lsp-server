@@ -1,6 +1,11 @@
 package com.ruin.intel
 
+import com.intellij.openapi.util.TextRange
+import com.ruin.intel.Util.getDocument
 import com.ruin.intel.model.WorkspaceManager
+import com.ruin.intel.model.rangeToTextRange
+import com.ruin.intel.values.Position
+import com.ruin.intel.values.Range
 import com.ruin.intel.values.TextDocumentContentChangeEvent
 import org.intellivim.FileEditingTestCase
 
@@ -38,10 +43,6 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     }
 
     fun `test partial text update`() {
-        assert(false)
-    }
-
-    fun `test range to start and end offset`() {
         assert(false)
     }
 }
