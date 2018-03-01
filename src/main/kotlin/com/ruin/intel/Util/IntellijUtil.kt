@@ -7,6 +7,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 
+/**
+ * Execute some code as an "undo-transparent" write action
+ *
+ * @param runnable
+ */
+fun runUndoTransparentWriteCommand(runnable: Runnable) {
+    runUndoTransparentAction(Runnable { ApplicationManager.getApplication().runWriteAction(runnable) })
+}
 
 /**
  * @return A new Computable that wraps execution of the given

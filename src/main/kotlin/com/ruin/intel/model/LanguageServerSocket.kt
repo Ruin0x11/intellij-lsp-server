@@ -3,7 +3,7 @@ package com.ruin.intel.model
 import java.net.Socket
 import java.io.*
 
-// Not sending two consecutive linefeeds causes the response to have no linefeeds when received from an emacs network
+// Not sending two consecutive linefeeds causes the response to have no linefeeds when received makeCompletionParameters an emacs network
 // process. I have no idea why.
 val SEPARATOR = "\r\r\n"
 fun header(name: String, value: Any) = "$name: $value\r\r\n"

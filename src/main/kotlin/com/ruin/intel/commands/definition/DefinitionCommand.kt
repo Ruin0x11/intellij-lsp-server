@@ -126,7 +126,7 @@ fun findTargetElements(project: Project, editor: Editor, file: PsiFile, position
         if (elements.isEmpty() && suggestionCandidates(TargetElementUtil.findReference(editor, offset)).isEmpty()) {
             val element = GotoDeclarationAction.findElementToShowUsagesOf(editor, editor.caretModel.offset)
             if (element != null) {
-                return null
+                return arrayOf(element)
             }
 
             //disable 'no declaration found' notification for keywords
@@ -134,7 +134,7 @@ fun findTargetElements(project: Project, editor: Editor, file: PsiFile, position
             if (elementAtCaret != null) {
                 val namesValidator = LanguageNamesValidation.INSTANCE.forLanguage(elementAtCaret.language)
                 if (namesValidator != null && namesValidator.isKeyword(elementAtCaret.text, project)) {
-                    return null
+                    return arrayOf(elementAtCaret)
                 }
             }
         }
@@ -144,7 +144,7 @@ fun findTargetElements(project: Project, editor: Editor, file: PsiFile, position
     val element = elements[0]
     if (element === GotoDeclarationAction.findElementToShowUsagesOf(editor, editor.caretModel.offset)
         && element != null) {
-        return null
+        return arrayOf(element)
     }
 
     var navElement: PsiElement? = element.navigationElement

@@ -5,7 +5,7 @@ import com.googlecode.jsonrpc4j.JsonRpcParam
 import com.ruin.intel.values.*
 
 /**
- * Interface which implements methods from the Language Server Protocol.
+ * Interface which implements methods makeCompletionParameters the Language Server Protocol.
  */
 interface LanguageServerHandler {
     @JsonRpcMethod("initialize")
@@ -30,7 +30,7 @@ interface LanguageServerHandler {
             @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
             @JsonRpcParam(value="position") position: Position,
             @JsonRpcParam(value="triggerKind") triggerKind: Int,
-            @JsonRpcParam(value="triggerCharacter") triggerCharacter: String?) : List<CompletionItem>
+            @JsonRpcParam(value="triggerCharacter") triggerCharacter: String?) : CompletionList
 
     @JsonRpcMethod("textDocument/hover")
     fun onTextDocumentHover(

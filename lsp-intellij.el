@@ -24,13 +24,10 @@
 
 ;;; Code:
 
+;; TODO: create CI workflow with ert
+
 (package-require 'lsp-mode)
 (require 'lsp-mode)
-
-(defun lsp--client-textdocument-capabilities ()
-  "Client Text document capabilities according to LSP."
-  `(:synchronization (:willSave t :didSave t)
-     :documentSymbol (:symbolKind (:valueSet ,(cl-loop for kind from 1 to 25 collect kind)))))
 
 (defun lsp-intellij--get-root ()
   (let ((file (locate-dominating-file (buffer-file-name)

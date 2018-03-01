@@ -1,5 +1,8 @@
 package com.ruin.intel.values
 
+import com.intellij.codeInsight.completion.scope.CompletionElement
+import com.intellij.codeInsight.lookup.LookupElement
+
 typealias DocumentUri = String
 typealias MarkedString = String
 
@@ -129,6 +132,9 @@ data class TextDocumentContentChangeEvent(val range: Range?,
                                           val rangeLength: Int?,
                                           val text: String)
 
+data class Command(val title: String,
+                   val command: String,
+                   val arguments: List<Any>?)
 data class TextEdit(val range: Range,
                     val newText: String)
 data class TextDocumentEdit(val textDocument: VersionedTextDocumentIdentifier,
@@ -144,5 +150,22 @@ data class Hover(val contents: MarkedString,
 
 data class CompletionContext(val triggerKind: Int?,
                              val triggerCharacters: List<String>?)
-data class CompletionItem(val label: String)
-
+typealias InsertTextFormat = Int
+data class CompletionList(val isIncomplete: Boolean,
+                          val items: List<CompletionItem>)
+data class CompletionItem(val label: String,
+                          val kind: Int? = null,
+                          val detail: String? = null,
+                          val documentation: String? = null,
+                          val sortText: String? = null,
+                          val filterText: String? = null,
+                          val insertText: String? = null,
+                          val insertTextFormat: InsertTextFormat? = null,
+                          val textEdit: TextEdit? = null,
+                          val additionalTextEdits: List<TextEdit>? = null,
+                          val command: Command? = null,
+                          val data: Any? = null) {
+    companion object {
+        fun from(lookupElement: LookupElement): CompletionItem = CompletionItem(lookupElement.toString())
+    }
+}

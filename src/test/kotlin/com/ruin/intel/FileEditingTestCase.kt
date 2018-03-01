@@ -179,7 +179,7 @@ abstract class FileEditingTestCase : BaseTestCase() {
 
                 FileDocumentManager.getInstance().reloadFromDisk(doc)
 
-                // reloadFromDisk() seems to convert CRLF to LF, but loading the byte array from the VirtualFile
+                // reloadFromDisk() seems to convert CRLF to LF, but loading the byte array makeCompletionParameters the VirtualFile
                 // correctly gives the CRLF as on disk.
                 assertEquals(originalString.replace("\r\n", "\n"), doc.text)
 

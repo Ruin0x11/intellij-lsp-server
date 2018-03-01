@@ -11,9 +11,9 @@ import com.ruin.intel.values.*
 fun defaultServerCapabilities() : ServerCapabilities {
     return ServerCapabilities(textDocumentSync = null,
             hoverProvider = null,
-            completionProvider = null,
+            completionProvider = CompletionOptions(false, listOf(".", "@", "#")),
             signatureHelpProvider = null,
-            definitionProvider = false,
+            definitionProvider = true,
             referencesProvider = false,
             documentHighlightProvider = false,
             documentSymbolProvider = false,
@@ -75,7 +75,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
                                           position: Position,
                                           triggerKind: Int,
-                                          triggerCharacter: String?): List<CompletionItem> {
+                                          triggerCharacter: String?): CompletionList {
         checkInitialized()
 
         val result = CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter).execute()

@@ -97,9 +97,11 @@ class WorkspaceManager {
                 val doc = getDocument(textDocument.uri)
 
                 if (doc != null) {
-                    assertEquals("Document and ground truth don't match!" +
-                    "\n\n${doc.text}\n\n=====\n\n${managedTextDoc.contents}",
-                        doc.text, managedTextDoc.contents)
+                    assert(managedTextDoc.contents == doc.text, {
+                        val change = Diff.buildChanges(managedTextDoc.contents, doc.text)
+                        LOG.debug("Difference: $change")
+                        "Ground truth differed upon change!"
+                    })
                     LOG.debug("Doc before:\n\n${doc.text}\n\n")
 
                     assert(doc.isWritable, { "Document at ${textDocument.uri} wasn't writable!" })
@@ -145,7 +147,8 @@ class WorkspaceManager {
         if (text != null) {
             assert(managedTextDoc.contents == text, {
                 val change = Diff.buildChanges(managedTextDoc.contents, text)
-                "Ground truth differed upon save!\n\n$change"
+                LOG.debug("Difference: $change")
+                "Ground truth differed upon save!"
             })
         }
     }

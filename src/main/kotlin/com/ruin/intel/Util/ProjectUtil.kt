@@ -31,7 +31,7 @@ import java.io.IOException
 import java.net.URI
 import java.util.*
 
-private val LOG = Logger.getInstance("ProjectUtil")
+private val LOG = Logger.getInstance("#com.ruin.intel.util.ProjectUtil")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     val (project, filePath) = resolveProjectFromUri(uri) ?: return null
@@ -40,7 +40,7 @@ fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
 }
 
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
-    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project makeCompletionParameters them
     // otherwise it gets confusing to have to look up the line and column being tested in the test project
 
     // has to have three slashes on windows
@@ -58,7 +58,7 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         directory = directory.parentFile
     }
 
-    LOG.warn("Unable to resolve project from URI $uri")
+    LOG.warn("Unable to resolve project makeCompletionParameters URI $uri")
     return null
 }
 
@@ -228,7 +228,7 @@ fun createEditor(context: Disposable, file: PsiFile, line: Int, column: Int) : E
 }
 
 /**
- * Gets a Windows-compatible URI from a VirtualFile.
+ * Gets a Windows-compatible URI makeCompletionParameters a VirtualFile.
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
  */
 fun getURIForFile(file: VirtualFile) = file.url.replace("file://", "file:///")
