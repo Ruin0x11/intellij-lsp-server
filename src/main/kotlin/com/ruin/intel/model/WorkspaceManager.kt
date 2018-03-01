@@ -39,7 +39,8 @@ class WorkspaceManager {
 
         managedFiles[textDocument.uri] =
             ManagedTextDocument(
-                VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version), textDocument.text
+                VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version),
+                textDocument.text.replace("\r\n", "\n")
             )
     }
 
@@ -112,7 +113,8 @@ class WorkspaceManager {
                     // Update the ground truth
                     val newDoc =
                         ManagedTextDocument(
-                            VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version), doc.text
+                            VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version),
+                            doc.text.replace("\r\n", "\n")
                         )
 
                     managedFiles[textDocument.uri] = newDoc
@@ -151,14 +153,13 @@ class WorkspaceManager {
 
 data class ManagedTextDocument(var identifier: VersionedTextDocumentIdentifier, var contents: String)
 
-fun rangeToTextRange(doc: Document, range: Range): TextRange {
-    val startLineOffset = doc.getLineStartOffset(range.start.line)
-    val startOffset = startLineOffset + range.start.character
-    val endLineOffset = doc.getLineStartOffset(range.end.line)
-    val endOffset = endLineOffset + range.end.character
+fun positionToOffset(doc: Document, pos: Position) = doc.getLineStartOffset(pos.line) + pos.character
 
-    return TextRange(startOffset, endOffset)
-}
+fun rangeToTextRange(doc: Document, range: Range) =
+    TextRange(
+        positionToOffset(doc, range.start),
+        positionToOffset(doc, range.end)
+    )
 
 fun applyChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>) =
     contentChanges.forEach { applyChange(doc, it) }

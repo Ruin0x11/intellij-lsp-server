@@ -19,7 +19,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.ruin.intel.model.LanguageServerService" />
-        <applicationService serviceImplementation="com.ruin.intel.commands.OneLineJavaDocInfoGeneratorFactory" />
+        <applicationService serviceImplementation="com.ruin.intel.commands.hover.OneLineJavaDocInfoGeneratorFactory" />
         <applicationService serviceImplementation="com.ruin.intel.model.WorkspaceManager" />
     </extensions>
 

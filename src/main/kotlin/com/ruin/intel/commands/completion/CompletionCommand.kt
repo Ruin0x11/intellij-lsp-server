@@ -1,7 +1,6 @@
-package com.ruin.intel.commands
+package com.ruin.intel.commands.completion
 
 import com.github.kittinunf.result.Result
-import com.googlecode.jsonrpc4j.ErrorResolver
 import com.intellij.codeInsight.completion.CodeCompletionHandlerBase
 import com.intellij.codeInsight.completion.CompletionProgressIndicator
 import com.intellij.codeInsight.completion.CompletionType
@@ -17,7 +16,6 @@ import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.util.ui.UIUtil
 import com.ruin.intel.Util.createEditor
 import com.ruin.intel.Util.resolvePsiFromUri
-import com.ruin.intel.model.LanguageServerException
 import com.ruin.intel.values.CompletionItem
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
@@ -27,10 +25,6 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position,
                         val triggerKind: Int?,
                         val triggerCharacter: String?) : Command<List<CompletionItem>>, Disposable {
-
-    override fun dispose() {
-
-    }
 
     override fun execute(): Result<List<CompletionItem>, Exception> {
         var result: List<CompletionItem> = listOf()

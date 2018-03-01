@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ruin.intel.commands
+package com.ruin.intel.commands.hover
 
-import com.intellij.codeInsight.javadoc.JavaDocInfoGenerator
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement

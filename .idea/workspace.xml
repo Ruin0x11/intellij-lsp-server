@@ -2,18 +2,28 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="178a50be-00aa-469b-a17c-5c54b895a8c8" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverCommand.kt" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestBase.kt" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestCase.kt" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/MyInterface.java" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/definition/DefinitionCommand.kt" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestBase.kt" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestCase.kt" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/CompletionCommand.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/CompletionCommand.kt" />
+      <change beforePath="$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/SubClass.java" afterPath="$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/SubClass.java" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/Command.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/CompletionCommand.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverCommand.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverDocumentationProvider.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/OneLineJavaDocInfoGenerator.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/OneLineJavaDocInfoGeneratorFactory.kt" afterPath="" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/values/Data.kt" afterPath="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/values/Data.kt" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/RequestDispatchTest.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/RequestDispatchTest.kt" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerInputStreamTest.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerInputStreamTest.kt" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/WorkspaceManagerTest.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/WorkspaceManagerTest.kt" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestBase.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestBase.kt" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestBase.kt" afterPath="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestBase.kt" />
     </list>
     <ignored path="$PROJECT_DIR$/.gradle/" />
     <ignored path="$PROJECT_DIR$/build/" />
@@ -85,66 +95,119 @@
       </state>
     </system>
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="int" />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="HoverCommand.kt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverCommand.kt">
+      <file leaf-file-name="DefinitionCommand.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/definition/DefinitionCommand.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="36" column="39" lean-forward="false" selection-start-line="36" selection-start-column="39" selection-end-line="36" selection-end-column="39" />
+            <state relative-caret-position="242">
+              <caret line="81" column="45" lean-forward="false" selection-start-line="81" selection-start-column="45" selection-end-line="81" selection-end-column="45" />
               <folding>
-                <element signature="e#33#703#0" expanded="true" />
+                <element signature="e#44#1485#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JavaDocumentationProvider.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/lang/java/JavaDocumentationProvider.java">
+      <file leaf-file-name="OpenFileDescriptor.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/fileEditor/OpenFileDescriptor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="942">
-              <caret line="552" column="83" lean-forward="false" selection-start-line="552" selection-start-column="83" selection-end-line="552" selection-end-column="83" />
+            <state relative-caret-position="246">
+              <caret line="86" column="21" lean-forward="false" selection-start-line="86" selection-start-column="21" selection-end-line="86" selection-end-column="21" />
+              <folding>
+                <element signature="e#3441#3442#0" expanded="true" />
+                <element signature="e#3464#3465#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ProjectUtil.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="694">
+              <caret line="235" column="0" lean-forward="true" selection-start-line="235" selection-start-column="0" selection-end-line="235" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LanguageServerHandler.kt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt">
+      <file leaf-file-name="VirtualFile.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/vfs/VirtualFile.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="322">
-              <caret line="25" column="67" lean-forward="false" selection-start-line="25" selection-start-column="67" selection-end-line="25" selection-end-column="67" />
+            <state relative-caret-position="246">
+              <caret line="165" column="16" lean-forward="false" selection-start-line="165" selection-start-column="16" selection-end-line="165" selection-end-column="16" />
+              <folding>
+                <element signature="e#6309#6310#0" expanded="true" />
+                <element signature="e#6399#6400#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TransactionGuardImpl.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/TransactionGuardImpl.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="246">
+              <caret line="316" column="0" lean-forward="false" selection-start-line="316" selection-start-column="0" selection-end-line="316" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JavaDocInfoGenerator.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/javadoc/JavaDocInfoGenerator.java">
+      <file leaf-file-name="TargetElementUtil.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/TargetElementUtil.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-9585">
-              <caret line="71" column="13" lean-forward="false" selection-start-line="71" selection-start-column="13" selection-end-line="71" selection-end-column="13" />
+            <state relative-caret-position="260">
+              <caret line="403" column="0" lean-forward="false" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JavaDocExternalFilter.java" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/javadoc/JavaDocExternalFilter.java">
+      <file leaf-file-name="OneLineJavaDocInfoGenerator.kt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/hover/OneLineJavaDocInfoGenerator.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-644">
-              <caret line="42" column="13" lean-forward="false" selection-start-line="42" selection-start-column="13" selection-end-line="42" selection-end-column="13" />
+            <state relative-caret-position="278">
+              <caret line="404" column="37" lean-forward="false" selection-start-line="404" selection-start-column="35" selection-end-line="404" selection-end-column="37" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LanguageServerHandlerImpl.kt" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt">
+      <file leaf-file-name="DefinitionCommandTestCase.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestCase.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
-              <caret line="74" column="0" lean-forward="false" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+            <state relative-caret-position="84">
+              <caret line="6" column="54" lean-forward="true" selection-start-line="6" selection-start-column="54" selection-end-line="6" selection-end-column="54" />
+              <folding>
+                <element signature="e#44#160#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EditSourceUtil.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/util/EditSourceUtil.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="140">
+              <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PsiNavigationSupportImpl.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/util/PsiNavigationSupportImpl.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="168">
+              <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+              <folding>
+                <element signature="e#1319#1320#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -168,6 +231,9 @@
       <find>CONTENT_ENCODING</find>
       <find>ACCEPT_ENCODING</find>
       <find>project</find>
+      <find>reloadFromDisk</find>
+      <find>completionFinished</find>
+      <find>\n</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -681,7 +747,6 @@
       <list>
         <option value="$PROJECT_DIR$/.idea/runConfigurations/Test.xml" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/BaseTestCase.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/Command.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/ProjectUtilTest.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestCase.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/actions/StopServerAction.kt" />
@@ -698,25 +763,37 @@
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerSocketTest.java" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerSocketTest.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/DocumentGroundTruthManager.kt" />
-        <option value="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerStreamingTCPServer.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerInputStream.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerInputStreamTest.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/MyStreamServer.java" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerSocket.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerOutputStreamTest.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerOutputStream.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/values/Data.kt" />
-        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestBase.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestCase.kt" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt" />
+        <option value="$PROJECT_DIR$/src/main/resources/META-INF/plugin.xml" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/OneLineJavaDocInfoGenerator.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerInputStream.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverDocumentationProvider.kt" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/WorkspaceManagerTest.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/values/Data.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/Command.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/CompletionCommand.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverCommand.kt" />
-        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt" />
+        <option value="$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/MyInterface.java" />
+        <option value="$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/SubClass.java" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/DefinitionCommand.kt" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/HoverCommandTestCase.kt" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestBase.kt" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestCase.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/definition/DefinitionCommand.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt" />
+        <option value="$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/hover/OneLineJavaDocInfoGenerator.kt" />
       </list>
     </option>
   </component>
@@ -751,6 +828,10 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="AndroidView" />
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -761,7 +842,47 @@
             <path>
               <item name="int" type="b2602c69:ProjectViewProjectNode" />
               <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
-              <item name="build" type="462c0819:PsiDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+              <item name="java-project" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+              <item name="java-project" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+              <item name="java-project" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="org" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+              <item name="java-project" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="org" type="462c0819:PsiDirectoryNode" />
+              <item name="intellivim" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="projects" type="462c0819:PsiDirectoryNode" />
+              <item name="java-project" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="org" type="462c0819:PsiDirectoryNode" />
+              <item name="intellivim" type="462c0819:PsiDirectoryNode" />
+              <item name="javaproject" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="int" type="b2602c69:ProjectViewProjectNode" />
@@ -788,6 +909,15 @@
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
               <item name="intel" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="actions" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="int" type="b2602c69:ProjectViewProjectNode" />
@@ -805,6 +935,36 @@
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
               <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="commands" type="462c0819:PsiDirectoryNode" />
+              <item name="completion" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="commands" type="462c0819:PsiDirectoryNode" />
+              <item name="definition" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="commands" type="462c0819:PsiDirectoryNode" />
+              <item name="hover" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
               <item name="model" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -814,7 +974,31 @@
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
               <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="Util" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
               <item name="values" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
+              <item name="META-INF" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="int" type="b2602c69:ProjectViewProjectNode" />
@@ -864,26 +1048,41 @@
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
               <item name="intel" type="462c0819:PsiDirectoryNode" />
               <item name="commands" type="462c0819:PsiDirectoryNode" />
+              <item name="definition" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="int" type="b2602c69:ProjectViewProjectNode" />
+              <item name="intellij-lsp-server" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="intel" type="462c0819:PsiDirectoryNode" />
+              <item name="commands" type="462c0819:PsiDirectoryNode" />
               <item name="hover" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="AndroidView" />
-      <pane id="Scratches" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SearchEverywhereHistoryKey" value="projectutil&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/impl/ProjectUtil.java&#10;quickdoc&#9;PSI&#9;JAVA://com.intellij.codeInsight.documentation.QuickDocUtil&#10;documentation&#9;PSI&#9;JAVA://com.intellij.util.xml.Documentation&#10;typeinfo&#9;PSI&#9;JAVA://com.intellij.psi.impl.cache.TypeInfo&#10;jsonrp&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.github.briandilley.jsonrpc4j/jsonrpc4j/1.5.3/f555b2c7e6a6048dda486e53a5704620fc2ff90/jsonrpc4j-1.5.3-sources.jar!/com/googlecode/jsonrpc4j/JsonRpcBasicServer.java&#10;commandprocessor&#9;PSI&#9;JAVA://com.intellij.openapi.command.impl.CommandProcessorImpl&#10;commandprocess&#9;PSI&#9;JAVA://com.intellij.openapi.command.CommandProcessor&#10;commandproces&#9;null&#9;null&#10;transactiongua&#9;PSI&#9;JAVA://com.intellij.openapi.application.TransactionGuard&#10;streamserver&#9;PSI&#9;JAVA://com.googlecode.jsonrpc4j.StreamServer&#10;completebasic&#9;PSI&#9;JAVA://com.intellij.testFramework.fixtures.CodeInsightTestFixture#completeBasic" />
+    <property name="SearchEverywhereHistoryKey" value="caret&#9;PSI&#9;JAVA://com.intellij.openapi.editor.Caret&#10;psifile&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiFile.java&#10;goto&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/navigation/actions/GotoDeclarationAction.java&#10;goto declaration&#9;PSI&#9;JAVA://com.intellij.codeInsight.navigation.actions.GotoDeclarationAction&#10;findusages&#9;PSI&#9;JAVA://com.intellij.find.actions.FindUsagesAction&#10;commandproce&#9;PSI&#9;JAVA://com.intellij.openapi.command.CommandProcessor&#10;WriteCommandAction&#9;PSI&#9;JAVA://com.intellij.openapi.command.WriteCommandAction&#10;project.java&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/project/Project.java&#10;diff&#9;PSI&#9;JAVA://com.intellij.util.diff.Diff&#10;change&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/history/core/changes/Change.java&#10;applychan&#9;PSI&#9;JAVA://com.intellij.openapi.diff.impl.patch.apply.ApplyFilePatchBase#applyChange&#10;renameaction&#9;PSI&#9;JAVA://com.intellij.refactoring.actions.RenameElementAction&#10;changeset&#9;PSI&#9;JAVA://com.intellij.history.core.changes.ChangeSet&#10;formatuti&#9;PSI&#9;JAVA://com.intellij.psi.formatter.FormatterUtil&#10;stringutil&#9;PSI&#9;JAVA://com.intellij.openapi.util.text.StringUtil&#10;projectutil&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/impl/ProjectUtil.java&#10;quickdoc&#9;PSI&#9;JAVA://com.intellij.codeInsight.documentation.QuickDocUtil&#10;documentation&#9;PSI&#9;JAVA://com.intellij.util.xml.Documentation&#10;typeinfo&#9;PSI&#9;JAVA://com.intellij.psi.impl.cache.TypeInfo&#10;jsonrp&#9;FILE&#9;jar://C:/Users/kadode/.gradle/caches/modules-2/files-2.1/com.github.briandilley.jsonrpc4j/jsonrpc4j/1.5.3/f555b2c7e6a6048dda486e53a5704620fc2ff90/jsonrpc4j-1.5.3-sources.jar!/com/googlecode/jsonrpc4j/JsonRpcBasicServer.java&#10;commandprocessor&#9;PSI&#9;JAVA://com.intellij.openapi.command.impl.CommandProcessorImpl&#10;commandprocess&#9;PSI&#9;JAVA://com.intellij.openapi.command.CommandProcessor&#10;commandproces&#9;null&#9;null&#10;transactiongua&#9;PSI&#9;JAVA://com.intellij.openapi.application.TransactionGuard&#10;streamserver&#9;PSI&#9;JAVA://com.googlecode.jsonrpc4j.StreamServer&#10;completebasic&#9;PSI&#9;JAVA://com.intellij.testFramework.fixtures.CodeInsightTestFixture#completeBasic" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
+      <recent name="com.ruin.intel.commands.completion" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\build\intellij-lsp-server\src\main\kotlin\com\ruin\intel\commands\definition" />
+      <recent name="E:\build\intellij-lsp-server\src\main\kotlin\com\ruin\intel\commands\hover" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -918,63 +1117,18 @@
       <module name="" />
       <envs />
     </configuration>
-    <configuration name="All in int_test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="int_test" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="MAIN_CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="package" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
-    </configuration>
-    <configuration name="HoverCommandTestCase.test hover gets element info" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DefinitionCommandTestCase" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="com.ruin.intel.commands.hover.*" />
+          <option name="PATTERN" value="com.ruin.intel.commands.definition.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="int_test" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="com.ruin.intel.commands.hover" />
-      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.commands.hover.HoverCommandTestCase" />
-      <option name="METHOD_NAME" value="test hover gets element info" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
-    </configuration>
-    <configuration name="LanguageServerOutputStreamTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
-        <pattern>
-          <option name="PATTERN" value="com.ruin.intel.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <module name="int_test" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="com.ruin.intel" />
-      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.LanguageServerOutputStreamTest" />
+      <option name="PACKAGE_NAME" value="com.ruin.intel.commands.definition" />
+      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.commands.definition.DefinitionCommandTestCase" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="" />
@@ -988,19 +1142,19 @@
       <envs />
       <patterns />
     </configuration>
-    <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DefinitionCommandTestCase.test finds declaration from usage" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="com.ruin.intel.*" />
+          <option name="PATTERN" value="com.ruin.intel.commands.definition.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="int_test" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="com.ruin.intel" />
-      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.LanguageServerOutputStreamTest" />
-      <option name="METHOD_NAME" value="test writes Content-Length after handling JSON-RPC" />
+      <option name="PACKAGE_NAME" value="com.ruin.intel.commands.definition" />
+      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.commands.definition.DefinitionCommandTestCase" />
+      <option name="METHOD_NAME" value="test finds declaration from usage" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PARAMETERS" value="" />
@@ -1013,7 +1167,57 @@
       <envs />
       <patterns />
     </configuration>
-    <configuration name="LanguageServerOutputStreamTest.test writes Content-Length on newline" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DefinitionCommandTestCase.test finds definition" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.ruin.intel.commands.definition.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="int_test" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="com.ruin.intel.commands.definition" />
+      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.commands.definition.DefinitionCommandTestCase" />
+      <option name="METHOD_NAME" value="test finds definition" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+    </configuration>
+    <configuration name="DefinitionCommandTestCase.test finds superclass from subclass" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.ruin.intel.commands.definition.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="int_test" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="com.ruin.intel.commands.definition" />
+      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.commands.definition.DefinitionCommandTestCase" />
+      <option name="METHOD_NAME" value="test finds superclass from subclass" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+    </configuration>
+    <configuration name="WorkspaceManagerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
           <option name="PATTERN" value="com.ruin.intel.*" />
@@ -1024,9 +1228,9 @@
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
       <option name="PACKAGE_NAME" value="com.ruin.intel" />
-      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.LanguageServerOutputStreamTest" />
-      <option name="METHOD_NAME" value="test writes Content-Length on newline" />
-      <option name="TEST_OBJECT" value="method" />
+      <option name="MAIN_CLASS_NAME" value="com.ruin.intel.WorkspaceManagerTest" />
+      <option name="METHOD_NAME" value="test updates changed file" />
+      <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -1112,19 +1316,19 @@
     </configuration>
     <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Gradle.Run" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest.test writes Content-Length on newline" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" />
-      <item index="4" class="java.lang.String" itemvalue="JUnit.All in int_test" />
-      <item index="5" class="java.lang.String" itemvalue="JUnit.HoverCommandTestCase.test hover gets element info" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.WorkspaceManagerTest" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds definition" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase" />
+      <item index="4" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds superclass from subclass" />
+      <item index="5" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds declaration from usage" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="JUnit.HoverCommandTestCase.test hover gets element info" />
-        <item index="1" class="java.lang.String" itemvalue="JUnit.All in int_test" />
-        <item index="2" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest" />
-        <item index="3" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" />
-        <item index="4" class="java.lang.String" itemvalue="JUnit.LanguageServerOutputStreamTest.test writes Content-Length on newline" />
+        <item index="0" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase" />
+        <item index="1" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds declaration from usage" />
+        <item index="2" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds superclass from subclass" />
+        <item index="3" class="java.lang.String" itemvalue="JUnit.DefinitionCommandTestCase.test finds definition" />
+        <item index="4" class="java.lang.String" itemvalue="JUnit.WorkspaceManagerTest" />
       </list>
     </recent_temporary>
   </component>
@@ -1132,7 +1336,7 @@
     <option name="remove_strategy" value="false" />
   </component>
   <component name="StructureViewFactory">
-    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,VISIBILITY_SORTER,SHOW_INHERITED,SHOW_INTERFACES" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -1148,69 +1352,70 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="HoverCommandTestCase_test_hover_gets_element_info - 2018.02.26 at 21h 52m 53s.xml">
-      <configuration name="HoverCommandTestCase.test hover gets element info" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase - 2018.02.28 at 19h 02m 19s.xml">
+      <configuration name="DefinitionCommandTestCase" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="HoverCommandTestCase_test_hover_gets_element_info - 2018.02.26 at 21h 53m 42s.xml">
-      <configuration name="HoverCommandTestCase.test hover gets element info" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase - 2018.02.28 at 19h 14m 12s.xml">
+      <configuration name="DefinitionCommandTestCase" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="HoverCommandTestCase_test_hover_gets_element_info - 2018.02.26 at 21h 54m 11s.xml">
-      <configuration name="HoverCommandTestCase.test hover gets element info" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase - 2018.02.28 at 19h 26m 46s.xml">
+      <configuration name="DefinitionCommandTestCase" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest - 2018.02.26 at 20h 14m 30s.xml">
-      <configuration name="LanguageServerOutputStreamTest" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase - 2018.02.28 at 19h 27m 17s.xml">
+      <configuration name="DefinitionCommandTestCase" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 00m 48s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_declaration_from_usage - 2018.02.28 at 19h 15m 28s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds declaration from usage" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 01m 03s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_declaration_from_usage - 2018.02.28 at 19h 18m 49s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds declaration from usage" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 01m 49s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_declaration_from_usage - 2018.02.28 at 19h 26m 26s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds declaration from usage" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 02m 16s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_definition - 2018.02.28 at 18h 59m 02s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds definition" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 02m 54s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_definition - 2018.02.28 at 19h 01m 14s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds definition" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="LanguageServerOutputStreamTest_test_writes_Content-Length_after_handling_JSON-RPC - 2018.02.26 at 20h 03m 08s.xml">
-      <configuration name="LanguageServerOutputStreamTest.test writes Content-Length after handling JSON-RPC" configurationId="JUnit" />
+    <history-entry file="DefinitionCommandTestCase_test_finds_superclass_from_subclass - 2018.02.28 at 19h 13m 59s.xml">
+      <configuration name="DefinitionCommandTestCase.test finds superclass from subclass" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="-4" y="17" width="1928" height="1187" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Buck" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996324" sideWeight="0.52239585" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Build" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996324" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.225" sideWeight="0.569863" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29963234" sideWeight="0.475" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996324" sideWeight="0.47760418" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Buck" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22135417" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" x="96" y="117" width="1728" height="987" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996324" sideWeight="0.52239585" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19114584" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" x="96" y="117" width="1728" height="987" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290441" sideWeight="0.46875" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.225" sideWeight="0.43013698" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.225" sideWeight="0.41076115" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290441" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17291667" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.225" sideWeight="0.5892388" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29963234" sideWeight="0.475" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.225" sideWeight="0.5849315" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
+      <window_info id="Build" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996324" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -1227,28 +1432,35 @@
           <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-line">
-          <url>file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt</url>
-          <line>83</line>
-          <properties />
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt</url>
           <line>2</line>
           <properties />
           <option name="timeStamp" value="74" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt</url>
+          <line>177</line>
+          <properties />
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="kotlin.KotlinNullPointerException" package="kotlin" />
           <option name="timeStamp" value="59" />
+        </breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="com.fasterxml.jackson.databind.exc.MismatchedInputException" package="com.fasterxml.jackson.databind.exc" />
+          <option name="timeStamp" value="88" />
         </breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="78" />
+      <option name="time" value="101" />
     </breakpoint-manager>
     <watches-manager>
+      <configuration name="JUnit">
+        <watch expression="doc.text" language="kotlin" />
+      </configuration>
       <configuration name="GradleRunConfiguration">
         <watch expression="((StringBuffer)((Request)((ExchangeImpl)((HttpExchangeImpl)exchange).impl).req).lineBuf).toStringCache" custom="java.lang.StringBuffer,sun.net.httpserver.Request,sun.net.httpserver.HttpExchangeImpl,sun.net.httpserver.ExchangeImpl" />
         <watch expression="((SocketInputStream)((BufferedInputStream)((NoCloseInputStream)((ReadContext)this).input).input).in).socket" custom="com.googlecode.jsonrpc4j.ReadContext,java.io.BufferedInputStream,java.net.SocketInputStream,com.googlecode.jsonrpc4j.NoCloseInputStream" />
@@ -1258,60 +1470,64 @@
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
       <expression>
-        <expression-string>e.toString()</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>java.lang.reflect.InvocationTargetException</custom-info>
+        <expression-string>nav is PsiElement</expression-string>
+        <language-id>kotlin</language-id>
+        <custom-info>import com.intellij.openapi.fileEditor.PsiElementNavigatable,import com.intellij.navigation.NavigationItem</custom-info>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>e.getStackTrace()</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>java.lang.reflect.InvocationTargetException</custom-info>
+        <expression-string>nav is NavigationItem</expression-string>
+        <language-id>kotlin</language-id>
+        <custom-info>import com.intellij.openapi.fileEditor.PsiElementNavigatable,import com.intellij.navigation.NavigationItem</custom-info>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>e.printStackTrace();</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>java.lang.reflect.InvocationTargetException</custom-info>
+        <expression-string>nav is PsiElementNavigatable</expression-string>
+        <language-id>kotlin</language-id>
+        <custom-info>import com.intellij.openapi.fileEditor.PsiElementNavigatable</custom-info>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>((InvocationTargetException)e).stackTrace</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>java.lang.reflect.InvocationTargetException</custom-info>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>project.isOpen()</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>SEPARATOR.toByteArray(
-)</expression-string>
+        <expression-string>nav is PsiElement</expression-string>
         <language-id>kotlin</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>`in`.available()</expression-string>
+        <expression-string>nav is PsiClass</expression-string>
         <language-id>kotlin</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>&quot;file:///&quot;.replace(&quot;file://&quot;, &quot;file:///&quot; +
-    &quot;&quot;)</expression-string>
+        <expression-string>nav is JavaStubPsiElement&lt;PsiClassStub&lt;Any?&gt;&gt;</expression-string>
         <language-id>kotlin</language-id>
-        <custom-info>import java.net.URI,import java.io.File</custom-info>
+        <custom-info>import com.intellij.psi.impl.source.PsiClassImpl,import com.intellij.psi.impl.source.JavaStubPsiElement,import com.intellij.psi.impl.java.stubs.PsiClassStub</custom-info>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>File(URI(&quot;file://C:/&quot;))</expression-string>
+        <expression-string>nav is JavaStubPsiElement&lt;PsiClassStub&lt;Any&gt;&gt;</expression-string>
         <language-id>kotlin</language-id>
-        <custom-info>import java.net.URI,import java.io.File</custom-info>
+        <custom-info>import com.intellij.psi.impl.source.PsiClassImpl,import com.intellij.psi.impl.source.JavaStubPsiElement,import com.intellij.psi.impl.java.stubs.PsiClassStub</custom-info>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>nav is JavaStubPsiElement&lt;PsiClassStub&lt;?&gt;&gt;</expression-string>
+        <language-id>kotlin</language-id>
+        <custom-info>import com.intellij.psi.impl.source.PsiClassImpl,import com.intellij.psi.impl.source.JavaStubPsiElement,import com.intellij.psi.impl.java.stubs.PsiClassStub</custom-info>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>nav is PsiElementBase</expression-string>
+        <language-id>kotlin</language-id>
+        <custom-info>import com.intellij.psi.impl.source.PsiClassImpl</custom-info>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
     </expressions>
     <expressions id="watch">
+      <expression>
+        <expression-string>doc.text</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>`in`.available()</expression-string>
         <language-id>kotlin</language-id>
@@ -1367,414 +1583,435 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.9.4/36aa90e99b8c73d43e66daadf50a96b83cbd09d3/jackson-databind-2.9.4-sources.jar!/com/fasterxml/jackson/databind/ObjectMapper.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/debugger/SourcePosition.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="3163" column="54" lean-forward="false" selection-start-line="3163" selection-start-column="54" selection-end-line="3163" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerInputStreamTest.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="24" column="0" lean-forward="true" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+        <state relative-caret-position="70">
+          <caret line="39" column="22" lean-forward="false" selection-start-line="39" selection-start-column="22" selection-end-line="39" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_151/src.zip!/java/io/OutputStream.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/debugger/engine/PositionManagerImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="45" column="22" lean-forward="false" selection-start-line="45" selection-start-column="22" selection-end-line="45" selection-end-column="22" />
+        <state relative-caret-position="355">
+          <caret line="203" column="22" lean-forward="false" selection-start-line="203" selection-start-column="22" selection-end-line="203" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_151/src.zip!/java/io/FilterOutputStream.java">
+    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/hover/HoverDocumentationProvider.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
-          <caret line="59" column="11" lean-forward="false" selection-start-line="59" selection-start-column="11" selection-end-line="59" selection-end-column="11" />
-          <folding>
-            <element signature="e#1538#1539#0" expanded="false" />
-            <element signature="e#1568#1569#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerOutputStreamTest.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="18" column="55" lean-forward="false" selection-start-line="18" selection-start-column="55" selection-end-line="18" selection-end-column="55" />
-          <folding>
-            <element signature="e#24#260#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/util/ui/UIUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1806">
-          <caret line="91" column="13" lean-forward="false" selection-start-line="91" selection-start-column="13" selection-end-line="91" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.briandilley.jsonrpc4j/jsonrpc4j/1.5.3/f555b2c7e6a6048dda486e53a5704620fc2ff90/jsonrpc4j-1.5.3-sources.jar!/com/googlecode/jsonrpc4j/StreamServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2884">
-          <caret line="246" column="0" lean-forward="false" selection-start-line="246" selection-start-column="0" selection-end-line="246" selection-end-column="0" />
+        <state relative-caret-position="98">
+          <caret line="15" column="29" lean-forward="true" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/LanguageServerSocketTest.kt" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/project/ProjectManager.java">
+    <entry file="jar://$PROJECT_DIR$/deps/ideaIC-2017.3.4/lib/openapi.jar!/com/intellij/debugger/SourcePosition.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1274">
-          <caret line="113" column="26" lean-forward="false" selection-start-line="113" selection-start-column="26" selection-end-line="113" selection-end-column="26" />
+        <state relative-caret-position="84">
+          <caret line="39" column="28" lean-forward="false" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/progress/Task.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/projectView/impl/nodes/BasePsiNode.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3752">
-          <caret line="330" column="0" lean-forward="false" selection-start-line="330" selection-start-column="0" selection-end-line="330" selection-end-column="0" />
+        <state relative-caret-position="98">
+          <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/progress/impl/CoreProgressManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9212">
-          <caret line="716" column="0" lean-forward="false" selection-start-line="716" selection-start-column="0" selection-end-line="716" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/util/xml/Documentation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="30" column="18" lean-forward="false" selection-start-line="30" selection-start-column="18" selection-end-line="30" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/impl/cache/TypeInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
-          <caret line="78" column="11" lean-forward="false" selection-start-line="78" selection-start-column="11" selection-end-line="78" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/documentation/QuickDocUtil.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiJavaFile.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="112">
-          <caret line="42" column="13" lean-forward="false" selection-start-line="42" selection-start-column="13" selection-end-line="42" selection-end-column="13" />
+          <caret line="24" column="17" lean-forward="false" selection-start-line="24" selection-start-column="17" selection-end-line="24" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/lang/documentation/DocumentationProvider.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/FileResolveScopeProvider.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="34" column="38" lean-forward="false" selection-start-line="34" selection-start-column="17" selection-end-line="34" selection-end-column="38" />
+        <state relative-caret-position="154">
+          <caret line="26" column="17" lean-forward="false" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/lang/documentation/DocumentationProviderEx.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/xml/XmlElement.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="112">
-          <caret line="30" column="61" lean-forward="true" selection-start-line="30" selection-start-column="61" selection-end-line="30" selection-end-column="61" />
+          <caret line="24" column="42" lean-forward="false" selection-start-line="24" selection-start-column="42" selection-end-line="24" selection-end-column="42" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/documentation/DocumentationManager.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/xml/XmlFile.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="1106" column="23" lean-forward="false" selection-start-line="1106" selection-start-column="23" selection-end-line="1106" selection-end-column="23" />
+        <state relative-caret-position="112">
+          <caret line="24" column="35" lean-forward="false" selection-start-line="24" selection-start-column="35" selection-end-line="24" selection-end-column="35" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/values/Data.kt">
+    <entry file="file://$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/SuperClass.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="553">
-          <caret line="133" column="34" lean-forward="false" selection-start-line="133" selection-start-column="34" selection-end-line="133" selection-end-column="34" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/MyInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="5" column="30" lean-forward="false" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/navigation/actions/GotoDeclarationAction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="72" column="13" lean-forward="false" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/SubClass.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="5" column="32" lean-forward="true" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/BaseTestCase.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="56">
-          <caret line="8" column="4" lean-forward="false" selection-start-line="8" selection-start-column="4" selection-end-line="8" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1">
-          <caret line="21" column="18" lean-forward="false" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestBase.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="21" selection-end-column="25" />
+        <state relative-caret-position="112">
+          <caret line="12" column="4" lean-forward="false" selection-start-line="12" selection-start-column="4" selection-end-line="12" selection-end-column="4" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestBase.kt">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="19" column="39" lean-forward="true" selection-start-line="19" selection-start-column="39" selection-end-line="19" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/FileEditingTestCase.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="36" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestBase.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="9" column="33" lean-forward="true" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiTarget.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="23" column="17" lean-forward="false" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/pom/Navigatable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="30" column="7" lean-forward="false" selection-start-line="30" selection-start-column="7" selection-end-line="30" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/util/Iconable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="38" column="8" lean-forward="false" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/navigation/NavigationItem.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="20" column="24" lean-forward="true" selection-start-line="20" selection-start-column="24" selection-end-line="20" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/stubs/StubElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="30" column="17" lean-forward="false" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/extapi/psi/StubBasedPsiElementBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="82" column="72" lean-forward="false" selection-start-line="82" selection-start-column="72" selection-end-line="82" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/extapi/psi/ASTDelegatePsiElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="53" column="59" lean-forward="false" selection-start-line="53" selection-start-column="59" selection-end-line="53" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiClass.java">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="140">
-          <caret line="10" column="5" lean-forward="false" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="5" />
+          <caret line="38" column="19" lean-forward="false" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/impl/source/JavaStubPsiElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="43" column="22" lean-forward="false" selection-start-line="43" selection-start-column="22" selection-end-line="43" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/impl/source/PsiClassImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="98">
+          <caret line="54" column="0" lean-forward="true" selection-start-line="54" selection-start-column="0" selection-end-line="54" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/impl/PsiElementBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="202" column="11" lean-forward="false" selection-start-line="202" selection-start-column="11" selection-end-line="202" selection-end-column="64" />
           <folding>
-            <element signature="e#39#322#0" expanded="true" />
+            <element signature="e#5997#5998#0" expanded="false" />
+            <element signature="e#6066#6067#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/completion/CompletionCommandTestCase.kt">
+    <entry file="file://$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/Problematic.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="42">
-          <caret line="3" column="79" lean-forward="false" selection-start-line="3" selection-start-column="63" selection-end-line="3" selection-end-column="79" />
+        <state relative-caret-position="70">
+          <caret line="5" column="14" lean-forward="false" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/hover/HoverCommandTestCase.kt">
+    <entry file="file://$PROJECT_DIR$/projects/java-project/src/org/intellivim/javaproject/Dummy.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="42">
-          <caret line="3" column="24" lean-forward="false" selection-start-line="3" selection-start-column="24" selection-end-line="3" selection-end-column="24" />
+        <state relative-caret-position="0">
+          <caret line="0" column="35" lean-forward="true" selection-start-line="0" selection-start-column="35" selection-end-line="0" selection-end-column="35" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
+    <entry file="jar://$PROJECT_DIR$/deps/ideaIC-2017.3.4/lib/junit-4.12.jar!/junit/framework/TestCase.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="235">
+          <caret line="89" column="23" lean-forward="false" selection-start-line="89" selection-start-column="23" selection-end-line="89" selection-end-column="23" />
+          <folding>
+            <element signature="e#2226#2227#0" expanded="true" />
+            <element signature="e#2279#2280#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestBase.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="294">
+          <caret line="21" column="10" lean-forward="false" selection-start-line="21" selection-start-column="10" selection-end-line="21" selection-end-column="10" />
+          <folding>
+            <element signature="e#44#321#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/util/PsiNavigationSupport.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="31" column="0" lean-forward="false" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+          <folding>
+            <element signature="e#1165#1166#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiFile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="26" column="12" lean-forward="false" selection-start-line="26" selection-start-column="12" selection-end-line="26" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/psi/PsiElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="666">
+          <caret line="190" column="6" lean-forward="false" selection-start-line="190" selection-start-column="6" selection-end-line="190" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/editor/CaretModel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="45" column="17" lean-forward="false" selection-start-line="45" selection-start-column="17" selection-end-line="45" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/editor/Caret.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="154">
-          <caret line="11" column="11" lean-forward="false" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/impl/ProjectUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-336">
-          <caret line="150" column="105" lean-forward="false" selection-start-line="150" selection-start-column="105" selection-end-line="150" selection-end-column="105" />
-          <folding>
-            <element signature="e#0#14132#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/project/impl/ProjectManagerImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="490" column="0" lean-forward="false" selection-start-line="490" selection-start-column="0" selection-end-line="490" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/TransactionGuardImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="318" column="0" lean-forward="false" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/impl/LaterInvocator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="411" column="0" lean-forward="false" selection-start-line="411" selection-start-column="0" selection-end-line="411" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/IdeEventQueue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="372" column="0" lean-forward="false" selection-start-line="372" selection-start-column="0" selection-end-line="372" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.briandilley.jsonrpc4j/jsonrpc4j/1.5.3/f555b2c7e6a6048dda486e53a5704620fc2ff90/jsonrpc4j-1.5.3-sources.jar!/com/googlecode/jsonrpc4j/JsonRpcBasicServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="310">
-          <caret line="382" column="0" lean-forward="false" selection-start-line="382" selection-start-column="0" selection-end-line="382" selection-end-column="0" />
+          <caret line="28" column="17" lean-forward="false" selection-start-line="28" selection-start-column="17" selection-end-line="28" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/WorkspaceManager.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="27" column="5" lean-forward="true" selection-start-line="27" selection-start-column="5" selection-end-line="27" selection-end-column="5" />
+        <state relative-caret-position="596">
+          <caret line="155" column="61" lean-forward="true" selection-start-line="155" selection-start-column="61" selection-end-line="155" selection-end-column="61" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/impl/ApplicationImpl.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/editor/Document.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="929" column="0" lean-forward="false" selection-start-line="929" selection-start-column="0" selection-end-line="929" selection-end-column="0" />
+        <state relative-caret-position="239">
+          <caret line="123" column="6" lean-forward="false" selection-start-line="123" selection-start-column="6" selection-end-line="123" selection-end-column="6" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerStreamingTCPServer.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/editor/impl/LineSet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="84">
-          <caret line="13" column="17" lean-forward="false" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="50" />
+        <state relative-caret-position="-14">
+          <caret line="36" column="13" lean-forward="false" selection-start-line="36" selection-start-column="13" selection-end-line="36" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerSocket.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/editor/impl/DocumentImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="22" column="35" lean-forward="true" selection-start-line="22" selection-start-column="35" selection-end-line="22" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerService.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="260">
+          <caret line="891" column="17" lean-forward="false" selection-start-line="891" selection-start-column="17" selection-end-line="891" selection-end-column="17" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#32598#32599#0" expanded="true" />
+            <element signature="e#32649#32650#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerServerSocket.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/util/EditSourceUtil.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="14" column="38" lean-forward="false" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
+        <state relative-caret-position="140">
+          <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerOutputStream.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/ide/util/PsiNavigationSupportImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="20" column="99" lean-forward="false" selection-start-line="20" selection-start-column="99" selection-end-line="20" selection-end-column="99" />
+        <state relative-caret-position="168">
+          <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+          <folding>
+            <element signature="e#1319#1320#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/kotlin/com/ruin/intel/commands/definition/DefinitionCommandTestCase.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="84">
+          <caret line="6" column="54" lean-forward="true" selection-start-line="6" selection-start-column="54" selection-end-line="6" selection-end-column="54" />
+          <folding>
+            <element signature="e#44#160#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/TransactionGuardImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="316" column="0" lean-forward="false" selection-start-line="316" selection-start-column="0" selection-end-line="316" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerInputStream.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/vfs/VirtualFile.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="679">
-          <caret line="68" column="0" lean-forward="false" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="246">
+          <caret line="165" column="16" lean-forward="false" selection-start-line="165" selection-start-column="16" selection-end-line="165" selection-end-column="16" />
+          <folding>
+            <element signature="e#6309#6310#0" expanded="true" />
+            <element signature="e#6399#6400#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerException.kt">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/fileEditor/OpenFileDescriptor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="56">
-          <caret line="4" column="6" lean-forward="false" selection-start-line="4" selection-start-column="6" selection-end-line="4" selection-end-column="6" />
-          <folding />
+        <state relative-caret-position="246">
+          <caret line="86" column="21" lean-forward="false" selection-start-line="86" selection-start-column="21" selection-end-line="86" selection-end-column="21" />
+          <folding>
+            <element signature="e#3441#3442#0" expanded="true" />
+            <element signature="e#3464#3465#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerErrorResolver.kt">
+    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/definition/DefinitionCommand.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="56">
-          <caret line="8" column="6" lean-forward="false" selection-start-line="8" selection-start-column="6" selection-end-line="8" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/Context.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="28">
-          <caret line="2" column="6" lean-forward="false" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/CompletionCommand.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="40">
-          <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/openapi/application/Application.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="235">
-          <caret line="88" column="8" lean-forward="false" selection-start-line="88" selection-start-column="8" selection-end-line="88" selection-end-column="8" />
-          <folding />
+        <state relative-caret-position="242">
+          <caret line="81" column="45" lean-forward="false" selection-start-line="81" selection-start-column="45" selection-end-line="81" selection-end-column="45" />
+          <folding>
+            <element signature="e#44#1485#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/Util/ProjectUtil.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="70">
-          <caret line="35" column="4" lean-forward="false" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
+        <state relative-caret-position="694">
+          <caret line="235" column="0" lean-forward="true" selection-start-line="235" selection-start-column="0" selection-end-line="235" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/javadoc/JavaDocExternalFilter.java">
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/TargetElementUtil.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-644">
-          <caret line="42" column="13" lean-forward="false" selection-start-line="42" selection-start-column="13" selection-end-line="42" selection-end-column="13" />
+        <state relative-caret-position="260">
+          <caret line="403" column="0" lean-forward="false" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/codeInsight/javadoc/JavaDocInfoGenerator.java">
+    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/hover/OneLineJavaDocInfoGenerator.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-9585">
-          <caret line="71" column="13" lean-forward="false" selection-start-line="71" selection-start-column="13" selection-end-line="71" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/commands/HoverCommand.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="36" column="39" lean-forward="false" selection-start-line="36" selection-start-column="39" selection-end-line="36" selection-end-column="39" />
-          <folding>
-            <element signature="e#33#703#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2017.3.4/b19651cc86083709816104946952320955b4bc86/ideaIC-2017.3.4-sources.jar!/com/intellij/lang/java/JavaDocumentationProvider.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="942">
-          <caret line="552" column="83" lean-forward="false" selection-start-line="552" selection-start-column="83" selection-end-line="552" selection-end-column="83" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandler.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="25" column="67" lean-forward="false" selection-start-line="25" selection-start-column="67" selection-end-line="25" selection-end-column="67" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/kotlin/com/ruin/intel/model/LanguageServerHandlerImpl.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="74" column="0" lean-forward="false" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+        <state relative-caret-position="278">
+          <caret line="404" column="37" lean-forward="false" selection-start-line="404" selection-start-column="35" selection-end-line="404" selection-end-column="37" />
           <folding />
         </state>
       </provider>

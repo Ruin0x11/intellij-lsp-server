@@ -117,6 +117,8 @@ data class Position(val line: Int,
                     val character: Int)
 data class Range(val start: Position,
                  val end: Position)
+data class Location(val uri: DocumentUri,
+                    val range: Range)
 data class TextDocumentIdentifier(val uri: DocumentUri)
 data class TextDocumentPositionParams(val textDocument: TextDocumentIdentifier,
                                       val position: Position)

@@ -1,18 +1,15 @@
-package com.ruin.intel.commands
+package com.ruin.intel.commands.hover
 
 import com.intellij.codeInsight.CodeInsightBundle
 import com.intellij.codeInsight.javadoc.ColorUtil
 import com.intellij.codeInsight.javadoc.JavaDocInfoGenerator
 import com.intellij.codeInsight.javadoc.JavaDocUtil
-import com.intellij.codeInsight.javadoc.NonCodeAnnotationGenerator
 import com.intellij.lang.LangBundle
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.intellij.psi.javadoc.PsiDocComment
-import com.intellij.psi.search.EverythingGlobalScope
 import com.intellij.psi.util.PsiFormatUtil
 import com.intellij.psi.util.PsiFormatUtilBase
 import java.lang.StringBuilder
@@ -112,7 +109,7 @@ private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boo
                 buffer.append(NBSP)
             }
         }
-        buffer.append("\n")
+        buffer.append(" ")
     }
     if (buffer[buffer.length - 1] == '\n') {
         buffer.setLength(buffer.length - 1)
@@ -164,7 +161,7 @@ private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
 
     val refs = method.throwsList.referencedTypes
     if (refs.isNotEmpty()) {
-        buffer.append("\n")
+        buffer.append(" ")
             buffer.append(" ")
         buffer.append(THROWS_KEYWORD)
         buffer.append(" ")

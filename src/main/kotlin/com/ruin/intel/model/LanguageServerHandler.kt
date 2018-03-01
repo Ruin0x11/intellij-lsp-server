@@ -13,6 +13,18 @@ interface LanguageServerHandler {
                      @JsonRpcParam(value="rootUri") rootUri: DocumentUri,
                      @JsonRpcParam(value="capabilities") capabilities: ClientCapabilities) : InitializeResult
 
+    @JsonRpcMethod("shutdown")
+    fun onShutdown()
+
+    @JsonRpcMethod("exit")
+    fun onExit()
+
+
+    @JsonRpcMethod("textDocument/definition")
+    fun onTextDocumentDefinition(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position): List<Location>
+
     @JsonRpcMethod("textDocument/completion")
     fun onTextDocumentCompletion(
             @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
@@ -24,12 +36,6 @@ interface LanguageServerHandler {
     fun onTextDocumentHover(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
         @JsonRpcParam(value="position") position: Position) : Hover?
-
-    @JsonRpcMethod("shutdown")
-    fun onShutdown()
-
-    @JsonRpcMethod("exit")
-    fun onExit()
 
 
     @JsonRpcMethod("initialized")

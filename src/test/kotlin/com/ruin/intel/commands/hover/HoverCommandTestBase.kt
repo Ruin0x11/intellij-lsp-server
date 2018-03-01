@@ -1,15 +1,10 @@
 package com.ruin.intel.commands.hover
 
-import com.ruin.intel.BaseTestCase
 import com.ruin.intel.DUMMY_FILE_PATH
 import com.ruin.intel.JAVA_PROJECT
-import com.ruin.intel.commands.HoverCommand
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
-import junit.framework.TestCase
 import org.intellivim.FileEditingTestCase
-import java.io.PrintWriter
-import java.io.StringWriter
 
 abstract class HoverCommandTestBase : FileEditingTestCase() {
     override val projectName: String

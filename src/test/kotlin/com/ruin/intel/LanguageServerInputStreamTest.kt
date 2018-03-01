@@ -33,4 +33,8 @@ class LanguageServerInputStreamTest : UsefulTestCase() {
         br.read()
         assertEquals(474, br.available())
     }
+
+    fun `test reads multiple length zero messages`() {
+        assert(false)
+    }
 }

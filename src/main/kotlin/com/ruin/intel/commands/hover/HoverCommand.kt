@@ -1,14 +1,14 @@
-package com.ruin.intel.commands
+package com.ruin.intel.commands.hover
 
 import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.documentation.DocumentationManager
-import com.intellij.lang.java.JavaDocumentationProvider
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.EditorFactory
 import com.ruin.intel.Util.createEditor
 import com.ruin.intel.Util.resolvePsiFromUri
+import com.ruin.intel.commands.completion.Command
 import com.ruin.intel.values.MarkedString
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
@@ -16,10 +16,6 @@ import com.ruin.intel.values.TextDocumentIdentifier
 class HoverCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position) : Command<MarkedString>, Disposable {
     private val LOG = Logger.getInstance(HoverCommand::class.java)
-
-    override fun dispose() {
-
-    }
 
     // TODO: Use invokeAndWait + Executor to get result from Future instead
     override fun execute(): Result<MarkedString, Exception> {

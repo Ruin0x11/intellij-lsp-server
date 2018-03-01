@@ -39,7 +39,8 @@ class WorkspaceManagerTest : FileEditingTestCase() {
 
         assertEquals("dood", manager.managedFiles[file.url]!!.contents)
         assertVirtualFileNowContains("dood")
-        assertPsiContentsChanged()
+        // We don't want the file on disk to change
+        assertPsiContentsUnchanged()
     }
 
     fun `test partial text update`() {

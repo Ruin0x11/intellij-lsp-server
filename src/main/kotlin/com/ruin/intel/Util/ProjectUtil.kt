@@ -16,7 +16,6 @@ import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.WindowManager
@@ -25,9 +24,6 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
-import com.intellij.util.ui.UIUtil
-import com.ruin.intel.commands.HoverCommand
 import org.jdom.JDOMException
 import org.jetbrains.annotations.NotNull
 import java.io.File
@@ -219,6 +215,7 @@ fun reloadDocumentAtUri(uri: String) {
     PsiDocumentManager.getInstance(project).commitDocument(doc)
 }
 
+
 fun createEditor(context: Disposable, file: PsiFile, line: Int, column: Int) : EditorEx {
     val doc = getDocument(file)!!
     val editorFactory = EditorFactory.getInstance()
@@ -229,6 +226,13 @@ fun createEditor(context: Disposable, file: PsiFile, line: Int, column: Int) : E
 
     return created
 }
+
+/**
+ * Gets a Windows-compatible URI from a VirtualFile.
+ * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
+ */
+fun getURIForFile(file: VirtualFile) = file.url.replace("file://", "file:///")
+fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
 
 private fun allocateFrame(project: Project?) {
         val mgr = WindowManager.getInstance();

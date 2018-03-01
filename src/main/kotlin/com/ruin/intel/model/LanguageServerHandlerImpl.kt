@@ -1,12 +1,11 @@
 package com.ruin.intel.model
 
 import com.googlecode.jsonrpc4j.ErrorResolver
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.util.Computable
-import com.ruin.intel.commands.CompletionCommand
-import com.ruin.intel.commands.HoverCommand
+import com.ruin.intel.commands.completion.CompletionCommand
+import com.ruin.intel.commands.definition.DefinitionCommand
+import com.ruin.intel.commands.hover.HoverCommand
 import com.ruin.intel.values.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
@@ -41,6 +40,14 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         return InitializeResult(defaultServerCapabilities())
     }
 
+    override fun onShutdown() {
+        checkInitialized()
+    }
+
+    override fun onExit() {
+        checkInitialized()
+    }
+
     override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Hover? {
         checkInitialized()
         var result = HoverCommand(textDocumentIdentifier, position).execute()
@@ -49,6 +56,17 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
             null
         else
             Hover(value, null)
+        }, { error ->
+            throw error
+        })
+    }
+
+    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+        checkInitialized()
+
+        val result = DefinitionCommand(textDocumentIdentifier, position).execute()
+
+        return result.fold({ value -> value
         }, { error ->
             throw error
         })
@@ -66,14 +84,6 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         }, { error ->
             throw error
         })
-    }
-
-    override fun onShutdown() {
-        checkInitialized()
-    }
-
-    override fun onExit() {
-        checkInitialized()
     }
 
     override fun onNotifyInitialized() {

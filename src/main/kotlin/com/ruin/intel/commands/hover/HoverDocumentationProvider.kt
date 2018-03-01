@@ -1,4 +1,4 @@
-package com.ruin.intel.commands
+package com.ruin.intel.commands.hover
 
 import com.intellij.codeInsight.CodeInsightBundle
 import com.intellij.codeInsight.completion.CompletionMemory
