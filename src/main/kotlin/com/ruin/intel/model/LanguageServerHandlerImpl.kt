@@ -61,7 +61,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         })
     }
 
-    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Location {
         checkInitialized()
 
         val result = DefinitionCommand(textDocumentIdentifier, position).execute()
@@ -116,7 +116,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
     fun checkInitialized() {
         if (!initialized()) {
-            throw LanguageServerException(ErrorResolver.JsonError.BULK_ERROR)
+            throw LanguageServerException("Server was not initialized.")
         }
     }
     fun initialized() = context.wasInitialized

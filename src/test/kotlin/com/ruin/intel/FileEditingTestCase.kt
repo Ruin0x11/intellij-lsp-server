@@ -79,7 +79,7 @@ abstract class FileEditingTestCase : BaseTestCase() {
     fun textDocumentItem(version: Int = 0) =
         TextDocumentItem(file.url, "java", version, currentFileContentsSafely!!)
 
-    fun versionedTextDocumentIdentifier(version: Int) =
+    fun getVersionedTextDocumentIdentifier(version: Int) =
         VersionedTextDocumentIdentifier(file.url, version)
 
     fun contentsChanged(original: ByteArray, updatedContents: ByteArray): Boolean {
@@ -87,11 +87,13 @@ abstract class FileEditingTestCase : BaseTestCase() {
             val len = updatedContents.size
             if (len != original.size) {
                 // definitely not same
+                LOG.debug("Length differed, orig: ${original.size}, now: $len")
                 return true
             } else {
                 // is it the same?
                 for (i in 0 until len) {
                     if (original[i] != updatedContents[i]) {
+                        LOG.debug("Byte at $i differed, orig: ${original[i]}, now: ${updatedContents[i]}")
                         return true
                     }
                 }

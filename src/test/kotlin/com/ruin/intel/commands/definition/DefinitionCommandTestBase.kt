@@ -19,12 +19,11 @@ abstract class DefinitionCommandTestBase : BaseTestCase() {
         if (result.component2() != null) {
             throw result.component2()!!
         }
+        val location = result.get()
         assertTrue("Expected ($expectedFile, $expectedPos to be included in results but got: " +
-            "\n${result.get().map{ it }}",
-            result.get().any {
-                extractFileName(it.uri) == expectedFile &&
-                    it.range.start == expectedPos
-            })
+            "\n${location}",
+                extractFileName(location.uri) == expectedFile &&
+                    location.range.start == expectedPos)
         command.dispose()
     }
 }

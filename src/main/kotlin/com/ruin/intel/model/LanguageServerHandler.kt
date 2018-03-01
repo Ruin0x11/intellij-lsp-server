@@ -23,7 +23,7 @@ interface LanguageServerHandler {
     @JsonRpcMethod("textDocument/definition")
     fun onTextDocumentDefinition(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
-        @JsonRpcParam(value="position") position: Position): List<Location>
+        @JsonRpcParam(value="position") position: Position): Location
 
     @JsonRpcMethod("textDocument/completion")
     fun onTextDocumentCompletion(

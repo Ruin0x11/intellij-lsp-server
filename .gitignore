@@ -15,3 +15,6 @@ build/
 gen/
 deps/
 .DS_Store
+/.idea/compiler.xml
+/.idea/modules.xml
+/.idea/libraries/*

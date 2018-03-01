@@ -1,9 +1,6 @@
 package com.ruin.intel
 
-import com.intellij.openapi.util.TextRange
-import com.ruin.intel.Util.getDocument
 import com.ruin.intel.model.WorkspaceManager
-import com.ruin.intel.model.rangeToTextRange
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.Range
 import com.ruin.intel.values.TextDocumentContentChangeEvent
@@ -23,7 +20,7 @@ class WorkspaceManagerTest : FileEditingTestCase() {
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
-        manager.onTextDocumentChanged(versionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(getVersionedTextDocumentIdentifier(1), changes)
 
         assertEquals(1, manager.managedFiles[file.url]!!.identifier.version)
     }
@@ -35,15 +32,23 @@ class WorkspaceManagerTest : FileEditingTestCase() {
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
-        manager.onTextDocumentChanged(versionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(getVersionedTextDocumentIdentifier(1), changes)
 
         assertEquals("dood", manager.managedFiles[file.url]!!.contents)
-        assertVirtualFileNowContains("dood")
-        // We don't want the file on disk to change
-        assertPsiContentsUnchanged()
+        assertPsiContentsChanged()
     }
 
     fun `test partial text update`() {
-        assert(false)
+        val manager = WorkspaceManager()
+
+        manager.onTextDocumentOpened(textDocumentItem(0))
+
+        val range = Range(Position(11, 28), Position(11, 30))
+        val changes =
+            listOf(TextDocumentContentChangeEvent(range, 2, "dood"))
+        manager.onTextDocumentChanged(getVersionedTextDocumentIdentifier(1), changes)
+
+        assert(manager.managedFiles[file.url]!!.contents.contains("System.out.println(\"dood\");"))
+        assertPsiContentsChanged()
     }
 }

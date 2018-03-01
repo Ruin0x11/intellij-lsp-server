@@ -34,7 +34,16 @@ class LanguageServerInputStreamTest : UsefulTestCase() {
         assertEquals(474, br.available())
     }
 
+    val lengthZeroRequest = "Content-Length: 0\r\n\r\n"
+
     fun `test reads multiple length zero messages`() {
-        assert(false)
+        val fiveRequests = request + lengthZeroRequest.repeat(3)+ request
+        val br = LanguageServerInputStream(fiveRequests.byteInputStream(StandardCharsets.UTF_8))
+        val buf = ByteArray(475)
+        br.read(buf)
+
+        // Read past the three empty requests, the header of the filled one, then one byte
+        br.read()
+        assertEquals(474, br.available())
     }
 }
