@@ -2,6 +2,8 @@ package com.ruin.intel.commands.completion
 
 import com.ruin.intel.DUMMY_FILE_PATH
 import com.ruin.intel.JAVA_PROJECT
+import com.ruin.intel.Util.resolveProjectFromUri
+import com.ruin.intel.model.execute
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
 import org.intellivim.FileEditingTestCase
@@ -15,10 +17,9 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
 
     protected fun checkContainsCompletion(line: Int, char: Int, expected: String) {
         val command = CompletionCommand(TextDocumentIdentifier(file.url), Position(line, char), null, null)
-        val result = command.execute()
-        assertNull(result.component2())
-        assertTrue("Expected $expected to be included but got: \n${result.get().items.map{ it.label }}",
-            result.get().items.any { it.label == expected })
+        val result = execute(command, file.url)
+        assertTrue("Expected $expected to be included but got: \n${result.items.map{ it.label }}",
+            result.items.any { it.label == expected })
         command.dispose()
     }
 }

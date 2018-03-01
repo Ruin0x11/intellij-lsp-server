@@ -20,10 +20,15 @@ interface LanguageServerHandler {
     fun onExit()
 
 
-    @JsonRpcMethod("textDocument/definition")
+    @JsonRpcMethod("textDocument/find")
     fun onTextDocumentDefinition(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
-        @JsonRpcParam(value="position") position: Position): Location
+        @JsonRpcParam(value="position") position: Position): List<Location>
+
+    @JsonRpcMethod("textDocument/implementation")
+    fun onTextDocumentImplementation(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position): List<Location>
 
     @JsonRpcMethod("textDocument/completion")
     fun onTextDocumentCompletion(

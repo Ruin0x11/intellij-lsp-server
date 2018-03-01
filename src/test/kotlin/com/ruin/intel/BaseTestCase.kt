@@ -12,6 +12,7 @@ val RUNNABLE_PROJECT = "runnable-project"
 val TESTABLE_PROJECT = "testable-project"
 val DUMMY_FILE_PATH = "src/org/intellivim/javaproject/Dummy.java"
 val SUBCLASS_FILE_PATH = "src/org/intellivim/javaproject/SubClass.java"
+val INTERFACE_FILE_PATH = "src/org/intellivim/javaproject/MyInterface.java"
 val PROBLEMATIC_FILE_PATH = "src/org/intellivim/javaproject/Problematic.java"
 val PROBLEMATIC_TWICE_FILE_PATH = "src/org/intellivim/javaproject/ProblematicTwice.java"
 

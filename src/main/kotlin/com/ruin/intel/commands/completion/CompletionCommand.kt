@@ -14,41 +14,35 @@ import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
 import com.intellij.psi.PsiElement
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
+import com.ruin.intel.commands.Command
 import java.util.LinkedHashSet
-
-
 
 class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position,
                         val triggerKind: Int?,
                         val triggerCharacter: String?) : Command<CompletionList>, Disposable {
 
-    override fun execute(): Result<CompletionList, Exception> {
+    override fun execute(project: Project, file: PsiFile): Result<CompletionList, Exception> {
         val result: MutableList<CompletionItem> = mutableListOf()
         val prefix: String? = null
 
-        ApplicationManager.getApplication().invokeAndWait {
-            val pair = resolvePsiFromUri(textDocumentIdentifier.uri)
-            if (pair != null) {
-                val (_, file) = pair
+        val editor = createEditor(this, file, position.line, position.character)
+        val params = makeCompletionParameters(editor, file, position)
 
-                val editor = createEditor(this, file, position.line, position.character)
-                val params = makeCompletionParameters(editor, file, position)
-
-                performCompletion(params!!, prefix, Consumer { completionResult ->
-                    val el = completionResult.lookupElement
-                    val dec = CompletionDecorator.from(el)
-                    if (dec != null) {
-                        result.add(dec.completionItem)
-                    }
-                })
-
-                // Disposer doesn't release editor after registering in createEditor?
-                val editorFactory = EditorFactory.getInstance()
-                editorFactory.releaseEditor(editor)
+        performCompletion(params!!, prefix, Consumer { completionResult ->
+            val el = completionResult.lookupElement
+            val dec = CompletionDecorator.from(el)
+            if (dec != null) {
+                result.add(dec.completionItem)
             }
-        }
+        })
+
+        // Disposer doesn't release editor after registering in createEditor?
+        val editorFactory = EditorFactory.getInstance()
+        editorFactory.releaseEditor(editor)
 
         return Result.of(CompletionList(false, result))
     }

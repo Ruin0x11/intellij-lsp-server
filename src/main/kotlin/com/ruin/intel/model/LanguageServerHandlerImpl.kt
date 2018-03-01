@@ -1,10 +1,13 @@
 package com.ruin.intel.model
 
-import com.googlecode.jsonrpc4j.ErrorResolver
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.Ref
+import com.ruin.intel.Util.resolvePsiFromUri
 import com.ruin.intel.commands.completion.CompletionCommand
-import com.ruin.intel.commands.definition.DefinitionCommand
+import com.ruin.intel.commands.find.FindDefinitionCommand
+import com.ruin.intel.commands.find.FindImplementationCommand
 import com.ruin.intel.commands.hover.HoverCommand
 import com.ruin.intel.values.*
 
@@ -50,26 +53,40 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
     override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Hover? {
         checkInitialized()
-        var result = HoverCommand(textDocumentIdentifier, position).execute()
 
-        return result.fold({ value -> if (value.isEmpty())
-            null
-        else
-            Hover(value, null)
-        }, { error ->
-            throw error
-        })
+        // Result<A, B> doesn't allow a null type, but the command can return null...
+        val uri = textDocumentIdentifier.uri
+
+        val ref: Ref<MarkedString> = Ref()
+        ApplicationManager.getApplication().invokeAndWait {
+            val pair = resolvePsiFromUri(uri)
+                ?: throw LanguageServerException("File \"$uri\" not tracked by IntelliJ.")
+            val (project, file) = pair
+
+            val command = HoverCommand(textDocumentIdentifier, position)
+            val result = command.execute(project, file).fold({ value -> value
+            }, { error ->
+                throw error
+            })
+            ref.set(result)
+            command.dispose()
+        }
+
+        return if(ref.get().isEmpty() ) null else Hover(ref.get(), null)
     }
 
-    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Location {
+    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
         checkInitialized()
 
-        val result = DefinitionCommand(textDocumentIdentifier, position).execute()
+        return execute(FindDefinitionCommand(textDocumentIdentifier, position),
+            textDocumentIdentifier.uri)
+    }
 
-        return result.fold({ value -> value
-        }, { error ->
-            throw error
-        })
+    override fun onTextDocumentImplementation(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+        checkInitialized()
+
+        return execute(FindImplementationCommand(textDocumentIdentifier, position),
+            textDocumentIdentifier.uri)
     }
 
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
@@ -78,12 +95,8 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
                                           triggerCharacter: String?): CompletionList {
         checkInitialized()
 
-        val result = CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter).execute()
-
-        return result.fold({ value -> value
-        }, { error ->
-            throw error
-        })
+        return execute(CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter),
+            textDocumentIdentifier.uri)
     }
 
     override fun onNotifyInitialized() {
@@ -120,4 +133,22 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         }
     }
     fun initialized() = context.wasInitialized
+}
+
+fun <T: Any>execute(command: com.ruin.intel.commands.Command<T>, uri: DocumentUri): T {
+    val ref: Ref<T> = Ref()
+    ApplicationManager.getApplication().invokeAndWait {
+        val pair = resolvePsiFromUri(uri)
+            ?: throw LanguageServerException("File \"$uri\" not tracked by IntelliJ.")
+
+        val (project, file) = pair
+        val result = command.execute(project, file).fold({ value -> value
+        }, { error ->
+            throw error
+        })
+        ref.set(result)
+        command.dispose()
+    }
+
+    return ref.get()
 }
