@@ -8,6 +8,7 @@ import com.ruin.intel.Util.resolvePsiFromUri
 import com.ruin.intel.commands.completion.CompletionCommand
 import com.ruin.intel.commands.find.FindDefinitionCommand
 import com.ruin.intel.commands.find.FindImplementationCommand
+import com.ruin.intel.commands.find.FindUsagesCommand
 import com.ruin.intel.commands.hover.HoverCommand
 import com.ruin.intel.values.*
 
@@ -75,6 +76,17 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         return if(ref.get().isEmpty() ) null else Hover(ref.get(), null)
     }
 
+    override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
+                                          position: Position,
+                                          triggerKind: Int,
+                                          triggerCharacter: String?): CompletionList {
+        checkInitialized()
+
+        return execute(CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter),
+            textDocumentIdentifier.uri)
+    }
+
+
     override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
         checkInitialized()
 
@@ -89,13 +101,10 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
             textDocumentIdentifier.uri)
     }
 
-    override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
-                                          position: Position,
-                                          triggerKind: Int,
-                                          triggerCharacter: String?): CompletionList {
+    override fun onTextDocumentReferences(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
         checkInitialized()
 
-        return execute(CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter),
+        return execute(FindUsagesCommand(textDocumentIdentifier, position),
             textDocumentIdentifier.uri)
     }
 

@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.ruin.intel.Util.*
 import com.ruin.intel.commands.Command
+import com.ruin.intel.commands.errorResult
 import com.ruin.intel.model.LanguageServerException
 import com.ruin.intel.model.positionToOffset
 import com.ruin.intel.values.Location
@@ -18,14 +19,14 @@ class FindDefinitionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                             val position: Position) : Command<List<Location>> {
     override fun execute(project: Project, file: PsiFile): Result<List<Location>, Exception> {
         val doc = getDocument(file)
-            ?: return Result.error(LanguageServerException("No reference found."))
+            ?: return errorResult("No document found.")
 
         val offset = positionToOffset(doc, position)
         val ref = file.findReferenceAt(offset)
-            ?: return Result.error(LanguageServerException("No reference found."));
+            ?: return errorResult("No reference found.")
 
         val lookup = ref.resolve()
-            ?: return Result.error(LanguageServerException("Definition not found."));
+            ?: return errorResult("Definition not found.")
 
         return Result.of(listOf(toLocation(lookup)))
     }

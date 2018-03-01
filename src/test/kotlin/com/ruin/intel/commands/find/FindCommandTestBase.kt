@@ -25,7 +25,6 @@ abstract class FindCommandTestBase : BaseTestCase() {
                 extractFileName(it.uri) == expectedFile &&
                     it.range.start == expectedPos
             })
-        command.dispose()
     }
 
     protected fun checkFindsLocation(filePath: String, at: Position, expectedFile: String, expectedPos: Position) {
@@ -37,7 +36,6 @@ abstract class FindCommandTestBase : BaseTestCase() {
                                     uri: String) {
         val result = execute(command, uri)
         assertTrue("Expected nothing to be found but got: \n$result", result.isEmpty())
-        command.dispose()
     }
 
     protected fun checkFindsNothing(filePath: String, at: Position) {

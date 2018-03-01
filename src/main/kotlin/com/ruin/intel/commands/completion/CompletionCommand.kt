@@ -17,6 +17,7 @@ import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
+import com.ruin.intel.Util.withEditor
 import com.ruin.intel.commands.Command
 import java.util.LinkedHashSet
 
@@ -29,20 +30,16 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
         val result: MutableList<CompletionItem> = mutableListOf()
         val prefix: String? = null
 
-        val editor = createEditor(this, file, position.line, position.character)
-        val params = makeCompletionParameters(editor, file, position)
-
-        performCompletion(params!!, prefix, Consumer { completionResult ->
-            val el = completionResult.lookupElement
-            val dec = CompletionDecorator.from(el)
-            if (dec != null) {
-                result.add(dec.completionItem)
-            }
-        })
-
-        // Disposer doesn't release editor after registering in createEditor?
-        val editorFactory = EditorFactory.getInstance()
-        editorFactory.releaseEditor(editor)
+        withEditor(this, file, position) { editor ->
+            val params = makeCompletionParameters(editor, file, position)
+            performCompletion(params!!, prefix, Consumer { completionResult ->
+                val el = completionResult.lookupElement
+                val dec = CompletionDecorator.from(el)
+                if (dec != null) {
+                    result.add(dec.completionItem)
+                }
+            })
+        }
 
         return Result.of(CompletionList(false, result))
     }

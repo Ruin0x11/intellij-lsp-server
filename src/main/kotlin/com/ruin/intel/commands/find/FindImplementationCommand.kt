@@ -14,25 +14,26 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
+import com.intellij.usages.Usage
 import com.ruin.intel.Util.*
+import com.ruin.intel.commands.errorResult
 
 
 class FindImplementationCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                                 val position: Position) : Command<List<Location>> {
     override fun execute(project: Project, file: PsiFile): Result<List<Location>, Exception> {
         val doc = getDocument(file)
-            ?: return Result.error(LanguageServerException("No implementations found."))
+            ?: return errorResult("No document found.")
 
         val offset = positionToOffset(doc, position)
-        val editor = createEditor(this, file, position.line, position.character)
-        val element = findTargetElement(editor)
-
-        val implementations = searchImplementations(editor, element, offset)
-
-        // Disposer doesn't release editor after registering in createEditor?
-        val editorFactory = EditorFactory.getInstance()
-        editorFactory.releaseEditor(editor)
+        val ref: Ref<Array<PsiElement>?> = Ref()
+        withEditor(this, file, position) { editor ->
+            val element = findTargetElement(editor)
+            ref.set(searchImplementations(editor, element, offset))
+        }
+        val implementations = ref.get()
 
         val results = implementations?.map(::toLocation) ?: listOf()
 

@@ -24,6 +24,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
+import com.ruin.intel.values.Position
 import org.jdom.JDOMException
 import org.jetbrains.annotations.NotNull
 import java.io.File
@@ -216,11 +217,11 @@ fun reloadDocumentAtUri(uri: String) {
 }
 
 
-fun createEditor(context: Disposable, file: PsiFile, line: Int, column: Int) : EditorEx {
+fun createEditor(context: Disposable, file: PsiFile, position: Position) : EditorEx {
     val doc = getDocument(file)!!
     val editorFactory = EditorFactory.getInstance()
     val created = editorFactory.createEditor(doc, file.project) as EditorEx
-    created.caretModel.moveToLogicalPosition(LogicalPosition(line, column))
+    created.caretModel.moveToLogicalPosition(LogicalPosition(position.line, position.character))
 
     Disposer.register(context, Disposable { editorFactory.releaseEditor(created) })
 

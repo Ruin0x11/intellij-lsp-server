@@ -20,7 +20,14 @@ interface LanguageServerHandler {
     fun onExit()
 
 
-    @JsonRpcMethod("textDocument/find")
+    @JsonRpcMethod("textDocument/completion")
+    fun onTextDocumentCompletion(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position,
+        @JsonRpcParam(value="triggerKind") triggerKind: Int,
+        @JsonRpcParam(value="triggerCharacter") triggerCharacter: String?) : CompletionList
+
+    @JsonRpcMethod("textDocument/definition")
     fun onTextDocumentDefinition(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
         @JsonRpcParam(value="position") position: Position): List<Location>
@@ -30,12 +37,10 @@ interface LanguageServerHandler {
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
         @JsonRpcParam(value="position") position: Position): List<Location>
 
-    @JsonRpcMethod("textDocument/completion")
-    fun onTextDocumentCompletion(
-            @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
-            @JsonRpcParam(value="position") position: Position,
-            @JsonRpcParam(value="triggerKind") triggerKind: Int,
-            @JsonRpcParam(value="triggerCharacter") triggerCharacter: String?) : CompletionList
+    @JsonRpcMethod("textDocument/references")
+    fun onTextDocumentReferences(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position): List<Location>
 
     @JsonRpcMethod("textDocument/hover")
     fun onTextDocumentHover(

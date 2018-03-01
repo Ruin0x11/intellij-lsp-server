@@ -5,7 +5,7 @@ import com.ruin.intel.INTERFACE_FILE_PATH
 import com.ruin.intel.SUBCLASS_FILE_PATH
 import com.ruin.intel.values.Position
 
-class FindImplementationTestCase : FindImplementationTestBase() {
+class FindImplementationCommandTestCase : FindImplementationCommandTestBase() {
     fun `test finds single impl`() = checkFindsLocation(DUMMY_FILE_PATH,
         Position(8, 14), "SubClass.java", Position(7, 17))
 
