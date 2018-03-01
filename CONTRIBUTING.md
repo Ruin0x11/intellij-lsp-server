@@ -53,6 +53,7 @@ and launch all code generation tasks. Unfortunately during import IDEA may delet
 
 ## Troubleshooting
 
-If you try running the tests in IDEA but get "Class not found" errors, check the "out" directory for where classes are
-output. It could either be "out/test/classes" or "out/test". Go to `Project Structure...` and set the module output
+If you try running the tests in IDEA but get "Class not found" errors, check the `out` 
+directory in the repo root and see where the classes are being output. It could either be 
+`out/test/classes` or `out/test`. Go to `Project Structure...` and set the module output
 directories for all modules so they match. It's probably a bug in the Gradle import.
