@@ -78,7 +78,7 @@ class ClassCompletionDecorator(lookup: LookupElement, val klass: PsiClass)
 class FieldCompletionDecorator(lookup: LookupElement, val field: PsiField)
     : CompletionDecorator<PsiField>(lookup, field) {
     override fun formatLabel() =
-        "${field.type.presentableText}  ${field.name}"
+        "${field.name} : ${field.type.presentableText}"
 }
 
 class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariable)
