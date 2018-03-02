@@ -86,7 +86,7 @@ class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariab
     private val type: String
         get() = variable.type.presentableText
 
-    override fun formatLabel() = type
+    override fun formatLabel() = "${variable.name} : $type"
 
     override fun formatDoc(): String = "$type ${variable.name};"
 }
