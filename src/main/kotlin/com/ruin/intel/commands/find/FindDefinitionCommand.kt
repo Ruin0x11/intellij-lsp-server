@@ -33,6 +33,9 @@ class FindDefinitionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
 }
 
 fun offsetToPosition(doc: Document, offset: Int): Position {
+    if (offset == -1) {
+        return Position(0, 0)
+    }
     val line = doc.getLineNumber(offset)
     val lineStartOffset = doc.getLineStartOffset(line)
     val column = offset - lineStartOffset

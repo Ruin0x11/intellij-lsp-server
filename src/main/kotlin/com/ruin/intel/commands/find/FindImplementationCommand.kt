@@ -4,7 +4,6 @@ import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.psi.PsiElement
 import com.ruin.intel.commands.Command
-import com.ruin.intel.model.LanguageServerException
 import com.ruin.intel.model.positionToOffset
 import com.ruin.intel.values.Location
 import com.ruin.intel.values.Position
@@ -12,11 +11,9 @@ import com.ruin.intel.values.TextDocumentIdentifier
 import com.intellij.codeInsight.navigation.ImplementationSearcher
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
-import com.intellij.usages.Usage
 import com.ruin.intel.Util.*
 import com.ruin.intel.commands.errorResult
 
@@ -30,7 +27,7 @@ class FindImplementationCommand(val textDocumentIdentifier: TextDocumentIdentifi
         val offset = positionToOffset(doc, position)
         val ref: Ref<Array<PsiElement>?> = Ref()
         withEditor(this, file, position) { editor ->
-            val element = findTargetElement(editor)
+            val element = ensureTargetElement(editor)
             ref.set(searchImplementations(editor, element, offset))
         }
         val implementations = ref.get()

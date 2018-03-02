@@ -18,7 +18,7 @@ abstract class CompletionDecorator<T: PsiElement>(val lookup: LookupElement, val
         insertTextFormat = insertTextFormat)
 
     val clientSupportsSnippets = false
-    val insertTextFormat: InsertTextFormat
+    val insertTextFormat: Int
         get() = if (clientSupportsSnippets) InsertTextFormat.SNIPPET else InsertTextFormat.PLAIN_TEXT
 
     protected open fun formatInsertText(): String {

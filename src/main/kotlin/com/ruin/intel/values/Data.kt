@@ -1,10 +1,8 @@
 package com.ruin.intel.values
 
-import com.intellij.codeInsight.completion.scope.CompletionElement
 import com.intellij.codeInsight.lookup.LookupElement
 
 typealias DocumentUri = String
-typealias MarkedString = String
 
 data class ClientCapabilities(val workspace: WorkspaceClientCapabilities?,
                               val textDocument: TextDocumentClientCapabilities?)
@@ -29,7 +27,7 @@ data class TextDocumentClientCapabilities(val synchronization: Synchronization?,
                                           val hover: HoverCapability?,
                                           val signatureHelp: SignatureHelp?,
                                           val references: References?,
-                                          val documentHighlight: DocumentHighlight?,
+                                          val documentHighlight: DocumentHighlightCapability?,
 
                                           // because lsp-mode doesn't follow the spec
                                           // val documentSymbol: DocumentSymbol?,
@@ -66,7 +64,7 @@ data class SignatureHelp(val dynamicRegistration: Boolean?,
 data class SignatureInformation(val documentationFormat: List<String>?)
 
 data class References(val dynamicRegistration: Boolean?)
-data class DocumentHighlight(val dynamicRegistration: Boolean?)
+data class DocumentHighlightCapability(val dynamicRegistration: Boolean?)
 data class DocumentSymbol(val dynamicRegistration: Boolean?,
                           val symbolKind: SymbolKindCapability)
 data class Formatting(val dynamicRegistration: Boolean?)
@@ -146,11 +144,17 @@ data class TextDocumentItem(val uri: DocumentUri,
 data class Hover(val contents: MarkedString,
                  val range: Range?)
 
+data class MarkedString(val language: String,
+                        val value: String)
+
 data class CompletionContext(val triggerKind: Int?,
                              val triggerCharacters: List<String>?)
-enum class InsertTextFormat(val i: Int) {
-    PLAIN_TEXT(1),
-    SNIPPET(2),
+
+class InsertTextFormat {
+    companion object {
+        const val PLAIN_TEXT = 1
+        const val SNIPPET = 2
+    }
 }
 data class CompletionList(val isIncomplete: Boolean,
                           val items: List<CompletionItem>)
@@ -161,12 +165,22 @@ data class CompletionItem(val label: String,
                           val sortText: String? = null,
                           val filterText: String? = null,
                           val insertText: String? = null,
-                          val insertTextFormat: InsertTextFormat? = null,
+                          val insertTextFormat: Int? = null,
                           val textEdit: TextEdit? = null,
                           val additionalTextEdits: List<TextEdit>? = null,
                           val command: Command? = null,
                           val data: Any? = null) {
     companion object {
         fun from(lookupElement: LookupElement): CompletionItem = CompletionItem(lookupElement.toString())
+    }
+}
+
+data class DocumentHighlight(val range: Range,
+                             val kind: Int?)
+class DocumentHighlightKind {
+    companion object {
+        const val TEXT = 1
+        const val READ = 2
+        const val WRITE = 3
     }
 }

@@ -23,12 +23,11 @@ open class LanguageServerService {
     private val defaultHostName = "127.0.0.1"
     private val defaultPort = 8080
 
-    private var server: LanguageServerStreamingTCPServer
+    private var server: LanguageServerStreamingTCPServer = LanguageServerStreamingTCPServer(defaultHostName, defaultPort)
     private var isAlive: Boolean = false
 
-
     init {
-        this.server = LanguageServerStreamingTCPServer(defaultHostName, defaultPort)
+        startServer()
     }
 
     fun startServer() {

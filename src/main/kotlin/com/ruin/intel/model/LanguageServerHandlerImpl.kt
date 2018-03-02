@@ -9,17 +9,18 @@ import com.ruin.intel.commands.completion.CompletionCommand
 import com.ruin.intel.commands.find.FindDefinitionCommand
 import com.ruin.intel.commands.find.FindImplementationCommand
 import com.ruin.intel.commands.find.FindUsagesCommand
+import com.ruin.intel.commands.highlight.DocumentHighlightCommand
 import com.ruin.intel.commands.hover.HoverCommand
 import com.ruin.intel.values.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
     return ServerCapabilities(textDocumentSync = null,
-            hoverProvider = null,
+            hoverProvider = true,
             completionProvider = CompletionOptions(false, listOf(".", "@", "#")),
             signatureHelpProvider = null,
             definitionProvider = true,
-            referencesProvider = false,
-            documentHighlightProvider = false,
+            referencesProvider = true,
+            documentHighlightProvider = true,
             documentSymbolProvider = false,
             workspaceSymbolProvider = false,
             codeActionProvider = false,
@@ -38,7 +39,8 @@ fun workspace() = ServiceManager.getService<WorkspaceManager>(WorkspaceManager::
 class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     val LOG = Logger.getInstance(LanguageServerHandlerImpl::class.java)
 
-    override fun onInitialize(processId: Int, rootUri: DocumentUri, capabilities: ClientCapabilities) : InitializeResult {
+    override fun onInitialize(processId: Int, rootUri: DocumentUri,
+                              capabilities: ClientCapabilities) : InitializeResult {
         context.wasInitialized = true
         LOG.info("INIT LSP")
         return InitializeResult(defaultServerCapabilities())
@@ -52,7 +54,8 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         checkInitialized()
     }
 
-    override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier, position: Position): Hover? {
+    override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier,
+                                     position: Position): Hover? {
         checkInitialized()
 
         // Result<A, B> doesn't allow a null type, but the command can return null...
@@ -73,7 +76,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
             command.dispose()
         }
 
-        return if(ref.get().isEmpty() ) null else Hover(ref.get(), null)
+        return if(ref.get().value.isEmpty() ) null else Hover(ref.get(), null)
     }
 
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
@@ -87,24 +90,35 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     }
 
 
-    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+    override fun onTextDocumentDefinition(textDocumentIdentifier: TextDocumentIdentifier,
+                                          position: Position): List<Location> {
         checkInitialized()
 
         return execute(FindDefinitionCommand(textDocumentIdentifier, position),
             textDocumentIdentifier.uri)
     }
 
-    override fun onTextDocumentImplementation(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+    override fun onTextDocumentImplementation(textDocumentIdentifier: TextDocumentIdentifier,
+                                              position: Position): List<Location> {
         checkInitialized()
 
         return execute(FindImplementationCommand(textDocumentIdentifier, position),
             textDocumentIdentifier.uri)
     }
 
-    override fun onTextDocumentReferences(textDocumentIdentifier: TextDocumentIdentifier, position: Position): List<Location> {
+    override fun onTextDocumentReferences(textDocumentIdentifier: TextDocumentIdentifier,
+                                          position: Position): List<Location> {
         checkInitialized()
 
         return execute(FindUsagesCommand(textDocumentIdentifier, position),
+            textDocumentIdentifier.uri)
+    }
+
+    override fun onTextDocumentDocumentHighlight(textDocumentIdentifier: TextDocumentIdentifier,
+                                                 position: Position): List<DocumentHighlight> {
+        checkInitialized()
+
+        return execute(DocumentHighlightCommand(textDocumentIdentifier, position),
             textDocumentIdentifier.uri)
     }
 
@@ -126,12 +140,14 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         workspace().onTextDocumentClosed(textDocument)
     }
 
-    override fun onNotifyTextDocumentDidChange(textDocument: VersionedTextDocumentIdentifier, contentChanges: List<TextDocumentContentChangeEvent>) {
+    override fun onNotifyTextDocumentDidChange(textDocument: VersionedTextDocumentIdentifier,
+                                               contentChanges: List<TextDocumentContentChangeEvent>) {
         checkInitialized()
         workspace().onTextDocumentChanged(textDocument, contentChanges)
     }
 
-    override fun onNotifyTextDocumentDidSave(textDocument: VersionedTextDocumentIdentifier, text: String?) {
+    override fun onNotifyTextDocumentDidSave(textDocument: VersionedTextDocumentIdentifier,
+                                             text: String?) {
         checkInitialized()
         workspace().onTextDocumentSaved(textDocument, text)
     }
@@ -144,6 +160,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     fun initialized() = context.wasInitialized
 }
 
+// TODO: Use invokeAndWait + Executor to get result makeCompletionParameters Future instead
 fun <T: Any>execute(command: com.ruin.intel.commands.Command<T>, uri: DocumentUri): T {
     val ref: Ref<T> = Ref()
     ApplicationManager.getApplication().invokeAndWait {
