@@ -1,4 +1,4 @@
-# intellij-lsp-server
+# intellij-lsp-server [![AppVeyor Build Status][appveyor-build-status-svg]][appveyor-build-status]
 A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowing other editors to use IntelliJ's features.
 
 ## Caveats
@@ -13,3 +13,7 @@ A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowi
 - [Support for eclim on Windows has been removed.](http://eclim.org/changes.html#jan-01-2018)
 - Developer usage of Eclipse itself has fallen over the years.
 - The exact same server concept has already existed in the form of [intellivim](https://github.com/dhleong/intellivim), but it supports Vim only through a custom protocol.
+
+<!-- Badges -->
+[appveyor-build-status]: https://ci.appveyor.com/project/Ruin0x11/intellij-lsp-server/branch/master
+[appveyor-build-status-svg]: https://ci.appveyor.com/api/projects/status/phds9ytheb3056w1?svg=true
