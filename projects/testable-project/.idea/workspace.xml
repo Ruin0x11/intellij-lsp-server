@@ -26,7 +26,7 @@
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="Testable.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/intellivim/runnable/test/Testable.java">
+        <entry file="file://$PROJECT_DIR$/src/org/intellij-lsp/runnable/test/Testable.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="210" max-vertical-offset="300">
               <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
@@ -163,8 +163,8 @@
       <module name="testable-project" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.intellivim.runnable.test" />
-      <option name="MAIN_CLASS_NAME" value="org.intellivim.runnable.test.Testable" />
+      <option name="PACKAGE_NAME" value="org.lsp.runnable.test" />
+      <option name="MAIN_CLASS_NAME" value="org.lsp.runnable.test.Testable" />
       <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-ea" />

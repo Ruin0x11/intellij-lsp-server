@@ -1,11 +1,11 @@
 <idea-plugin>
-    <id>com.ruin.intel</id>
-    <name>Intelligence</name>
+    <id>com.ruin.lsp</id>
+    <name>intellij-lsp-server</name>
 
     <vendor>Ruin0x11</vendor>
 
     <description><![CDATA[
-        Internal LSP server
+        Exposes IntelliJ IDEA features through the Language Server Protocol.
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
@@ -18,26 +18,26 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.ruin.intel.model.LanguageServerService" />
-        <applicationService serviceImplementation="com.ruin.intel.commands.hover.OneLineJavaDocInfoGeneratorFactory" />
-        <applicationService serviceImplementation="com.ruin.intel.model.WorkspaceManager" />
+        <applicationService serviceImplementation="com.ruin.lsp.model.LanguageServerService" />
+        <applicationService serviceImplementation="com.ruin.lsp.commands.hover.OneLineJavaDocInfoGeneratorFactory" />
+        <applicationService serviceImplementation="com.ruin.lsp.model.WorkspaceManager" />
         <preloadingActivity
-            implementation="com.ruin.intel.model.LanguageServerStartupActivity"/>
+            implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
     </extensions>
 
     <application-components>
     </application-components>
 
     <actions>
-        <action id="LSP.RestartServer"
-                class="com.ruin.intel.actions.StartServerAction"
+        <action id="LSP.StartServer"
+                class="com.ruin.lsp.actions.StartServerAction"
                 text="Start LSP Server"
                 description="Start the internal LSP server">
             <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>
         </action>
 
         <action id="LSP.StopServer"
-                class="com.ruin.intel.actions.StopServerAction"
+                class="com.ruin.lsp.actions.StopServerAction"
                 text="Stop LSP Server"
                 description="Stop the internal LSP server">
             <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>

@@ -23,7 +23,7 @@
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="Dummy.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/Dummy.java">
+        <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/Dummy.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.5033557" vertical-offset="0" max-vertical-offset="660">
               <caret line="20" column="3" selection-start-line="20" selection-start-column="3" selection-end-line="20" selection-end-column="3" />
@@ -44,7 +44,7 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/org/intellivim/javaproject/Dummy.java" />
+        <option value="$PROJECT_DIR$/src/org/lsp/javaproject/Dummy.java" />
       </list>
     </option>
   </component>
@@ -116,7 +116,7 @@
   <component name="RunManager" selected="Application.JavaMain">
     <configuration default="false" name="JavaMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="MAIN_CLASS_NAME" value="org.intellivim.javaproject.subpackage.JavaMain" />
+      <option name="MAIN_CLASS_NAME" value="org.lsp.javaproject.subpackage.JavaMain" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -247,49 +247,49 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="8" column="1" selection-start-line="8" selection-start-column="1" selection-end-line="8" selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.13289036">
           <caret line="8" column="1" selection-start-line="8" selection-start-column="1" selection-end-line="8" selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/intellivim/javaproject/subpackage2/JavaMain.java">
+    <entry file="file://$PROJECT_DIR$/src/org/lsp/javaproject/subpackage2/JavaMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.049833886">
           <caret line="3" column="13" selection-start-line="3" selection-start-column="13" selection-end-line="3" selection-end-column="13" />

@@ -23,7 +23,7 @@
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="LoopingMain.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/intellivim/looping/LoopingMain.java">
+        <entry file="file://$PROJECT_DIR$/src/org/lsp/looping/LoopingMain.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.105017506" vertical-offset="0" max-vertical-offset="857">
               <caret line="6" column="21" selection-start-line="6" selection-start-column="21" selection-end-line="6" selection-end-column="21" />
@@ -106,7 +106,7 @@
   </component>
   <component name="RunManager" selected="Application.LoopingMain">
     <configuration default="false" name="LoopingMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.intellivim.looping.LoopingMain" />
+      <option name="MAIN_CLASS_NAME" value="org.lsp.looping.LoopingMain" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
