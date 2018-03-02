@@ -16,4 +16,8 @@ class FindDefinitionCommandTestCase : FindDefinitionCommandTestBase() {
     fun `test finds declaration of class outside file`() =
         checkFindsLocation(DUMMY_FILE_PATH,
             Position(22, 9), "Problematic.java", Position(5, 13))
+
+    fun `test finds super method`() =
+        checkFindsLocation(SUBCLASS_FILE_PATH,
+            Position(12, 25), "SuperClass.java", Position(9, 25))
 }

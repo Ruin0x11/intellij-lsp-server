@@ -14,7 +14,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
-import com.ruin.intel.Util.*
+import com.ruin.intel.util.*
 import com.ruin.intel.commands.errorResult
 
 

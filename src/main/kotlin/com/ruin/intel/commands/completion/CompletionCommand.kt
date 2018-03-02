@@ -4,10 +4,6 @@ import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.editor.EditorFactory
-import com.ruin.intel.Util.createEditor
-import com.ruin.intel.Util.resolvePsiFromUri
 import com.ruin.intel.values.CompletionItem
 import com.ruin.intel.values.CompletionList
 import com.ruin.intel.values.Position
@@ -17,14 +13,15 @@ import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
-import com.ruin.intel.Util.withEditor
+import com.ruin.intel.util.withEditor
 import com.ruin.intel.commands.Command
 import java.util.LinkedHashSet
 
 class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position,
                         val triggerKind: Int?,
-                        val triggerCharacter: String?) : Command<CompletionList>, Disposable {
+                        val triggerCharacter: String?,
+                        val snippetSupport: Boolean) : Command<CompletionList>, Disposable {
 
     override fun execute(project: Project, file: PsiFile): Result<CompletionList, Exception> {
         val result: MutableList<CompletionItem> = mutableListOf()
@@ -34,7 +31,7 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
             val params = makeCompletionParameters(editor, file, position)
             performCompletion(params!!, prefix, Consumer { completionResult ->
                 val el = completionResult.lookupElement
-                val dec = CompletionDecorator.from(el)
+                val dec = CompletionDecorator.from(el, snippetSupport)
                 if (dec != null) {
                     result.add(dec.completionItem)
                 }

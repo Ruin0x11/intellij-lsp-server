@@ -26,10 +26,6 @@ open class LanguageServerService {
     private var server: LanguageServerStreamingTCPServer = LanguageServerStreamingTCPServer(defaultHostName, defaultPort)
     private var isAlive: Boolean = false
 
-    init {
-        startServer()
-    }
-
     fun startServer() {
         LOG.info("Start LSP Server!")
         this.server.start()

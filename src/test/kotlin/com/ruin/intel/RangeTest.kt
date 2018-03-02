@@ -1,7 +1,6 @@
 package com.ruin.intel
 
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase.assertEquals
-import com.ruin.intel.Util.getDocument
+import com.ruin.intel.util.getDocument
 import com.ruin.intel.model.rangeToTextRange
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.Range

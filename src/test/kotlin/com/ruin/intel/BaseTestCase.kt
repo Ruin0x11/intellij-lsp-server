@@ -3,7 +3,7 @@ package com.ruin.intel
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
-import com.ruin.intel.Util.ensureProject
+import com.ruin.intel.util.ensureProject
 import java.io.File
 
 val JAVA_PROJECT = "java-project"

@@ -6,7 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
-import com.ruin.intel.Util.*
+import com.ruin.intel.util.*
 import com.ruin.intel.values.*
 import groovy.util.GroovyTestCase.assertEquals
 import com.intellij.openapi.command.UndoConfirmationPolicy

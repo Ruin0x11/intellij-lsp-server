@@ -7,9 +7,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.ruin.intel.BaseTestCase
-import com.ruin.intel.Util.getDocument
-import com.ruin.intel.Util.getPsiFile
-import com.ruin.intel.Util.getVirtualFile
+import com.ruin.intel.util.getDocument
+import com.ruin.intel.util.getPsiFile
+import com.ruin.intel.util.getVirtualFile
 import com.ruin.intel.values.TextDocumentItem
 import com.ruin.intel.values.VersionedTextDocumentIdentifier
 import junit.framework.TestCase

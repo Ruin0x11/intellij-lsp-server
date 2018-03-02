@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2018
 
-;; Author:  <kadode@kadode-PC>
-;; Keywords: convenience
+;; Author:  Ruin0x11
+;; Keywords: java
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;
+;; lsp-mode client for intellij-lsp-server.
 
 ;;; Code:
 
@@ -80,4 +80,4 @@
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
 
 (provide 'lsp-intellij)
-;;; intel.el ends here
+;;; lsp-intellij.el ends here

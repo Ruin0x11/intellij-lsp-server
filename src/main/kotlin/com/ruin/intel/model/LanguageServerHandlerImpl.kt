@@ -4,7 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Ref
-import com.ruin.intel.Util.resolvePsiFromUri
+import com.ruin.intel.util.resolvePsiFromUri
 import com.ruin.intel.commands.completion.CompletionCommand
 import com.ruin.intel.commands.find.FindDefinitionCommand
 import com.ruin.intel.commands.find.FindImplementationCommand
@@ -42,6 +42,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     override fun onInitialize(processId: Int, rootUri: DocumentUri,
                               capabilities: ClientCapabilities) : InitializeResult {
         context.wasInitialized = true
+        context.clientCapabilities = capabilities
         LOG.info("INIT LSP")
         return InitializeResult(defaultServerCapabilities())
     }
@@ -85,7 +86,8 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
                                           triggerCharacter: String?): CompletionList {
         checkInitialized()
 
-        return execute(CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter),
+        return execute(CompletionCommand(textDocumentIdentifier, position, triggerKind, triggerCharacter,
+            context.clientCapabilities?.textDocument?.completion?.completionItem?.snippetSupport ?: false),
             textDocumentIdentifier.uri)
     }
 

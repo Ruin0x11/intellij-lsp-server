@@ -1,4 +1,4 @@
-package com.ruin.intel.Util
+package com.ruin.intel.util
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor

@@ -1,4 +1,4 @@
-package com.ruin.intel.Util
+package com.ruin.intel.util
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -111,7 +111,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                //allocateFrame(project)
+                allocateFrame(project)
                 //mockMessageView(project)
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -151,7 +151,7 @@ fun getPsiFile(@NotNull project: Project, @NotNull virtual: VirtualFile): PsiFil
                 }
 
                 // TODO: reload doc here?
-                val doc = getDocument(file) ?: return@Computable null
+                // val doc = getDocument(file) ?: return@Computable null
 
                 PsiUtilCore.ensureValid(file)
                 file
@@ -249,7 +249,7 @@ private fun allocateFrame(project: Project?) {
         if (null != existing) {
             // hide any existing frames. We may want this
             //  to be a preference... Not sure
-            existing.isVisible = false;
+            existing.isVisible = false
             return // already done
         }
 

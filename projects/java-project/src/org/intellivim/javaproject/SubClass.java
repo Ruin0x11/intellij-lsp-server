@@ -9,5 +9,8 @@ public class SubClass extends SuperClass implements MyInterface {
 
     }
 
-
+    @Override
+    public void abstractMethod() {
+        System.out.println("Hi.");
+    }
 }

@@ -24,9 +24,8 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetUtil
 import com.intellij.util.containers.ContainerUtil
-import com.ruin.intel.Util.ensureTargetElement
-import com.ruin.intel.Util.findTargetElement
-import com.ruin.intel.Util.withEditor
+import com.ruin.intel.util.findTargetElement
+import com.ruin.intel.util.withEditor
 import com.ruin.intel.commands.Command
 import com.ruin.intel.values.*
 
@@ -190,7 +189,7 @@ private fun getUsageTargets(editor: Editor, file: PsiFile): Array<UsageTarget>? 
     }
 
     if (usageTargets == null) {
-        usageTargets = getUsageTargetsFromPolyvariantReference(editor, file)
+        usageTargets = getUsageTargetsFromPolyvariantReference(editor)
     }
     return usageTargets
 }
@@ -208,7 +207,7 @@ private fun getUsageTargetsFromNavItem(editor: Editor, file: PsiFile): Array<Usa
     return null
 }
 
-private fun getUsageTargetsFromPolyvariantReference(editor: Editor, file: PsiFile): Array<UsageTarget>? {
+private fun getUsageTargetsFromPolyvariantReference(editor: Editor): Array<UsageTarget>? {
     val ref = TargetElementUtil.findReference(editor)
 
     if (ref is PsiPolyVariantReference) {

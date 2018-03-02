@@ -1,14 +1,17 @@
 package com.ruin.intel.commands.find
 
 import com.github.kittinunf.result.Result
+import com.intellij.ide.util.PsiNavigationSupport
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.ruin.intel.Util.*
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.search.searches.SuperMethodsSearch
+import com.ruin.intel.util.*
 import com.ruin.intel.commands.Command
 import com.ruin.intel.commands.errorResult
-import com.ruin.intel.model.LanguageServerException
 import com.ruin.intel.model.positionToOffset
 import com.ruin.intel.values.Location
 import com.ruin.intel.values.Position
@@ -23,12 +26,24 @@ class FindDefinitionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
 
         val offset = positionToOffset(doc, position)
         val ref = file.findReferenceAt(offset)
-            ?: return errorResult("No reference found.")
 
-        val lookup = ref.resolve()
-            ?: return errorResult("Definition not found.")
+        var lookup = ref?.resolve()
 
-        return Result.of(listOf(toLocation(lookup)))
+        if (lookup == null) {
+            val element = file.findElementAt(offset)
+            val parent = element?.parent
+            if (parent != null && parent is PsiMethod) {
+                val superSignature =
+                    SuperMethodsSearch.search(parent, null, true, false).findFirst()
+                lookup = superSignature?.method
+            }
+        }
+
+        return if (lookup != null) {
+            Result.of(listOf(toLocation(lookup)))
+        } else {
+            return errorResult("No definition found.")
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-package com.ruin.intel.commands.find
+ package com.ruin.intel.commands.find
 
 import com.github.kittinunf.result.Result
 import com.intellij.openapi.project.Project
@@ -14,21 +14,13 @@ import com.intellij.usages.UsageInfo2UsageAdapter
 import com.intellij.openapi.editor.Editor
 import com.intellij.find.findUsages.FindUsagesManager
 import com.intellij.openapi.util.Ref
-import com.ruin.intel.Util.ensureTargetElement
-import com.ruin.intel.Util.getDocument
-import com.ruin.intel.Util.withEditor
-import com.ruin.intel.commands.errorResult
-import com.ruin.intel.model.positionToOffset
+import com.ruin.intel.util.findTargetElement
+import com.ruin.intel.util.withEditor
 import java.util.ArrayList
 
 class FindUsagesCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position) : Command<List<Location>> {
     override fun execute(project: Project, file: PsiFile): Result<List<Location>, Exception> {
-        val doc = getDocument(file) ?: return errorResult("No document found")
-        val offset = positionToOffset(doc, position)
-
-        val element = file.findElementAt(offset) ?: return errorResult("No element at position")
-
         val ref: Ref<List<Usage>> = Ref()
         withEditor(this, file, position) { editor ->
             ref.set(findUsages(editor))
@@ -58,7 +50,7 @@ fun extractLocationFromRaw(usage: Usage): Location? {
 fun findUsages(editor: Editor): List<Usage> {
     val project = editor.project ?: return listOf()
 
-    val element = ensureTargetElement(editor)
+    val element = findTargetElement(editor) ?: return listOf()
 
     val rawResults = ArrayList<Usage>()
     val manager = FindUsagesManager(project,

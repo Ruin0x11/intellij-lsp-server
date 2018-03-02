@@ -1,4 +1,4 @@
-package com.ruin.intel.Util
+package com.ruin.intel.util
 
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.openapi.Disposable
@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.psi.PsiFile
-import com.ruin.intel.commands.find.findUsages
 import com.ruin.intel.values.Position
 
 /**

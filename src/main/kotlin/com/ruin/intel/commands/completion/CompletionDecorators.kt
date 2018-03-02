@@ -9,16 +9,16 @@ import com.intellij.psi.PsiPackage
 import com.ruin.intel.values.InsertTextFormat
 
 
-abstract class CompletionDecorator<T: PsiElement>(val lookup: LookupElement, val elt: T) {
+abstract class CompletionDecorator<T : PsiElement>(val lookup: LookupElement, val elt: T) {
     val completionItem: CompletionItem
-    get() = CompletionItem(
-        label = formatLabel(),
-        insertText = formatInsertText(),
-        documentation = formatDoc(),
-        insertTextFormat = insertTextFormat)
+        get() = CompletionItem(
+            label = formatLabel(),
+            insertText = formatInsertText(),
+            documentation = formatDoc(),
+            insertTextFormat = insertTextFormat)
 
-    val clientSupportsSnippets = false
-    val insertTextFormat: Int
+    var clientSupportsSnippets = false
+    private val insertTextFormat: Int
         get() = if (clientSupportsSnippets) InsertTextFormat.SNIPPET else InsertTextFormat.PLAIN_TEXT
 
     protected open fun formatInsertText(): String {
@@ -44,9 +44,9 @@ abstract class CompletionDecorator<T: PsiElement>(val lookup: LookupElement, val
     protected abstract fun formatLabel(): String
 
     companion object {
-        fun from(lookup: LookupElement): CompletionDecorator<out PsiElement>? {
+        fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<out PsiElement>? {
             val psi = lookup.psiElement
-            return when (psi) {
+            val decorator = when (psi) {
                 is PsiMethod -> MethodCompletionDecorator(lookup, psi)
                 is PsiClass -> ClassCompletionDecorator(lookup, psi)
                 is PsiField -> FieldCompletionDecorator(lookup, psi)
@@ -54,20 +54,16 @@ abstract class CompletionDecorator<T: PsiElement>(val lookup: LookupElement, val
                 is PsiPackage -> PackageCompletionDecorator(lookup, psi)
                 else -> null
             }
+            decorator?.clientSupportsSnippets = snippetSupport
+            return decorator
         }
     }
 }
 
 class MethodCompletionDecorator(lookup: LookupElement, val method: PsiMethod)
     : CompletionDecorator<PsiMethod>(lookup, method) {
-    override fun formatInsertText(): String {
-        val parameterList = method.getParameterList()
-        val params = if (clientSupportsSnippets)
-            buildSnippetTabStops(method)
-        else
-            buildParens(method)
-        return super.formatInsertText() + params
-    }
+    override fun formatInsertText() =
+        super.formatInsertText() + buildMethodParams(method, clientSupportsSnippets)
 
     override fun formatLabel() =
         "${super.formatInsertText()}${buildParamsList(method)} -> ${getTypeName(method.returnType)}"
@@ -84,10 +80,11 @@ class FieldCompletionDecorator(lookup: LookupElement, val field: PsiField)
     override fun formatLabel() =
         "${field.type.presentableText}  ${field.name}"
 }
+
 class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariable)
     : CompletionDecorator<PsiVariable>(lookup, variable) {
     private val type: String
-    get() = variable.type.presentableText
+        get() = variable.type.presentableText
 
     override fun formatLabel() = type
 
@@ -130,15 +127,21 @@ fun buildParamsList(method: PsiMethod): CharSequence {
     return builder.toString()
 }
 
+fun buildMethodParams(method: PsiMethod, snippetSupport: Boolean) = if (snippetSupport)
+    buildSnippetTabStops(method)
+else
+    buildParens(method)
+
 fun buildParens(method: PsiMethod) = if (method.parameters.isEmpty()) "()" else "("
 
 fun buildSnippetTabStops(method: PsiMethod): CharSequence {
-    val tabStops = method.parameterList.parameters.map {
-        "${'$'}${it.name}"
-    }.joinToString(", ")
+    val tabStops = method.parameterList.parameters.mapIndexed(::methodParamToSnippet).joinToString(", ")
 
     return "($tabStops)$0"
 }
+
+fun methodParamToSnippet(index: Int, param: PsiParameter) =
+    "${'$'}${'{'}${index+1}:${param.name}${'}'}"
 
 fun getTypeName(type: PsiType?): CharSequence {
     return type?.presentableText ?: "void"

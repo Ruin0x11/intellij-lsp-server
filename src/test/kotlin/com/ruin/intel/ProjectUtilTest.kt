@@ -1,7 +1,7 @@
 package com.ruin.intel
 
-import com.ruin.intel.Util.getPsiFile
-import com.ruin.intel.Util.resolvePsiFromUri
+import com.ruin.intel.util.getPsiFile
+import com.ruin.intel.util.resolvePsiFromUri
 import java.io.File
 
 
@@ -11,13 +11,13 @@ class ProjectUtilTest : BaseTestCase() {
         get() = TESTABLE_PROJECT
 
     fun `test finds project`() {
-        val project = com.ruin.intel.Util.getProject(getProjectIml())
+        val project = com.ruin.intel.util.getProject(getProjectIml())
         assertNotNull(project)
         assertEquals(TESTABLE_PROJECT, project!!.name)
     }
 
     fun `test doesn't find nonexistent project`() {
-        val project = com.ruin.intel.Util.getProject("blah")
+        val project = com.ruin.intel.util.getProject("blah")
         assertNull(project)
     }
 

@@ -9,8 +9,8 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.DocumentUtil
-import com.ruin.intel.Util.createFileCopy
-import com.ruin.intel.Util.runUndoTransparentWriteCommand
+import com.ruin.intel.util.createFileCopy
+import com.ruin.intel.util.runUndoTransparentWriteCommand
 import com.ruin.intel.model.positionToOffset
 import com.ruin.intel.values.Position
 import java.io.IOException
