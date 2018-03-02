@@ -5,6 +5,7 @@ A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowi
 - Alpha-quality, and probably really unstable.
 - Only targets Java for now, though there is no reason awareness of other languages can't be added.
 - Tested primarily with Emacs' [lsp-mode](https://github.com/emacs-lsp/lsp-mode). There are apparently some differences in the way `lsp-mode` implements the specification, so those are currently reflected in the code.
+- Editing in both IDEA and the LSP client at the same time isn't supported currently.
 
 ## Rationale
 - I didn't like the latency of `eclim`. `eclim-mode` in emacs has to start a new process to get results from the `eclim` daemon, which takes about 5 seconds per command on my Windows system.
