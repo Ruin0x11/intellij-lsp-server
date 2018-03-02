@@ -1,6 +1,9 @@
 # intellij-lsp-server [![AppVeyor Build Status][appveyor-build-status-svg]][appveyor-build-status]
 A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowing other editors to use IntelliJ's features.
 
+## Usage
+Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded.
+
 ## Caveats
 - Alpha-quality, and probably really unstable.
 - Only targets Java for now, though there is no reason awareness of other languages can't be added.
