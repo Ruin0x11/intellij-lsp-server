@@ -9,17 +9,12 @@ import com.ruin.intel.commands.Command
 import com.ruin.intel.values.Location
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
-import com.intellij.usages.UsageViewManager.UsageViewStateListener
 import com.intellij.util.Processor
 import com.intellij.usages.UsageInfo2UsageAdapter
-import com.intellij.psi.PsiElement
-import com.intellij.util.containers.ContainerUtil
 import com.intellij.openapi.editor.Editor
-import com.ruin.intel.Util.createEditor
 import com.intellij.find.findUsages.FindUsagesManager
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.util.Ref
-import com.ruin.intel.Util.findTargetElement
+import com.ruin.intel.Util.ensureTargetElement
 import com.ruin.intel.Util.getDocument
 import com.ruin.intel.Util.withEditor
 import com.ruin.intel.commands.errorResult
@@ -63,7 +58,7 @@ fun extractLocationFromRaw(usage: Usage): Location? {
 fun findUsages(editor: Editor): List<Usage> {
     val project = editor.project ?: return listOf()
 
-    val element = findTargetElement(editor)
+    val element = ensureTargetElement(editor)
 
     val rawResults = ArrayList<Usage>()
     val manager = FindUsagesManager(project,

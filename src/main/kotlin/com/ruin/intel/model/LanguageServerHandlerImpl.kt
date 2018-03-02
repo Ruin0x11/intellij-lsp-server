@@ -15,12 +15,12 @@ import com.ruin.intel.values.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
     return ServerCapabilities(textDocumentSync = null,
-            hoverProvider = null,
+            hoverProvider = true,
             completionProvider = CompletionOptions(false, listOf(".", "@", "#")),
             signatureHelpProvider = null,
             definitionProvider = true,
-            referencesProvider = false,
-            documentHighlightProvider = false,
+            referencesProvider = true,
+            documentHighlightProvider = true,
             documentSymbolProvider = false,
             workspaceSymbolProvider = false,
             codeActionProvider = false,
@@ -76,7 +76,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
             command.dispose()
         }
 
-        return if(ref.get().isEmpty() ) null else Hover(ref.get(), null)
+        return if(ref.get().value.isEmpty() ) null else Hover(ref.get(), null)
     }
 
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
@@ -160,6 +160,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     fun initialized() = context.wasInitialized
 }
 
+// TODO: Use invokeAndWait + Executor to get result makeCompletionParameters Future instead
 fun <T: Any>execute(command: com.ruin.intel.commands.Command<T>, uri: DocumentUri): T {
     val ref: Ref<T> = Ref()
     ApplicationManager.getApplication().invokeAndWait {

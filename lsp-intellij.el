@@ -47,30 +47,37 @@
     (error str)))
 
 (defun lsp-intellij--initialize-client (client)
-  (lsp-provide-marked-string-renderer client "intellij" #'lsp-intellij--render-string))
+  (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root '("ruby")
                        "127.0.0.1" 8080
                        :initialize #'lsp-intellij--initialize-client)
-(setq lsp-print-io t
-      lsp-response-timeout 10000
-      lsp-document-sync-method 'incremental)
 
-(comment
- (setq host "127.0.0.1"
-        port 8080
-        name "asdf"
-        tcp-proc (open-network-stream (concat name " TCP connection")
-                                          "*tcp*" host port
-                                          :type 'plain))
- (process-send-string tcp-proc "Content-Length: 1256\n\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///e:/build/intellij-plugins/Dart/src/com/jetbrains/lang/dart/DartYamlFileTypeFactory.java\",\"languageId\":\"intellij\",\"version\":0,\"text\":\"package com.jetbrains.lang.dart;\\n\\nimport com.intellij.openapi.fileTypes.ExactFileNameMatcher;\\nimport com.intellij.openapi.fileTypes.FileType;\\nimport com.intellij.openapi.fileTypes.FileTypeConsumer;\\nimport com.intellij.openapi.fileTypes.FileTypeFactory;\\nimport org.jetbrains.annotations.NotNull;\\n\\npublic class DartYamlFileTypeFactory extends FileTypeFactory {\\n\\n  public static final String DOT_ANALYSIS_OPTIONS = \\\".analysis_options\\\";\\n\\n  @Override\\n  public void createFileTypes(@NotNull final FileTypeConsumer fileTypeConsumer) {\\n    // Do not use YAMLFileType.YML directly to avoid class loaders conflict in IDEA Community + Dart Plugin project setup.\\n    // The problem is that YAMLFileType is instantiated twice in such project setup: by PluginClassLoader and by UrlClassLoader\\n    final FileType yamlFileType = fileTypeConsumer.getStandardFileTypeByName(\\\"YAML\\\");\\n    if (yamlFileType != null) {\\n      fileTypeConsumer.consume(yamlFileType, new ExactFileNameMatcher(DOT_ANALYSIS_OPTIONS));\\n    }\\n  }\\n}\\n\"}}}" )
- )
+(defun lsp-intellij--locations-to-xref-items (locations)
+  "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."
+  (let* ((filtered-locs (seq-filter
+                         (lambda (loc)
+                           (string-prefix-p "file" (gethash "uri" loc)))
+                         locations))
+         (fn (lambda (loc) (lsp--uri-to-path (gethash "uri" loc))))
+         ;; locations-by-file is an alist of the form
+         ;; ((FILENAME . LOCATIONS)...), where FILENAME is a string of the
+         ;; actual file name, and LOCATIONS is a list of Location objects
+         ;; pointing to Ranges inside that file.
+         (locations-by-file (seq-group-by fn filtered-locs))
+         (items-by-file (mapcar #'lsp--get-xrefs-in-file locations-by-file)))
+    (apply #'append items-by-file)))
 
-(defun lsp-intellij-reset ()
+(defun lsp-intellij-find-implementations ()
+  "List all implementations for the Java element point."
   (interactive)
-  (unload-feature 'lsp-mode)
-  (load-library "lsp-mode")
-  (kill-matching-buffers "lsp-intellij"))
+  (let* ((impls (lsp--send-request (lsp--make-request
+                                    "textDocument/implementation"
+                                    (lsp--text-document-position-params))))
+         (items (lsp--locations-to-xref-items impls)))
+    (if items
+        (xref--show-xrefs items nil)
+      (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
 
 (provide 'lsp-intellij)
 ;;; intel.el ends here

@@ -27,7 +27,7 @@
     </application-components>
 
     <actions>
-        <action id="LSP.StartServer"
+        <action id="LSP.RestartServer"
                 class="com.ruin.intel.actions.StartServerAction"
                 text="Start LSP Server"
                 description="Start the internal LSP server">

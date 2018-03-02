@@ -3,7 +3,6 @@ package com.ruin.intel.values
 import com.intellij.codeInsight.lookup.LookupElement
 
 typealias DocumentUri = String
-typealias MarkedString = String
 
 data class ClientCapabilities(val workspace: WorkspaceClientCapabilities?,
                               val textDocument: TextDocumentClientCapabilities?)
@@ -145,6 +144,9 @@ data class TextDocumentItem(val uri: DocumentUri,
 data class Hover(val contents: MarkedString,
                  val range: Range?)
 
+data class MarkedString(val language: String,
+                        val value: String)
+
 data class CompletionContext(val triggerKind: Int?,
                              val triggerCharacters: List<String>?)
 
@@ -172,7 +174,6 @@ data class CompletionItem(val label: String,
         fun from(lookupElement: LookupElement): CompletionItem = CompletionItem(lookupElement.toString())
     }
 }
-
 
 data class DocumentHighlight(val range: Range,
                              val kind: Int?)

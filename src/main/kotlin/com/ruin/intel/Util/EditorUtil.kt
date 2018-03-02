@@ -14,11 +14,14 @@ import com.ruin.intel.values.Position
  *  isn't enough. This will never return null.
  * @throws IllegalArgumentException if it couldn't find an element
  */
-fun findTargetElement(editor: Editor): PsiElement {
-    return TargetElementUtil
+fun ensureTargetElement(editor: Editor): PsiElement =
+    findTargetElement(editor) ?: throw IllegalArgumentException("No element under the cursor")
+
+fun findTargetElement(editor: Editor): PsiElement? =
+    TargetElementUtil
         .findTargetElement(editor,
-            TargetElementUtil.getInstance().allAccepted) ?: throw IllegalArgumentException("No element under the cursor")
-}
+            TargetElementUtil.getInstance().allAccepted)
+
 
 /**
  * Creates, uses, then releases an editor.

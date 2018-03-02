@@ -95,12 +95,20 @@ fun getProject(projectPath: String): Project? {
         val projectRef = Ref<Project>()
         ApplicationManager.getApplication().runWriteAction {
             try {
-                // NB: The line below causes a window to be opened for
-                //  the project. But! RunCommand breaks in IntelliJ 14 without it.
-                //  So, we now hide any existing frames in allocateFrame().
-                //  I'm not sure if this is the right way to do it, but it doesn't
-                //  seem to cause any problems so far....
-                val project = mgr.loadAndOpenProject(projectPath)
+                val alreadyOpenProject = mgr.openProjects.find {proj ->
+                    if(proj.projectFilePath?.contains(".idea") == true) {
+                        val prefix = proj.projectFilePath!!
+                            .substringBefore(".idea")
+                            .replace("\\", "/")
+                        projectPath
+                            .replace("\\", "/")
+                            .startsWith(prefix, true)
+                    } else {
+                        false
+                    }
+                }
+
+                val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
                 //allocateFrame(project)

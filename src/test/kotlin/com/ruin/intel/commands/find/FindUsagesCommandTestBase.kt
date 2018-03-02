@@ -6,7 +6,7 @@ import com.ruin.intel.values.Location
 import com.ruin.intel.values.Position
 import com.ruin.intel.values.TextDocumentIdentifier
 
-open class FindUsagesCommandTestBase : FindCommandTestBase() {
+abstract class FindUsagesCommandTestBase : FindCommandTestBase() {
     override val projectName: String
         get() = JAVA_PROJECT
 

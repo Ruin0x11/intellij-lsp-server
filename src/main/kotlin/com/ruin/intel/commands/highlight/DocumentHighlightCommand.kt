@@ -1,6 +1,7 @@
 package com.ruin.intel.commands.highlight
 
 import com.github.kittinunf.result.Result
+import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandler
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandlerBase
 import com.intellij.codeInsight.highlighting.ReadWriteAccessDetector
@@ -10,23 +11,24 @@ import com.intellij.find.findUsages.PsiElement2UsageTargetAdapter
 import com.intellij.find.impl.FindManagerImpl
 import com.intellij.idea.ActionsBundle
 import com.intellij.lang.injection.InjectedLanguageManager
+import com.intellij.navigation.NavigationItem
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiReference
+import com.intellij.psi.*
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetUtil
+import com.intellij.util.containers.ContainerUtil
+import com.ruin.intel.Util.ensureTargetElement
+import com.ruin.intel.Util.findTargetElement
 import com.ruin.intel.Util.withEditor
 import com.ruin.intel.commands.Command
 import com.ruin.intel.values.*
-import java.util.*
 
 class DocumentHighlightCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                                val position: Position) : Command<List<DocumentHighlight>> {
@@ -61,24 +63,11 @@ fun textRangeToRange(editor: Editor, range: TextRange) =
 private fun findHighlights(project: Project, editor: Editor, file: PsiFile): List<DocumentHighlight>? {
     val handler = HighlightUsagesHandler.createCustomHandler(editor, file)
 
-    if (handler != null) {
-        return getHighlightsFromHandler(handler, editor)
+    return if (handler != null) {
+        getHighlightsFromHandler(handler, editor)
+    } else {
+        getHighlightsFromUsages(project, editor, file)
     }
-
-    val ref: Ref<List<DocumentHighlight>> = Ref()
-    DumbService.getInstance(project).withAlternativeResolveEnabled {
-        val usageTargets = getUsageTargets(editor, file)
-        val result = if (usageTargets == null) {
-            ref.set(listOf())
-            return@withAlternativeResolveEnabled
-        } else {
-            usageTargets.mapNotNull { extractDocumentHighlightFromRaw(project, file, editor, it) }.flatten()
-        }
-
-        ref.set(result)
-    }
-
-    return ref.get()
 }
 
 private fun getHighlightsFromHandler(handler: HighlightUsagesHandlerBase<PsiElement>,
@@ -89,23 +78,36 @@ private fun getHighlightsFromHandler(handler: HighlightUsagesHandlerBase<PsiElem
         FeatureUsageTracker.getInstance().triggerFeatureUsed(featureId)
     }
 
-    // FIXME: Not able to use handler.selectTargets()
+    // NOTE: Not able to use handler.selectTargets()
     handler.computeUsages(handler.targets)
 
-    val reads = handler.readUsages.map {
-        val range = textRangeToRange(editor, it)
-        DocumentHighlight(range, DocumentHighlightKind.READ)
-    }
-
-    val writes = handler.writeUsages.map {
-        val range = textRangeToRange(editor, it)
-        DocumentHighlight(range, DocumentHighlightKind.WRITE)
-    }
+    val reads  = textRangesToHighlights(handler.readUsages, editor, DocumentHighlightKind.READ)
+    val writes = textRangesToHighlights(handler.writeUsages, editor, DocumentHighlightKind.WRITE)
 
     return reads.plus(writes)
 }
 
-fun findRefsToElement(target: PsiElement, project: Project, file: PsiFile) : Collection<PsiReference> {
+private fun textRangesToHighlights(usages: List<TextRange>, editor: Editor, kind: Int): List<DocumentHighlight> =
+    usages.map {
+        val range = textRangeToRange(editor, it)
+        DocumentHighlight(range, kind)
+    }
+
+private fun getHighlightsFromUsages(project: Project, editor: Editor, file: PsiFile): List<DocumentHighlight>? {
+    val ref: Ref<List<DocumentHighlight>> = Ref()
+    DumbService.getInstance(project).withAlternativeResolveEnabled {
+        val usageTargets = getUsageTargets(editor, file)
+        val result = usageTargets?.mapNotNull {
+            extractDocumentHighlightFromRaw(project, file, editor, it)
+        }?.flatten() ?: listOf()
+
+        ref.set(result)
+    }
+
+    return ref.get()
+}
+
+private fun findRefsToElement(target: PsiElement, project: Project, file: PsiFile): Collection<PsiReference> {
     val findUsagesManager = (FindManager.getInstance(project) as FindManagerImpl).findUsagesManager
     val handler = findUsagesManager.getFindUsagesHandler(target, true)
 
@@ -117,26 +119,24 @@ fun findRefsToElement(target: PsiElement, project: Project, file: PsiFile) : Col
         ?: ReferencesSearch.search(target, searchScope, false).findAll()
 }
 
-fun extractDocumentHighlightFromRaw(project: Project,
-                                    file: PsiFile,
-                                    editor: Editor,
-                                    usage: UsageTarget): List<DocumentHighlight>? {
-    when(usage) {
-        is PsiElement2UsageTargetAdapter -> {
-            val target = usage.element
-            val refs = findRefsToElement(target, project, file)
+private fun extractDocumentHighlightFromRaw(project: Project,
+                                            file: PsiFile,
+                                            editor: Editor,
+                                            usage: UsageTarget): List<DocumentHighlight>? {
+    return if (usage is PsiElement2UsageTargetAdapter) {
+        val target = usage.element
+        val refs = findRefsToElement(target, project, file)
 
-            return refsToHighlights(target, file, editor, refs)
-        }
+        return refsToHighlights(target, file, editor, refs)
+    } else {
+        null
     }
-
-    return null
 }
 
-fun refsToHighlights(element: PsiElement,
-                     file: PsiFile,
-                     editor: Editor,
-                     refs: Collection<PsiReference>): List<DocumentHighlight> {
+private fun refsToHighlights(element: PsiElement,
+                             file: PsiFile,
+                             editor: Editor,
+                             refs: Collection<PsiReference>): List<DocumentHighlight> {
     val detector = ReadWriteAccessDetector.findDetector(element)
 
     val highlights: MutableList<DocumentHighlight> = mutableListOf()
@@ -182,6 +182,44 @@ private fun addHighlights(highlights: MutableList<DocumentHighlight>,
     highlights.addAll(toAdd)
 }
 
-private fun getUsageTargets(editor: Editor, file: PsiFile): Array<UsageTarget>? =
-    UsageTargetUtil.findUsageTargets(editor, file)
+private fun getUsageTargets(editor: Editor, file: PsiFile): Array<UsageTarget>? {
+    var usageTargets = UsageTargetUtil.findUsageTargets(editor, file)
 
+    if (usageTargets == null) {
+        usageTargets = getUsageTargetsFromNavItem(editor, file)
+    }
+
+    if (usageTargets == null) {
+        usageTargets = getUsageTargetsFromPolyvariantReference(editor, file)
+    }
+    return usageTargets
+}
+
+private fun getUsageTargetsFromNavItem(editor: Editor, file: PsiFile): Array<UsageTarget>? {
+    var targetElement = findTargetElement(editor) ?: return null
+    if (targetElement !== file) {
+        if (targetElement !is NavigationItem) {
+            targetElement = targetElement.navigationElement
+        }
+        if (targetElement is NavigationItem) {
+            return arrayOf(PsiElement2UsageTargetAdapter(targetElement))
+        }
+    }
+    return null
+}
+
+private fun getUsageTargetsFromPolyvariantReference(editor: Editor, file: PsiFile): Array<UsageTarget>? {
+    val ref = TargetElementUtil.findReference(editor)
+
+    if (ref is PsiPolyVariantReference) {
+        val results = ref.multiResolve(false)
+
+        if (results.isNotEmpty()) {
+            return ContainerUtil.mapNotNull(results, { result ->
+                val element = result.element
+                if (element == null) null else PsiElement2UsageTargetAdapter(element)
+            }, UsageTarget.EMPTY_ARRAY)
+        }
+    }
+    return null
+}
