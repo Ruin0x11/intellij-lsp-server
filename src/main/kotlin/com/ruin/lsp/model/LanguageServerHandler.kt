@@ -20,6 +20,12 @@ interface LanguageServerHandler {
     fun onExit()
 
 
+    @JsonRpcMethod("workspace/applyEdit")
+    fun onWorkspaceApplyEdit(
+        @JsonRpcParam(value="label") label: String?,
+        @JsonRpcParam(value="edit") edit: WorkspaceEdit): ApplyWorkspaceEditResponse
+
+
     @JsonRpcMethod("textDocument/completion")
     fun onTextDocumentCompletion(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,

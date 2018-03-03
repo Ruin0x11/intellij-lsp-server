@@ -50,10 +50,18 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
     override fun onShutdown() {
         checkInitialized()
+        workspace().onShutdown()
     }
 
     override fun onExit() {
         checkInitialized()
+    }
+
+
+    override fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit): ApplyWorkspaceEditResponse {
+        checkInitialized()
+
+        return workspace().onWorkspaceApplyEdit(label, edit)
     }
 
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,

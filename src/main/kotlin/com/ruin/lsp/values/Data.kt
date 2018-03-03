@@ -8,12 +8,12 @@ data class ClientCapabilities(val workspace: WorkspaceClientCapabilities?,
                               val textDocument: TextDocumentClientCapabilities?)
 
 data class WorkspaceClientCapabilities(val applyEdit: Boolean?,
-                                       val workspaceEdit: WorkspaceEdit?,
+                                       val workspaceEdit: WorkspaceEditCapability?,
                                        val didChangeConfiguration: DidChangeConfiguration?,
                                        val didChangeWatchedFiles: DidChangeWatchedFiles?,
                                        val symbol: Symbol?,
                                        val executeCommand: ExecuteCommand?)
-data class WorkspaceEdit(val documentChanges: Boolean?)
+data class WorkspaceEditCapability(val documentChanges: Boolean?)
 data class DidChangeConfiguration(val dynamicRegistration: Boolean?)
 data class DidChangeWatchedFiles(val dynamicRegistration: Boolean?)
 data class Symbol(val dynamicRegistration: Boolean?,
@@ -123,6 +123,11 @@ data class TextDocumentPositionParams(val textDocument: TextDocumentIdentifier,
                                       val position: Position)
 data class VersionedTextDocumentIdentifier(val uri: DocumentUri,
                                            val version: Int?)
+
+data class WorkspaceEdit(val changes: Map<String, List<TextEdit>>? = null,
+                         val documentChanges: List<TextDocumentEdit>?)
+
+data class ApplyWorkspaceEditResponse(val applied: Boolean)
 
 data class TextDocumentContentChangeEvent(val range: Range?,
                                           val rangeLength: Int?,

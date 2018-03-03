@@ -35,8 +35,7 @@ import java.util.*
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
-    val normalizedUri = normalizeUri(uri)
-    val (project, filePath) = resolveProjectFromUri(normalizedUri) ?: return null
+    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
     val file = getPsiFile(project, filePath) ?: return null
     return Pair(project, file)
 }
@@ -44,9 +43,7 @@ fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
     // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
     // otherwise it gets confusing to have to look up the line and column being tested in the test project
-
-    // has to have three slashes on windows
-    val newUri = uri
+    val newUri = normalizeUri(uri)
     val uri_b = URI(newUri)
     val topFile = File(uri_b)
     var directory = topFile.parentFile
@@ -55,15 +52,15 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         if (project != null) {
             val proj = ensureProject(project.absolutePath)
             val projPathUri = fileToUri(File(proj.basePath))
-            val prefix = uri.commonPrefixWith(projPathUri, true)
+            val prefix = newUri.commonPrefixWith(projPathUri, true)
             assert(prefix.isNotEmpty())
-            val filePathFromRoot = uri.substring(prefix.length)
+            val filePathFromRoot = newUri.substring(prefix.length)
             return Pair(proj, filePathFromRoot)
         }
         directory = directory.parentFile
     }
 
-    LOG.warn("Unable to resolve project from URI $uri")
+    LOG.warn("Unable to resolve project from URI $newUri")
     return null
 }
 
@@ -82,7 +79,7 @@ fun getProject(projectPath: String): Project? {
     val mgr = ProjectManagerEx.getInstanceEx()
 
     val cached = sProjectCache[projectPath]
-    if (cached != null ) {
+    if (cached != null) {
         if (!cached.isDisposed) {
             return cached
         } else {
@@ -115,7 +112,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                allocateFrame(project)
+                hideProjectWindow(project)
                 //mockMessageView(project)
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -143,7 +140,7 @@ fun getPsiFile(project: Project, filePath: String): PsiFile? {
     return getPsiFile(project, getVirtualFile(project, filePath))
 }
 
-fun getPsiFile(@NotNull project: Project, @NotNull virtual: VirtualFile): PsiFile? {
+fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
     return invokeAndWaitIfNeeded(asWriteAction(
             Computable<PsiFile> {
                 val mgr = PsiManager.getInstance(project)
@@ -218,18 +215,10 @@ fun getDocument(file: PsiFile): Document? {
     return doc
 }
 
-fun reloadDocumentAtUri(uri: String) {
-    val normalizedUri = normalizeUri(uri)
-    LOG.debug("Reloading document at $normalizedUri")
-    val pair = resolvePsiFromUri(normalizedUri) ?: return
-    val (project, file) = pair
-    val doc = getDocument(file) ?: return
-
-    LOG.debug("Everything found for $normalizedUri, proceeding with reload")
+fun reloadDocument(doc: Document, project: Project) {
     FileDocumentManager.getInstance().reloadFromDisk(doc)
     PsiDocumentManager.getInstance(project).commitDocument(doc)
 }
-
 
 fun createEditor(context: Disposable, file: PsiFile, position: Position) : EditorEx {
     val doc = getDocument(file)!!
@@ -246,7 +235,7 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position) : Edito
  * Gets a Windows-compatible URI from a VirtualFile.
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
  */
-fun getURIForFile(file: VirtualFile) = normalizeUri(file.url.replace("file://", "file:///"))
+fun getURIForFile(file: VirtualFile) = normalizeUri(file.url)
 fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
 
 /**
@@ -263,7 +252,7 @@ fun normalizeUri(uri: String): String {
 
 fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
 
-private fun allocateFrame(project: Project?) {
+private fun hideProjectWindow(project: Project?) {
         val mgr = WindowManager.getInstance();
         val existing = mgr.getFrame(project);
         if (null != existing) {
