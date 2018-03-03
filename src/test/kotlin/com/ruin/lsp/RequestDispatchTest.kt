@@ -8,6 +8,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.ruin.lsp.model.LanguageServerHandler
 import com.ruin.lsp.model.createJsonRpcBasicServer
 import com.ruin.lsp.values.ClientCapabilities
+import junit.framework.TestCase
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -16,7 +17,7 @@ import java.io.ByteArrayOutputStream
 /**
  * Tests that requests are dispatched to the proper handlers.
  */
-class RequestDispatchTest {
+class RequestDispatchTest : TestCase() {
     private val mockLanguageServerHandler: LanguageServerHandler = mock()
     private val jsonRpcServer: JsonRpcBasicServer
     private var byteArrayOutputStream: ByteArrayOutputStream = ByteArrayOutputStream()
@@ -30,8 +31,7 @@ class RequestDispatchTest {
         byteArrayOutputStream = ByteArrayOutputStream()
     }
 
-    @Test
-    fun `responds to initialize`() {
+    fun `test responds to initialize`() {
         val capabilities = ClientCapabilities(null, null)
         val request = messageWithMapParamsStream("initialize",
                 "processId", 1,
@@ -42,29 +42,25 @@ class RequestDispatchTest {
         verify(mockLanguageServerHandler).onInitialize(1, "file:///", capabilities)
     }
 
-    @Test
-    fun `responds to initialized`() {
+    fun `test responds to initialized`() {
         val request = messageWithMapParamsStream("initialized" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
         verify(mockLanguageServerHandler).onNotifyInitialized()
     }
 
-    @Test
-    fun `responds to shutdown`() {
+    fun `test responds to shutdown`() {
         val request = messageWithMapParamsStream("shutdown" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
         verify(mockLanguageServerHandler).onShutdown()
     }
 
-    @Test
-    fun `responds to exit`() {
+    fun `test responds to exit`() {
         val request = messageWithMapParamsStream("exit" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
         verify(mockLanguageServerHandler).onExit()
     }
 
-    @Test
-    fun `creates error on invalid method`() {
+    fun `test creates error on invalid method`() {
         val request = messageWithMapParamsStream("<INVALID>" )
         jsonRpcServer.handleRequest(request, byteArrayOutputStream)
         assertEquals(JsonError.METHOD_NOT_FOUND.code, errorCode(getJsonError(byteArrayOutputStream)!!).intValue());

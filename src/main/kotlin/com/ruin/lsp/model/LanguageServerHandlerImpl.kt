@@ -11,6 +11,7 @@ import com.ruin.lsp.commands.find.FindImplementationCommand
 import com.ruin.lsp.commands.find.FindUsagesCommand
 import com.ruin.lsp.commands.highlight.DocumentHighlightCommand
 import com.ruin.lsp.commands.hover.HoverCommand
+import com.ruin.lsp.commands.symbol.DocumentSymbolCommand
 import com.ruin.lsp.values.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
@@ -21,7 +22,7 @@ fun defaultServerCapabilities() : ServerCapabilities {
             definitionProvider = true,
             referencesProvider = true,
             documentHighlightProvider = true,
-            documentSymbolProvider = false,
+            documentSymbolProvider = true,
             workspaceSymbolProvider = false,
             codeActionProvider = false,
             codeLensProvider = null,
@@ -53,31 +54,6 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
     override fun onExit() {
         checkInitialized()
-    }
-
-    override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier,
-                                     position: Position): Hover? {
-        checkInitialized()
-
-        // Result<A, B> doesn't allow a null type, but the command can return null...
-        val uri = textDocumentIdentifier.uri
-
-        val ref: Ref<MarkedString> = Ref()
-        ApplicationManager.getApplication().invokeAndWait {
-            val pair = resolvePsiFromUri(uri)
-                ?: throw LanguageServerException("File \"$uri\" not tracked by IntelliJ.")
-            val (project, file) = pair
-
-            val command = HoverCommand(textDocumentIdentifier, position)
-            val result = command.execute(project, file).fold({ value -> value
-            }, { error ->
-                throw error
-            })
-            ref.set(result)
-            command.dispose()
-        }
-
-        return if(ref.get().value.isEmpty() ) null else Hover(ref.get(), null)
     }
 
     override fun onTextDocumentCompletion(textDocumentIdentifier: TextDocumentIdentifier,
@@ -122,6 +98,23 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
         return execute(DocumentHighlightCommand(textDocumentIdentifier, position),
             textDocumentIdentifier.uri)
+    }
+
+    override fun onTextDocumentDocumentSymbol(textDocumentIdentifier: TextDocumentIdentifier): List<SymbolInformation> {
+        checkInitialized()
+
+        return execute(DocumentSymbolCommand(),
+            textDocumentIdentifier.uri)
+    }
+
+    override fun onTextDocumentHover(textDocumentIdentifier: TextDocumentIdentifier,
+                                     position: Position): Hover? {
+        checkInitialized()
+
+        val result = execute(HoverCommand(textDocumentIdentifier, position),
+            textDocumentIdentifier.uri)
+
+        return if(result.value.isEmpty()) null else Hover(result, null)
     }
 
     override fun onNotifyInitialized() {

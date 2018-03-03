@@ -177,12 +177,12 @@ class CompletionItemKind {
         const val FILE = 17
         const val REFERENCE = 18
         const val FOLDER = 19
-        const val ENUMMEMBER = 20
+        const val ENUM_MEMBER = 20
         const val CONSTANT = 21
         const val STRUCT = 22
         const val EVENT = 23
         const val OPERATOR = 24
-        const val TYPEPARAMETER = 25
+        const val TYPE_PARAMETER = 25
     }
 
 }
@@ -214,3 +214,38 @@ class DocumentHighlightKind {
 }
 data class DocumentHighlight(val range: Range,
                              val kind: Int?)
+
+class SymbolKind {
+    companion object {
+        const val FILE = 1
+        const val MODULE = 2
+        const val NAMESPACE = 3
+        const val PACKAGE = 4
+        const val CLASS = 5
+        const val METHOD = 6
+        const val PROPERTY = 7
+        const val FIELD = 8
+        const val CONSTRUCTOR = 9
+        const val ENUM = 10
+        const val INTERFACE = 11
+        const val FUNCTION = 12
+        const val VARIABLE = 13
+        const val CONSTANT = 14
+        const val STRING = 15
+        const val NUMBER = 16
+        const val BOOLEAN = 17
+        const val ARRAY = 18
+        const val OBJECT = 19
+        const val KEY = 20
+        const val NULL = 21
+        const val ENUM_MEMBER = 22
+        const val STRUCT = 23
+        const val EVENT = 24
+        const val OPERATOR = 25
+        const val TYPE_PARAMETER = 26
+    }
+}
+data class SymbolInformation(val name: String,
+                             val kind: Int,
+                             val location: Location,
+                             val containerName: String? = null)

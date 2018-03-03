@@ -47,6 +47,10 @@ interface LanguageServerHandler {
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
         @JsonRpcParam(value="position") position: Position): List<DocumentHighlight>
 
+    @JsonRpcMethod("textDocument/documentSymbol")
+    fun onTextDocumentDocumentSymbol(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier): List<SymbolInformation>
+
 
     @JsonRpcMethod("textDocument/hover")
     fun onTextDocumentHover(

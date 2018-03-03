@@ -20,6 +20,5 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
         val result = execute(command, file.url)
         assertTrue("Expected $expected to be included but got: \n${result.items}",
             result.items.any { it.label == expected || it.insertText == expected })
-        command.dispose()
     }
 }

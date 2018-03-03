@@ -1,10 +1,9 @@
 package com.ruin.lsp.commands.find
 
 import com.github.kittinunf.result.Result
-import com.intellij.ide.util.PsiNavigationSupport
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
@@ -12,6 +11,7 @@ import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.ruin.lsp.util.*
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.errorResult
+import com.ruin.lsp.commands.highlight.textRangeToRange
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.values.Location
 import com.ruin.lsp.values.Position
@@ -40,7 +40,7 @@ class FindDefinitionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
         }
 
         return if (lookup != null) {
-            Result.of(listOf(toLocation(lookup)))
+            Result.of(listOf(elementToLocation(lookup)))
         } else {
             return errorResult("No definition found.")
         }
@@ -57,7 +57,14 @@ fun offsetToPosition(doc: Document, offset: Int): Position {
     return Position(line, column)
 }
 
-fun toLocation(psi: PsiElement): Location {
+fun textRangeToRange(doc: Document, textRange: TextRange): Range =
+    Range(
+        offsetToPosition(doc, textRange.startOffset),
+        offsetToPosition(doc, textRange.endOffset)
+    )
+
+
+fun elementToLocation(psi: PsiElement): Location {
     // TODO: support lookup of files inside JARs?
     val uri = getURIForFile(psi.containingFile)
     val doc = getDocument(psi.containingFile)!!
@@ -65,3 +72,9 @@ fun toLocation(psi: PsiElement): Location {
     return Location(uri, Range(position, position))
 }
 
+fun elementToLocationWithRange(psi: PsiElement): Location {
+    val uri = getURIForFile(psi.containingFile)
+    val doc = getDocument(psi.containingFile)!!
+    val range = textRangeToRange(doc, psi.textRange)
+    return Location(uri, range)
+}

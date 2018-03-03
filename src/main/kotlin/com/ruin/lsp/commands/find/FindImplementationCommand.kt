@@ -32,7 +32,7 @@ class FindImplementationCommand(val textDocumentIdentifier: TextDocumentIdentifi
         }
         val implementations = ref.get()
 
-        val results = implementations?.map(::toLocation) ?: listOf()
+        val results = implementations?.map(::elementToLocation) ?: listOf()
 
         return Result.of(results)
     }

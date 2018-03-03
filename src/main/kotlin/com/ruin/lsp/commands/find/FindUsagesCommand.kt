@@ -41,7 +41,7 @@ fun extractLocationFromRaw(usage: Usage): Location? {
     if (usage is UsageInfo2UsageAdapter) {
         val element = usage.element
         if (element != null) {
-            return toLocation(element)
+            return elementToLocation(element)
         }
     }
     return null

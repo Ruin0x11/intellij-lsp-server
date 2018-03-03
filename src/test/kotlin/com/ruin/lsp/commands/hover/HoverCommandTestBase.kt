@@ -19,6 +19,5 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         val result = execute(command, file.url)
         assertEquals("Expected \"$expected\" but got: \n$result",
             expected, result.value)
-        command.dispose()
     }
 }

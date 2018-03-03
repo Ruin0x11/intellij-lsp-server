@@ -17,6 +17,5 @@ abstract class DocumentHighlightCommandTestBase : BaseTestCase() {
         val command = DocumentHighlightCommand(TextDocumentIdentifier(file.url), at)
         val result = execute(command, file.url)
         assertSameElements(result, expected)
-        command.dispose()
     }
 }
