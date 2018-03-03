@@ -63,7 +63,7 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         directory = directory.parentFile
     }
 
-    LOG.warn("Unable to resolve project makeCompletionParameters URI $uri")
+    LOG.warn("Unable to resolve project from URI $uri")
     return null
 }
 
@@ -243,7 +243,7 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position) : Edito
 }
 
 /**
- * Gets a Windows-compatible URI makeCompletionParameters a VirtualFile.
+ * Gets a Windows-compatible URI from a VirtualFile.
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
  */
 fun getURIForFile(file: VirtualFile) = normalizeUri(file.url.replace("file://", "file:///"))

@@ -14,7 +14,7 @@ class HoverDocumentationProvider : JavaDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         var anElement = element
         var anOriginalElement = originalElement
-        // for new Class(<caret>) or methodCall(<caret>) proceed makeCompletionParameters method call or new expression
+        // for new Class(<caret>) or methodCall(<caret>) proceed from method call or new expression
         // same for new Cl<caret>ass() or method<caret>Call()
         if (anElement is PsiExpressionList || anElement is PsiReferenceExpression && anElement.getParent() is PsiMethodCallExpression) {
             anElement = anElement.parent

@@ -15,6 +15,6 @@ abstract class DocumentSymbolTestBase : BaseTestCase() {
         val command = DocumentSymbolCommand()
         val result = execute(command, file.url)
         assertTrue("Expected $expectedName: $expectedKind to be found but got: \n$result",
-            result.any { it.name == expectedName || it.kind == expectedKind })
+            result.any { it.name.contains(expectedName) && it.kind == expectedKind })
     }
 }

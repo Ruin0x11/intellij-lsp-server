@@ -7,9 +7,7 @@ import com.intellij.psi.PsiFile
 import com.ruin.lsp.model.LanguageServerException
 
 interface Command<out T: Any>: Disposable {
-    override fun dispose() {
-
-    }
+    override fun dispose() {}
 
     fun execute(project: Project, file: PsiFile): Result<T, Exception>
 }

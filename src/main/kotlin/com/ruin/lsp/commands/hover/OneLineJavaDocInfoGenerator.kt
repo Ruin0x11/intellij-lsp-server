@@ -17,7 +17,7 @@ import java.util.*
 
 /**
  * Creates a one-line documentation string for use in minibuffers and the like when hovering over a symbol.
- * Mainly copied makeCompletionParameters JavaDocInfoGenerator.
+ * Mainly copied from JavaDocInfoGenerator.
  */
 class OneLineJavaDocInfoGenerator(val myProject: Project, val myElement: PsiElement) : JavaDocInfoGenerator(myProject, myElement) {
     override fun generateDocInfoCore(buffer: StringBuilder, generatePrologueAndEpilogue: Boolean): Boolean {

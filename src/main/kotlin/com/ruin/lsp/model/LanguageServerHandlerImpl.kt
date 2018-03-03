@@ -155,7 +155,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     fun initialized() = context.wasInitialized
 }
 
-// TODO: Use invokeAndWait + Executor to get result makeCompletionParameters Future instead
+// TODO: Use invokeAndWait + Executor to get result from Future instead
 fun <T: Any>execute(command: com.ruin.lsp.commands.Command<T>, uri: DocumentUri): T {
     val ref: Ref<T> = Ref()
     ApplicationManager.getApplication().invokeAndWait {

@@ -13,7 +13,7 @@ private val LOG = Logger.getInstance("#com.ruin.lsp.util.FileUtil")
 private val FILE_COPY_KEY: Key<SoftReference<Trinity<PsiFile, Document, Long>>> = Key.create("CompletionFileCopy")
 
 /**
- * Duplicate a PsiFile; makeCompletionParameters CodeCompletionHandlerBase
+ * Duplicate a PsiFile; from CodeCompletionHandlerBase
  * @param file file to copy
  * @param startOffset startOffset offset
  * @param endOffset startOffset end offset
@@ -54,7 +54,7 @@ fun createFileCopy(file: PsiFile, startOffset: Long, endOffset: Long): PsiFile {
     return copy
 }
 
-/** Also makeCompletionParameters CodeCompletionHandlerBase  */
+/** Also from CodeCompletionHandlerBase  */
 private fun isCopyUpToDate(document: Document, file: PsiFile): Boolean {
     if (!file.isValid) {
         return false

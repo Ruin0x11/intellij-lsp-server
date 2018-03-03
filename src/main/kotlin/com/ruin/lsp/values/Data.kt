@@ -184,7 +184,6 @@ class CompletionItemKind {
         const val OPERATOR = 24
         const val TYPE_PARAMETER = 25
     }
-
 }
 data class CompletionList(val isIncomplete: Boolean,
                           val items: List<CompletionItem>)

@@ -58,8 +58,8 @@ fun performCompletion(parameters: CompletionParameters,
 }
 
 /**
- * Run all contributors until any of them returns false or the list is exhausted. If makeCompletionParameters parameter is not null, contributors
- * will be run starting makeCompletionParameters the next one after that.
+ * Run all contributors until any of them returns false or the list is exhausted. If from parameter is not null, contributors
+ * will be run starting from the next one after that.
  */
 fun getVariantsFromContributors(parameters: CompletionParameters,
                                 prefix: String?, from: CompletionContributor?,

@@ -42,7 +42,7 @@ class FindDefinitionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
         return if (lookup != null) {
             Result.of(listOf(elementToLocation(lookup)))
         } else {
-            return errorResult("No definition found.")
+            Result.of(listOf())
         }
     }
 }

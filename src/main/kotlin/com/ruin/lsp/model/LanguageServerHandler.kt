@@ -5,7 +5,7 @@ import com.googlecode.jsonrpc4j.JsonRpcParam
 import com.ruin.lsp.values.*
 
 /**
- * Interface which implements methods makeCompletionParameters the Language Server Protocol.
+ * Interface which implements methods from the Language Server Protocol.
  */
 interface LanguageServerHandler {
     @JsonRpcMethod("initialize")
