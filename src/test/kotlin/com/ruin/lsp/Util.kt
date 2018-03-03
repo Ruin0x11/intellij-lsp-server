@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.googlecode.jsonrpc4j.JsonRpcBasicServer
 import com.googlecode.jsonrpc4j.JsonRpcServer
+import com.ruin.lsp.values.Position
+import com.ruin.lsp.values.Range
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -67,3 +69,6 @@ fun getJsonError(byteArrayOutputStream: ByteArrayOutputStream): JsonNode? {
 fun errorCode(error: JsonNode): JsonNode {
     return error.get(JsonRpcBasicServer.ERROR_CODE)
 }
+
+fun range(startLine: Int, startChar: Int, endLine: Int, endChar: Int): Range =
+    Range(Position(startLine, startChar), Position(endLine, endChar))

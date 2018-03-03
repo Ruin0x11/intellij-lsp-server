@@ -1,80 +1,108 @@
 package com.ruin.lsp.commands.symbol
 
 import com.github.kittinunf.result.Result
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.lang.jvm.JvmModifier
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.commands.find.elementToLocation
-import com.ruin.lsp.commands.find.elementToLocationWithRange
-import com.ruin.lsp.values.SymbolInformation
-import com.ruin.lsp.values.SymbolKind
+import com.ruin.lsp.commands.errorResult
+import com.ruin.lsp.commands.find.offsetToPosition
+import com.ruin.lsp.commands.hover.generateType
+import com.ruin.lsp.model.positionToOffset
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.values.*
 
-val LOG = Logger.getInstance(DocumentSymbolCommand::class.java)
+class DocumentSymbolCommand(
+    private val textDocumentIdentifier: TextDocumentIdentifier
+) : Command<List<SymbolInformation>> {
 
-class DocumentSymbolCommand : Command<List<SymbolInformation>> {
     override fun execute(project: Project, file: PsiFile): Result<List<SymbolInformation>, Exception> {
-        val results: MutableList<SymbolInformation> = mutableListOf()
-
-        val visitor = DocumentSymbolGatheringVisitor(results)
-        visitor.visitFile(file)
-
-        return Result.of(results)
+        val uri = textDocumentIdentifier.uri
+        val document = getDocument(file) ?: return errorResult("No document found.")
+        val symbols = mutableListOf<SymbolInformation>()
+        DocumentSymbolPsiVisitor(file) { element ->
+            val kind = element.symbolKind()
+            val name = element.symbolName()
+            if (kind != null && name != null) {
+                symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
+            }
+        }.visit()
+        symbols.sortBy { positionToOffset(document, it.location.range.start) }
+        return Result.of(symbols)
     }
 }
 
-internal class DocumentSymbolGatheringVisitor(val syms: MutableList<SymbolInformation>) : PsiRecursiveElementWalkingVisitor() {
-    override fun visitElement(element: PsiElement?) {
-        super.visitElement(element)
-
-        if (element != null) {
-            val symbolKind = elementToSymbolKind(element) ?: return
-            val location = elementToLocationWithRange(element)
-
-            syms.add(SymbolInformation(element.text, symbolKind, location))
-        }
-    }
-}
-
-private fun elementToSymbolKind(element: PsiElement): Int? {
-    return when(element) {
-        is PsiFile -> SymbolKind.FILE
-        is PsiJavaModule -> SymbolKind.MODULE
-        is PsiImportStatement -> SymbolKind.PACKAGE
-        is PsiEnumConstant -> SymbolKind.ENUM_MEMBER
-        is PsiClass -> {
-            when {
-                element.isEnum -> SymbolKind.ENUM
-                element.isInterface -> SymbolKind.INTERFACE
-                else -> SymbolKind.CLASS
-            }
-        }
-        is PsiMethod -> {
-            when {
-                element.isConstructor -> SymbolKind.CONSTRUCTOR
-                isStatic(element) -> SymbolKind.FUNCTION
-                else -> SymbolKind.METHOD
-            }
-        }
-        is PsiField -> {
-            if (isFinal(element))
-                SymbolKind.CONSTANT
-            else
-                SymbolKind.FIELD
-        }
-        is PsiVariable -> {
-            if (isFinal(element))
-                SymbolKind.CONSTANT
-            else
-                SymbolKind.VARIABLE
-        }
-        is PsiTypeParameter -> SymbolKind.TYPE_PARAMETER
+private fun PsiElement.symbolName(): String? =
+    when (this) {
+        is PsiFile -> name
+        is PsiPackageStatement -> packageName
+        is PsiImportStatement -> qualifiedName ?: "<error>"
+        is PsiClass -> name ?: qualifiedName ?: "<anonymous>"
+        is PsiClassInitializer -> name ?: "<init>"
+        is PsiMethod -> methodLabel(this)
+        is PsiEnumConstant -> name
+        is PsiField -> name
+        is PsiVariable -> name ?: "<unknown>"
+        is PsiAnnotation -> annotationLabel(this)
+        is PsiLiteralExpression -> text
         else -> null
     }
-}
 
-private fun hasModifier(element: PsiModifierListOwner, modifier: String) =
-    element.modifierList?.hasModifierProperty(modifier) ?: false
+private fun PsiElement.symbolKind(): Int? =
+    when (this) {
+        is PsiFile -> SymbolKind.FILE
+        is PsiPackageStatement -> SymbolKind.PACKAGE
+        is PsiImportStatement -> SymbolKind.MODULE
+        is PsiClass -> when {
+            isAnnotationType || isInterface -> SymbolKind.INTERFACE
+            isEnum -> SymbolKind.ENUM
+            else -> SymbolKind.CLASS
+        }
+        is PsiClassInitializer -> SymbolKind.CONSTRUCTOR
+        is PsiMethod -> if (isConstructor) SymbolKind.CONSTRUCTOR else SymbolKind.METHOD
+        is PsiEnumConstant -> SymbolKind.ENUM_MEMBER
+        is PsiField ->
+            if (hasModifier(JvmModifier.STATIC) && hasModifier(JvmModifier.FINAL)) {
+                SymbolKind.CONSTANT
+            } else {
+                SymbolKind.FIELD
+            }
+        is PsiVariable -> SymbolKind.VARIABLE
+        is PsiAnnotation -> SymbolKind.PROPERTY
+        is PsiLiteralExpression -> {
+            (type as? PsiClassType)?.let { if (it.name == "String") SymbolKind.STRING else null }
+                ?: when (this.type) {
+                    PsiType.BOOLEAN -> SymbolKind.BOOLEAN
+                    PsiType.BYTE, PsiType.DOUBLE, PsiType.FLOAT, PsiType.INT, PsiType.LONG, PsiType.SHORT ->
+                        SymbolKind.NUMBER
+                    PsiType.CHAR -> SymbolKind.STRING
+                    PsiType.NULL, PsiType.VOID -> SymbolKind.NULL
+                    else -> SymbolKind.CONSTANT
+                }
+        }
+        else -> null
+    }
 
-private fun isFinal(element: PsiModifierListOwner) = hasModifier(element, PsiModifier.FINAL)
-private fun isStatic(element: PsiModifierListOwner)  = hasModifier(element, PsiModifier.STATIC)
+private fun PsiElement.containerName(): String? =
+    generateSequence(parent, { it.parent })
+        .firstOrNull { it.symbolKind() != null && it.symbolName() != null }
+        ?.symbolName()
+
+private fun PsiElement.toLocation(doc: Document, uri: String) =
+    ((this as? PsiNameIdentifierOwner)?.nameIdentifier ?: this).textRange.let { range ->
+        Location(uri, Range(offsetToPosition(doc, range.startOffset), offsetToPosition(doc, range.endOffset)))
+    }
+
+private fun annotationLabel(annotation: PsiAnnotation): String =
+    (annotation.nameReferenceElement?.text ?: annotation.qualifiedName)?.let { "@$it"}
+        ?: "<unknown>"
+
+/** Return a method label including simplified parameter types. */
+private fun methodLabel(method: PsiMethod): String =
+    method.name + "(" + method.parameterList.parameters.joinToString(", ") { param ->
+        methodParameterLabel(method, param)
+    } + ")"
+
+private fun methodParameterLabel(method: PsiMethod, parameter: PsiParameter): String =
+    StringBuilder().apply { generateType(this, parameter.type, method, false, true) }.toString()
