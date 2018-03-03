@@ -22,6 +22,14 @@ Can also find super method if available.
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
 
+To use the server with Emacs, [lsp-mode](https://github.com/emacs-lsp/lsp-mode) is required. First load `lsp-mode` and the `lsp-intellij.el` file in your config, then put the following hook afterward:
+```emacs-lisp
+(with-eval-after-load 'lsp-mode
+  (require 'lsp-intellij)
+  (add-hook 'java-mode-hook #'lsp-intellij-enable))
+```
+Then visit a `.java` file tracked by a project you've opened in IDEA.
+
 ## Caveats
 - Alpha-quality, and probably really unstable.
 - Only targets Java for now, though there is no reason awareness of other languages can't be added.
