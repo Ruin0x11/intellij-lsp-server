@@ -1,6 +1,24 @@
 # intellij-lsp-server [![AppVeyor Build Status][appveyor-build-status-svg]][appveyor-build-status]
 A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowing other editors to use IntelliJ's features.
 
+## Features
+### Code completion with snippet parameters
+Snippet feature is provided by [company-lsp](https://github.com/tigersoldier/company-lsp).
+
+![Code completion with snippet parameters](https://sub.god.jp/f/uecray.gif)
+### Symbol usage highlighting
+Highlights read/write usage.
+
+![Symbol usage highlighting](https://sub.god.jp/f/nieypg.png)
+### Find usages
+![Find usages](https://sub.god.jp/f/aeitpo.gif)
+### Go to definition
+Can also find super method if available.
+
+![Go to definition](https://sub.god.jp/f/lcocla.gif)
+### Go to implementation
+![Go to implementation](https://sub.god.jp/f/uighbt.gif)
+
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
 
