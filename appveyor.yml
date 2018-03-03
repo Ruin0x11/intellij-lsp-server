@@ -7,10 +7,10 @@ environment:
   JAVA_HOME: C:\Program Files\Java\jdk1.8.0
 
 build_script:
-  - gradlew.bat assemble testClasses --no-daemon
+  - gradlew.bat assemble testClasses --no-daemon --stacktrace
 
 test_script:
-  - gradlew.bat check --no-daemon
+  - gradlew.bat check --no-daemon --stacktrace
 
 on_success:
   - ps: rm C:\Users\appveyor\.gradle\caches\modules-2\modules-2.lock -force
