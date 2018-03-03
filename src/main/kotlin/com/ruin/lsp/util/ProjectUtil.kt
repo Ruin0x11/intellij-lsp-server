@@ -35,17 +35,18 @@ import java.util.*
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
-    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
+    val normalizedUri = normalizeUri(uri)
+    val (project, filePath) = resolveProjectFromUri(normalizedUri) ?: return null
     val file = getPsiFile(project, filePath) ?: return null
     return Pair(project, file)
 }
 
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
-    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project makeCompletionParameters them
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
     // otherwise it gets confusing to have to look up the line and column being tested in the test project
 
     // has to have three slashes on windows
-    val newUri = uri.replace("file://", "file:///")
+    val newUri = uri
     val uri_b = URI(newUri)
     val topFile = File(uri_b)
     var directory = topFile.parentFile
@@ -53,8 +54,11 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         val project = directory.listFiles().firstOrNull { it.extension == "iml" }
         if (project != null) {
             val proj = ensureProject(project.absolutePath)
-            val relativePath = directory.toPath().relativize(topFile.toPath())
-            return Pair(proj, relativePath.toString())
+            val projPathUri = fileToUri(File(proj.basePath))
+            val prefix = uri.commonPrefixWith(projPathUri, true)
+            assert(prefix.isNotEmpty())
+            val filePathFromRoot = uri.substring(prefix.length)
+            return Pair(proj, filePathFromRoot)
         }
         directory = directory.parentFile
     }
@@ -176,7 +180,8 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
 }
 
 fun getDocument(uri: String): Document? {
-    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
+    val normalizedUri = normalizeUri(uri)
+    val (project, filePath) = resolveProjectFromUri(normalizedUri) ?: return null
     val virtual = getVirtualFile(project, filePath)
     return invokeAndWaitIfNeeded(asWriteAction(
         Computable<Document> {
@@ -214,12 +219,13 @@ fun getDocument(file: PsiFile): Document? {
 }
 
 fun reloadDocumentAtUri(uri: String) {
-    LOG.debug("Reloading document at $uri")
-    val pair = resolvePsiFromUri(uri) ?: return
+    val normalizedUri = normalizeUri(uri)
+    LOG.debug("Reloading document at $normalizedUri")
+    val pair = resolvePsiFromUri(normalizedUri) ?: return
     val (project, file) = pair
     val doc = getDocument(file) ?: return
 
-    LOG.debug("Everything found for $uri, proceeding with reload")
+    LOG.debug("Everything found for $normalizedUri, proceeding with reload")
     FileDocumentManager.getInstance().reloadFromDisk(doc)
     PsiDocumentManager.getInstance(project).commitDocument(doc)
 }
@@ -240,8 +246,22 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position) : Edito
  * Gets a Windows-compatible URI makeCompletionParameters a VirtualFile.
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
  */
-fun getURIForFile(file: VirtualFile) = file.url.replace("file://", "file:///")
+fun getURIForFile(file: VirtualFile) = normalizeUri(file.url.replace("file://", "file:///"))
 fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
+
+/**
+ * Converts URIs to have forward slashes and ensures the protocol has three slashes.
+ *
+ * Important for testing URIs for equality across platforms.
+ */
+fun normalizeUri(uri: String): String {
+    val protocolRegex = "^file:/+".toRegex()
+
+    return protocolRegex.replace(uri, "file:///")
+        .replace("\\", "/")
+}
+
+fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
 
 private fun allocateFrame(project: Project?) {
         val mgr = WindowManager.getInstance();

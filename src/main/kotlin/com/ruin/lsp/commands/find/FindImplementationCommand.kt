@@ -45,10 +45,11 @@ fun searchImplementations(editor: Editor, element: PsiElement?, offset: Int): Ar
             getFlags() and (TargetElementUtil.REFERENCED_ELEMENT_ACCEPTED or TargetElementUtil.LOOKUP_ITEM_ACCEPTED).inv(),
             offset) == null
     }
-    val onRefValid = ReadAction.compute<Boolean, RuntimeException> {
+    val shouldIncludeSelf = ReadAction.compute<Boolean, RuntimeException> {
         element == null || targetElementUtil.includeSelfInGotoImplementation(element)
     }
-    return ImplementationSearcher().searchImplementations(element, editor, onRef && onRefValid, onRef)
+    val includeSelf = onRef && shouldIncludeSelf
+    return ImplementationSearcher().searchImplementations(element, editor, includeSelf, onRef)
 }
 
 fun getFlags() = TargetElementUtil.getInstance().definitionSearchFlags;

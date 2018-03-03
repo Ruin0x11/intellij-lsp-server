@@ -107,6 +107,9 @@ project(":") {
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
         }
+
+        // Prevent "File access outside allowed roots" in multi module tests, because modules each have an .iml
+        environment("NO_FS_ROOTS_ACCESS_CHECK", "1")
     }
 
     task("resolveDependencies") {

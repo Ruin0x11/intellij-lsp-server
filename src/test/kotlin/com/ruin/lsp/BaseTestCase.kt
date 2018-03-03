@@ -10,12 +10,17 @@ val JAVA_PROJECT = "java-project"
 val LOOPING_PROJECT = "looping-project"
 val RUNNABLE_PROJECT = "runnable-project"
 val TESTABLE_PROJECT = "testable-project"
+val MULTI_MODULE_PROJECT = "multi-module-project"
+val MAVEN_MULTI_MODULE_PROJECT = "maven-multi-module-project"
 val DUMMY_FILE_PATH = "src/org/lsp/javaproject/Dummy.java"
 val SUBCLASS_FILE_PATH = "src/org/lsp/javaproject/SubClass.java"
 val INTERFACE_FILE_PATH = "src/org/lsp/javaproject/MyInterface.java"
 val TESTABLE_FILE_PATH = "src/org/lsp/runnable/test/Testable.java"
 val PROBLEMATIC_FILE_PATH = "src/org/lsp/javaproject/Problematic.java"
 val PROBLEMATIC_TWICE_FILE_PATH = "src/org/lsp/javaproject/ProblematicTwice.java"
+
+val MULTI_MODULE_APP_PATH = "application/src/main/java/hello/app/DemoApplication.java"
+val MAVEN_MULTI_MODULE_APP_PATH = "first-module/src/main/java/com/ruin/lsp/App.java"
 
 abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
 
@@ -38,7 +43,7 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     protected fun getProjectIml() = getProjectIml(projectName)
 
     override fun tearDown() {
-        ProjectUtil.closeAndDispose(getProject())
+        ProjectUtil.closeAndDispose(project)
         super.tearDown()
     }
 

@@ -1,23 +1,27 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="Test" type="JUnit" factoryName="JUnit">
-        <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-        <module name="intellij-lsp-server_test" />
-        <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-        <option name="ALTERNATIVE_JRE_PATH" />
-        <option name="PACKAGE_NAME" value="com.ruin.lsp" />
-        <option name="MAIN_CLASS_NAME" value="" />
-        <option name="METHOD_NAME" value="" />
-        <option name="TEST_OBJECT" value="package" />
-        <option name="VM_PARAMETERS" value="-ea -Didea.system.path=$PROJECT_DIR$/build/idea-sandbox/system-test -Didea.config.path=$PROJECT_DIR$/build/idea-sandbox/config-test" />
-        <option name="PARAMETERS" value="" />
-        <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-        <option name="ENV_VARIABLES" />
-        <option name="PASS_PARENT_ENVS" value="true" />
-        <option name="TEST_SEARCH_SCOPE">
-            <value defaultName="singleModule" />
-        </option>
-        <envs />
-        <patterns />
-        <method />
-    </configuration>
+  <configuration default="false" name="Test" type="JUnit" factoryName="JUnit">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <module name="intellij-lsp-server_test" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="PACKAGE_NAME" value="com.ruin.lsp" />
+    <option name="MAIN_CLASS_NAME" value="" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="package" />
+    <option name="VM_PARAMETERS" value="-ea -Didea.system.path=$PROJECT_DIR$/build/idea-sandbox/system-test -Didea.config.path=$PROJECT_DIR$/build/idea-sandbox/config-test" />
+    <option name="PARAMETERS" value="" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <option name="ENV_VARIABLES" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <option name="TEST_SEARCH_SCOPE">
+      <value defaultName="singleModule" />
+    </option>
+    <envs>
+      <env name="NO_FS_ROOTS_ACCESS_CHECK" value="1" />
+    </envs>
+    <patterns />
+    <method>
+      <option name="Make" enabled="false" />
+    </method>
+  </configuration>
 </component>

@@ -156,6 +156,36 @@ class InsertTextFormat {
         const val SNIPPET = 2
     }
 }
+class CompletionItemKind {
+    companion object {
+        const val TEXT = 1
+        const val METHOD = 2
+        const val FUNCTION = 3
+        const val CONSTRUCTOR = 4
+        const val FIELD = 5
+        const val VARIABLE = 6
+        const val CLASS = 7
+        const val INTERFACE = 8
+        const val MODULE = 9
+        const val PROPERTY = 10
+        const val UNIT = 11
+        const val VALUE = 12
+        const val ENUM = 13
+        const val KEYWORD = 14
+        const val SNIPPET = 15
+        const val COLOR = 16
+        const val FILE = 17
+        const val REFERENCE = 18
+        const val FOLDER = 19
+        const val ENUMMEMBER = 20
+        const val CONSTANT = 21
+        const val STRUCT = 22
+        const val EVENT = 23
+        const val OPERATOR = 24
+        const val TYPEPARAMETER = 25
+    }
+
+}
 data class CompletionList(val isIncomplete: Boolean,
                           val items: List<CompletionItem>)
 data class CompletionItem(val label: String,
@@ -175,8 +205,6 @@ data class CompletionItem(val label: String,
     }
 }
 
-data class DocumentHighlight(val range: Range,
-                             val kind: Int?)
 class DocumentHighlightKind {
     companion object {
         const val TEXT = 1
@@ -184,3 +212,5 @@ class DocumentHighlightKind {
         const val WRITE = 3
     }
 }
+data class DocumentHighlight(val range: Range,
+                             val kind: Int?)

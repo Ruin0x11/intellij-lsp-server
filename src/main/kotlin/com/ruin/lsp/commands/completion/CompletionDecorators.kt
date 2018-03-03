@@ -6,13 +6,15 @@ import com.intellij.psi.*
 import com.ruin.lsp.values.CompletionItem
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.PsiPackage
+import com.ruin.lsp.values.CompletionItemKind
 import com.ruin.lsp.values.InsertTextFormat
 
 
-abstract class CompletionDecorator<T : PsiElement>(val lookup: LookupElement, val elt: T) {
+abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
     val completionItem: CompletionItem
         get() = CompletionItem(
             label = formatLabel(),
+            kind = kind,
             insertText = formatInsertText(),
             documentation = formatDoc(),
             insertTextFormat = insertTextFormat)
@@ -20,6 +22,7 @@ abstract class CompletionDecorator<T : PsiElement>(val lookup: LookupElement, va
     var clientSupportsSnippets = false
     private val insertTextFormat: Int
         get() = if (clientSupportsSnippets) InsertTextFormat.SNIPPET else InsertTextFormat.PLAIN_TEXT
+    abstract val kind: Int
 
     protected open fun formatInsertText(): String {
         if (elt is PsiNamedElement) {
@@ -44,7 +47,7 @@ abstract class CompletionDecorator<T : PsiElement>(val lookup: LookupElement, va
     protected abstract fun formatLabel(): String
 
     companion object {
-        fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<out PsiElement>? {
+        fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<PsiElement>? {
             val psi = lookup.psiElement
             val decorator = when (psi) {
                 is PsiMethod -> MethodCompletionDecorator(lookup, psi)
@@ -62,29 +65,36 @@ abstract class CompletionDecorator<T : PsiElement>(val lookup: LookupElement, va
 
 class MethodCompletionDecorator(lookup: LookupElement, val method: PsiMethod)
     : CompletionDecorator<PsiMethod>(lookup, method) {
+    override val kind = CompletionItemKind.METHOD
+
     override fun formatInsertText() =
         super.formatInsertText() + buildMethodParams(method, clientSupportsSnippets)
 
     override fun formatLabel() =
-        "${super.formatInsertText()}${buildParamsList(method)} -> ${getTypeName(method.returnType)}"
+        "${super.formatInsertText()}${buildParamsList(method)} : ${getTypeName(method.returnType)}"
 }
 
 class ClassCompletionDecorator(lookup: LookupElement, val klass: PsiClass)
     : CompletionDecorator<PsiClass>(lookup, klass) {
+    override val kind = CompletionItemKind.CLASS
+
     override fun formatLabel() =
         klass.qualifiedName ?: klass.toString()
 }
 
 class FieldCompletionDecorator(lookup: LookupElement, val field: PsiField)
     : CompletionDecorator<PsiField>(lookup, field) {
+    override val kind = CompletionItemKind.FIELD
+
     override fun formatLabel() =
         "${field.name} : ${field.type.presentableText}"
 }
 
 class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariable)
     : CompletionDecorator<PsiVariable>(lookup, variable) {
-    private val type: String
-        get() = variable.type.presentableText
+    override val kind = CompletionItemKind.VARIABLE
+
+    private val type = variable.type.presentableText
 
     override fun formatLabel() = "${variable.name} : $type"
 
@@ -93,6 +103,7 @@ class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariab
 
 class PackageCompletionDecorator(lookup: LookupElement, val pack: PsiPackage)
     : CompletionDecorator<PsiPackage>(lookup, pack) {
+    override val kind = CompletionItemKind.MODULE
 
     override fun formatLabel() = pack.qualifiedName
 
