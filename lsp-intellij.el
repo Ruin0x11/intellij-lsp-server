@@ -26,7 +26,6 @@
 
 ;; TODO: create CI workflow with ert
 
-(package-require 'lsp-mode)
 (require 'lsp-mode)
 
 (defun lsp-intellij--get-root ()
@@ -69,7 +68,7 @@
     (apply #'append items-by-file)))
 
 (defun lsp-intellij-find-implementations ()
-  "List all implementations for the Java element point."
+  "List all implementations for the Java element at point."
   (interactive)
   (let* ((impls (lsp--send-request (lsp--make-request
                                     "textDocument/implementation"
