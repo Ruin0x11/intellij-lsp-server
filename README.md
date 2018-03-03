@@ -19,4 +19,4 @@ Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alterna
 
 <!-- Badges -->
 [appveyor-build-status]: https://ci.appveyor.com/project/Ruin0x11/intellij-lsp-server/branch/master
-[appveyor-build-status-svg]: https://ci.appveyor.com/api/projects/status/phds9ytheb3056w1?svg=true
+[appveyor-build-status-svg]: https://ci.appveyor.com/api/projects/status/yvuy70pdmfkhn8aw?svg=true
