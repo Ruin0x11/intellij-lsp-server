@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="application_main" target="1.8" />
+      <module name="application_test" target="1.8" />
+      <module name="first-module_main" target="1.8" />
+      <module name="first-module_test" target="1.8" />
+      <module name="gs-multi-module_main" target="1.8" />
+      <module name="gs-multi-module_test" target="1.8" />
+      <module name="library_main" target="1.8" />
+      <module name="library_test" target="1.8" />
+      <module name="multi-module-project_main" target="1.8" />
+      <module name="multi-module-project_test" target="1.8" />
+      <module name="second-module_main" target="1.8" />
+      <module name="second-module_test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

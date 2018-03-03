@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":library:second-module:test" external.linked.project.path="$MODULE_DIR$/../../../../library/second-module" external.root.project.path="$MODULE_DIR$/../../../.." external.system.id="GRADLE" external.system.module.group="multi-module-project.library" external.system.module.type="sourceSet" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output-test url="file://$MODULE_DIR$/../../../../library/second-module/out/test/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../../library/second-module/src/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../../../library/second-module/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../library/second-module/src/test/resources" type="java-test-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="second-module_main" />
+  </component>
+  <component name="TestModuleProperties" production-module="second-module_main" />
+</module>

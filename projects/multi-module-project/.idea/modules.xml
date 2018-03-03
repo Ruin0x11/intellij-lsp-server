@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/application/application.iml" filepath="$PROJECT_DIR$/.idea/modules/application/application.iml" group="application" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/application/application_main.iml" filepath="$PROJECT_DIR$/.idea/modules/application/application_main.iml" group="application" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/application/application_test.iml" filepath="$PROJECT_DIR$/.idea/modules/application/application_test.iml" group="application" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/first-module/first-module.iml" filepath="$PROJECT_DIR$/.idea/modules/library/first-module/first-module.iml" group="library/first-module" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/first-module/first-module_main.iml" filepath="$PROJECT_DIR$/.idea/modules/library/first-module/first-module_main.iml" group="library/first-module" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/first-module/first-module_test.iml" filepath="$PROJECT_DIR$/.idea/modules/library/first-module/first-module_test.iml" group="library/first-module" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/library.iml" filepath="$PROJECT_DIR$/.idea/modules/library/library.iml" group="library" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/library_main.iml" filepath="$PROJECT_DIR$/.idea/modules/library/library_main.iml" group="library" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/library_test.iml" filepath="$PROJECT_DIR$/.idea/modules/library/library_test.iml" group="library" />
+      <module fileurl="file://$PROJECT_DIR$/multi-module-project.iml" filepath="$PROJECT_DIR$/multi-module-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/multi-module-project_main.iml" filepath="$PROJECT_DIR$/.idea/modules/multi-module-project_main.iml" group="multi-module-project" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/multi-module-project_test.iml" filepath="$PROJECT_DIR$/.idea/modules/multi-module-project_test.iml" group="multi-module-project" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/second-module/second-module.iml" filepath="$PROJECT_DIR$/.idea/modules/library/second-module/second-module.iml" group="library/second-module" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/second-module/second-module_main.iml" filepath="$PROJECT_DIR$/.idea/modules/library/second-module/second-module_main.iml" group="library/second-module" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/second-module/second-module_test.iml" filepath="$PROJECT_DIR$/.idea/modules/library/second-module/second-module_test.iml" group="library/second-module" />
+    </modules>
+  </component>
+</project>

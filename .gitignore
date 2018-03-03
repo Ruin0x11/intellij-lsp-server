@@ -11,7 +11,6 @@
 /.idea/uiDesigner.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
-*.iml
 .gradle
 out/
 build/
