@@ -44,7 +44,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
                               capabilities: ClientCapabilities) : InitializeResult {
         context.wasInitialized = true
         context.clientCapabilities = capabilities
-        LOG.info("INIT LSP")
+        LOG.info("Received initialize")
         return InitializeResult(defaultServerCapabilities())
     }
 

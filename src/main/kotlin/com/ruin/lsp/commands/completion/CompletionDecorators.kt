@@ -39,7 +39,6 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
         return lookup.lookupString
     }
 
-
     protected open fun formatDoc(): String {
         return buildDocComment(elt as PsiDocCommentOwner)
     }
@@ -154,7 +153,6 @@ fun buildSnippetTabStops(method: PsiMethod): CharSequence {
 fun methodParamToSnippet(index: Int, param: PsiParameter) =
     "${'$'}${'{'}${index+1}:${param.name}${'}'}"
 
-fun getTypeName(type: PsiType?): CharSequence {
-    return type?.presentableText ?: "void"
+fun getTypeName(type: PsiType?) =
+    type?.presentableText ?: "void"
 
-}
