@@ -51,4 +51,7 @@ public class Dummy {
         return 42;
     }
 
+    void assignThingy(int thingy) {
+        this.thingy = thingy;
+    }
 }

@@ -17,7 +17,7 @@ abstract class RenameCommandTestBase : BaseTestCase() {
         val file = getPsiFile(project, filePath) ?: throw FileNotFoundException(filePath)
         val uri = getURIForFile(file)
         workspace().onTextDocumentOpened(TextDocumentItem(uri, "java", 0, file.text))
-        val command = RenameCommand(VersionedTextDocumentIdentifier(getURIForFile(file), 0), at, newName)
+        val command = RenameCommand(TextDocumentIdentifier(getURIForFile(file)), at, newName)
         val result = execute(command, uri)
         assertEquals(result.documentChanges!!.size, expected.size)
 

@@ -55,8 +55,9 @@ class RenameCommandTestCase : RenameCommandTestBase() {
         listOf(
             Pair(DUMMY_FILE_PATH, listOf(
                 TextEdit(Range(Position(9, 16), Position(9, 22)), "myField"),
-                TextEdit(Range(Position(17, 8), Position(17, 14)), "myField")
-                ))
+                TextEdit(Range(Position(17, 8), Position(17, 14)), "myField"),
+                TextEdit(Range(Position(54, 14), Position(54, 19)), "myField")
+            ))
         ))
 
     fun `test rename interface`() = checkRenameHas(INTERFACE_FILE_PATH, Position(5, 18), "CoolInterface",
