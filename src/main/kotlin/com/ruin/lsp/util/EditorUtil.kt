@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.psi.PsiFile
-import com.ruin.lsp.values.Position
+import org.eclipse.lsp4j.Position
 
 /**
  * Convenience. Sometimes <code>PsiFile.findElementAt()</code>

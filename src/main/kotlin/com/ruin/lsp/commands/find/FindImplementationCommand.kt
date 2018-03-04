@@ -5,9 +5,6 @@ import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.psi.PsiElement
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.model.positionToOffset
-import com.ruin.lsp.values.Location
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.TextDocumentIdentifier
 import com.intellij.codeInsight.navigation.ImplementationSearcher
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
@@ -16,25 +13,28 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.util.*
 import com.ruin.lsp.commands.errorResult
+import com.ruin.lsp.model.LanguageServerException
+import org.eclipse.lsp4j.*
+import java.util.concurrent.CompletableFuture
 
 
 class FindImplementationCommand(val textDocumentIdentifier: TextDocumentIdentifier,
-                                val position: Position) : Command<List<Location>> {
-    override fun execute(project: Project, file: PsiFile): Result<List<Location>, Exception> {
-        val doc = getDocument(file)
-            ?: return errorResult("No document found.")
+                                val position: Position) : Command<MutableList<Location>> {
+    override fun execute(project: Project, file: PsiFile): CompletableFuture<MutableList<Location>> {
+        return CompletableFuture.supplyAsync {
+            val doc = getDocument(file)
+                ?: throw LanguageServerException("No document found.")
 
-        val offset = positionToOffset(doc, position)
-        val ref: Ref<Array<PsiElement>?> = Ref()
-        withEditor(this, file, position) { editor ->
-            val element = ensureTargetElement(editor)
-            ref.set(searchImplementations(editor, element, offset))
+            val offset = positionToOffset(doc, position)
+            val ref: Ref<Array<PsiElement>?> = Ref()
+            withEditor(this, file, position) { editor ->
+                val element = ensureTargetElement(editor)
+                ref.set(searchImplementations(editor, element, offset))
+            }
+            val implementations = ref.get()
+
+            implementations?.map(::elementToLocation)?.toMutableList() ?: mutableListOf()
         }
-        val implementations = ref.get()
-
-        val results = implementations?.map(::elementToLocation) ?: listOf()
-
-        return Result.of(results)
     }
 }
 

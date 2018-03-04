@@ -27,22 +27,24 @@ import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.values.*
+import org.eclipse.lsp4j.*
+import java.util.concurrent.CompletableFuture
 
 class DocumentHighlightCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                                val position: Position) : Command<List<DocumentHighlight>> {
-    override fun execute(project: Project, file: PsiFile): Result<List<DocumentHighlight>, Exception> {
-
-        val ref: Ref<List<DocumentHighlight>> = Ref()
-        withEditor(this, file, position) { editor ->
-            try {
-                ref.set(findHighlights(project, editor, file))
-            } catch (ex: IndexNotReadyException) {
-                DumbService.getInstance(project).showDumbModeNotification(ActionsBundle.message("action.HighlightUsagesInFile.not.ready"))
+    override fun execute(project: Project, file: PsiFile): CompletableFuture<List<DocumentHighlight>> {
+        return CompletableFuture.supplyAsync {
+            val ref: Ref<List<DocumentHighlight>> = Ref()
+            withEditor(this, file, position) { editor ->
+                try {
+                    ref.set(findHighlights(project, editor, file))
+                } catch (ex: IndexNotReadyException) {
+                    DumbService.getInstance(project).showDumbModeNotification(ActionsBundle.message("action.HighlightUsagesInFile.not.ready"))
+                }
             }
-        }
 
-        return Result.of(ref.get())
+            ref.get()
+        }
     }
 }
 
@@ -80,13 +82,13 @@ private fun getHighlightsFromHandler(handler: HighlightUsagesHandlerBase<PsiElem
     // NOTE: Not able to use handler.selectTargets()
     handler.computeUsages(handler.targets)
 
-    val reads  = textRangesToHighlights(handler.readUsages, editor, DocumentHighlightKind.READ)
-    val writes = textRangesToHighlights(handler.writeUsages, editor, DocumentHighlightKind.WRITE)
+    val reads  = textRangesToHighlights(handler.readUsages, editor, DocumentHighlightKind.Read)
+    val writes = textRangesToHighlights(handler.writeUsages, editor, DocumentHighlightKind.Write)
 
     return reads.plus(writes)
 }
 
-private fun textRangesToHighlights(usages: List<TextRange>, editor: Editor, kind: Int): List<DocumentHighlight> =
+private fun textRangesToHighlights(usages: List<TextRange>, editor: Editor, kind: DocumentHighlightKind): List<DocumentHighlight> =
     usages.map {
         val range = textRangeToRange(editor, it)
         DocumentHighlight(range, kind)
@@ -151,18 +153,18 @@ private fun refsToHighlights(element: PsiElement,
                 writeRefs.add(ref)
             }
         }
-        addHighlights(highlights, readRefs, editor, DocumentHighlightKind.READ)
-        addHighlights(highlights, writeRefs, editor, DocumentHighlightKind.WRITE)
+        addHighlights(highlights, readRefs, editor, DocumentHighlightKind.Read)
+        addHighlights(highlights, writeRefs, editor, DocumentHighlightKind.Write)
     } else {
-        addHighlights(highlights, refs, editor, DocumentHighlightKind.TEXT)
+        addHighlights(highlights, refs, editor, DocumentHighlightKind.Text)
     }
 
     val range = HighlightUsagesHandler.getNameIdentifierRange(file, element)
     if (range != null) {
         val kind = if (detector != null && detector.isDeclarationWriteAccess(element)) {
-            DocumentHighlightKind.WRITE
+            DocumentHighlightKind.Write
         } else {
-            DocumentHighlightKind.TEXT
+            DocumentHighlightKind.Text
         }
         highlights.add(DocumentHighlight(textRangeToRange(editor, range), kind))
     }
@@ -172,7 +174,7 @@ private fun refsToHighlights(element: PsiElement,
 
 private fun addHighlights(highlights: MutableList<DocumentHighlight>,
                           refs: Collection<PsiReference>,
-                          editor: Editor, kind: Int) {
+                          editor: Editor, kind: DocumentHighlightKind) {
     val textRanges = java.util.ArrayList<TextRange>(refs.size)
     for (ref in refs) {
         HighlightUsagesHandler.collectRangesToHighlight(ref, textRanges)

@@ -3,26 +3,27 @@ package com.ruin.lsp.commands.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.ruin.lsp.values.CompletionItem
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.PsiPackage
-import com.ruin.lsp.values.CompletionItemKind
-import com.ruin.lsp.values.InsertTextFormat
+import org.eclipse.lsp4j.CompletionItem
+import org.eclipse.lsp4j.CompletionItemKind
+import org.eclipse.lsp4j.InsertTextFormat
 
 
 abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
     val completionItem: CompletionItem
-        get() = CompletionItem(
-            label = formatLabel(),
-            kind = kind,
-            insertText = formatInsertText(),
-            documentation = formatDoc(),
-            insertTextFormat = insertTextFormat)
+        get() = CompletionItem().apply {
+            label = formatLabel()
+            kind = kind
+            insertText = formatInsertText()
+            documentation = formatDoc()
+            insertTextFormat = insertTextFormat
+        }
 
     var clientSupportsSnippets = false
-    private val insertTextFormat: Int
-        get() = if (clientSupportsSnippets) InsertTextFormat.SNIPPET else InsertTextFormat.PLAIN_TEXT
-    abstract val kind: Int
+    private val insertTextFormat: InsertTextFormat
+        get() = if (clientSupportsSnippets) InsertTextFormat.Snippet else InsertTextFormat.PlainText
+    abstract val kind: CompletionItemKind
 
     protected open fun formatInsertText(): String {
         if (elt is PsiNamedElement) {
@@ -64,7 +65,7 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
 
 class MethodCompletionDecorator(lookup: LookupElement, val method: PsiMethod)
     : CompletionDecorator<PsiMethod>(lookup, method) {
-    override val kind = CompletionItemKind.METHOD
+    override val kind = CompletionItemKind.Method
 
     override fun formatInsertText() =
         super.formatInsertText() + buildMethodParams(method, clientSupportsSnippets)
@@ -75,7 +76,7 @@ class MethodCompletionDecorator(lookup: LookupElement, val method: PsiMethod)
 
 class ClassCompletionDecorator(lookup: LookupElement, val klass: PsiClass)
     : CompletionDecorator<PsiClass>(lookup, klass) {
-    override val kind = CompletionItemKind.CLASS
+    override val kind = CompletionItemKind.Class
 
     override fun formatLabel() =
         klass.qualifiedName ?: klass.toString()
@@ -83,7 +84,7 @@ class ClassCompletionDecorator(lookup: LookupElement, val klass: PsiClass)
 
 class FieldCompletionDecorator(lookup: LookupElement, val field: PsiField)
     : CompletionDecorator<PsiField>(lookup, field) {
-    override val kind = CompletionItemKind.FIELD
+    override val kind = CompletionItemKind.Field
 
     override fun formatLabel() =
         "${field.name} : ${field.type.presentableText}"
@@ -91,7 +92,7 @@ class FieldCompletionDecorator(lookup: LookupElement, val field: PsiField)
 
 class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariable)
     : CompletionDecorator<PsiVariable>(lookup, variable) {
-    override val kind = CompletionItemKind.VARIABLE
+    override val kind = CompletionItemKind.Variable
 
     private val type = variable.type.presentableText
 
@@ -102,7 +103,7 @@ class VariableCompletionDecorator(lookup: LookupElement, val variable: PsiVariab
 
 class PackageCompletionDecorator(lookup: LookupElement, val pack: PsiPackage)
     : CompletionDecorator<PsiPackage>(lookup, pack) {
-    override val kind = CompletionItemKind.MODULE
+    override val kind = CompletionItemKind.Module
 
     override fun formatLabel() = pack.qualifiedName
 

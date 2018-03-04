@@ -6,9 +6,6 @@ import com.intellij.openapi.util.Factory
 import com.intellij.psi.PsiFile
 import com.intellij.usages.*
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.values.Location
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.TextDocumentIdentifier
 import com.intellij.util.Processor
 import com.intellij.usages.UsageInfo2UsageAdapter
 import com.intellij.openapi.editor.Editor
@@ -16,24 +13,29 @@ import com.intellij.find.findUsages.FindUsagesManager
 import com.intellij.openapi.util.Ref
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
+import org.eclipse.lsp4j.Location
 import java.util.ArrayList
+import java.util.concurrent.CompletableFuture
+import org.eclipse.lsp4j.*
 
-class FindUsagesCommand(val textDocumentIdentifier: TextDocumentIdentifier,
-                        val position: Position) : Command<List<Location>> {
-    override fun execute(project: Project, file: PsiFile): Result<List<Location>, Exception> {
-        val ref: Ref<List<Usage>> = Ref()
-        withEditor(this, file, position) { editor ->
-            ref.set(findUsages(editor))
+ class FindUsagesCommand(val textDocumentIdentifier: TextDocumentIdentifier,
+                        val position: Position) : Command<MutableList<Location>> {
+    override fun execute(project: Project, file: PsiFile): CompletableFuture<MutableList<Location>> {
+        return CompletableFuture.supplyAsync {
+            val ref: Ref<List<Usage>> = Ref()
+            withEditor(this, file, position) { editor ->
+                ref.set(findUsages(editor))
+            }
+            val rawResults = ref.get()
+
+            if (rawResults.isEmpty()) {
+                return@supplyAsync mutableListOf<Location>()
+            }
+
+            val results = rawResults.mapNotNull(::extractLocationFromRaw).toMutableList()
+
+            results
         }
-        val rawResults = ref.get()
-
-        if (rawResults.isEmpty()) {
-            return Result.of(listOf())
-        }
-
-        val results = rawResults.mapNotNull(::extractLocationFromRaw)
-
-        return Result.of(results)
     }
 }
 

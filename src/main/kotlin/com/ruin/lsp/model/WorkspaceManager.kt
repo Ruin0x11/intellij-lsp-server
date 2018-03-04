@@ -7,12 +7,13 @@ import com.intellij.openapi.editor.Document
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
-import com.ruin.lsp.values.*
 import groovy.util.GroovyTestCase.assertEquals
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
+import com.ruin.lsp.values.DocumentUri
+import org.eclipse.lsp4j.*
 
 
 val LOG = Logger.getInstance(WorkspaceManager::class.java)
@@ -49,7 +50,10 @@ class WorkspaceManager {
 
         managedTextDocuments[textDocument.uri] =
             ManagedTextDocument(
-                VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version),
+                VersionedTextDocumentIdentifier().apply {
+                    uri = textDocument.uri
+                    version = textDocument.version
+                },
                 textDocument.text.replace("\r\n", "\n")
             )
     }
@@ -170,7 +174,10 @@ class WorkspaceManager {
 
         managedTextDocuments[edit.textDocument.uri] =
             ManagedTextDocument(
-                VersionedTextDocumentIdentifier(edit.textDocument.uri, null),
+                VersionedTextDocumentIdentifier().apply {
+                    uri = edit.textDocument.uri
+                    version = 0 // TODO: should this be null?
+                },
                 normalizeText(text)
             )
 
@@ -230,7 +237,10 @@ class WorkspaceManager {
                     val newVersion = if (fileOpenedByServer) 0 else textDocument.version
                     val newDoc =
                         ManagedTextDocument(
-                            VersionedTextDocumentIdentifier(textDocument.uri, newVersion),
+                            VersionedTextDocumentIdentifier().apply {
+                                uri = textDocument.uri
+                                version = newVersion
+                            },
                             normalizeText(doc.text)
                         )
 

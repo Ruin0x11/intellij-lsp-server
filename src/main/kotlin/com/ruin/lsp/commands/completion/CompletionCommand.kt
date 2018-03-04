@@ -4,10 +4,6 @@ import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.Disposable
-import com.ruin.lsp.values.CompletionItem
-import com.ruin.lsp.values.CompletionList
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.TextDocumentIdentifier
 import com.intellij.psi.PsiElement
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.openapi.project.Project
@@ -15,7 +11,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
 import com.ruin.lsp.util.withEditor
 import com.ruin.lsp.commands.Command
+import org.eclipse.lsp4j.*
 import java.util.LinkedHashSet
+import java.util.concurrent.CompletableFuture
+import javax.annotation.processing.Completion
 
 class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val position: Position,
@@ -23,22 +22,23 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                         val triggerCharacter: String?,
                         val snippetSupport: Boolean) : Command<CompletionList>, Disposable {
 
-    override fun execute(project: Project, file: PsiFile): Result<CompletionList, Exception> {
-        val result: MutableList<CompletionItem> = mutableListOf()
-        val prefix: String? = null
+    override fun execute(project: Project, file: PsiFile): CompletableFuture<CompletionList> {
+        return CompletableFuture.supplyAsync {
+            val result: MutableList<CompletionItem> = mutableListOf()
+            val prefix: String? = null
 
-        withEditor(this, file, position) { editor ->
-            val params = makeCompletionParameters(editor, file, position)
-            performCompletion(params!!, prefix, Consumer { completionResult ->
-                val el = completionResult.lookupElement
-                val dec = CompletionDecorator.from(el, snippetSupport)
-                if (dec != null) {
-                    result.add(dec.completionItem)
-                }
-            })
+            withEditor(this, file, position) { editor ->
+                val params = makeCompletionParameters(editor, file, position)
+                performCompletion(params!!, prefix, Consumer { completionResult ->
+                    val el = completionResult.lookupElement
+                    val dec = CompletionDecorator.from(el, snippetSupport)
+                    if (dec != null) {
+                        result.add(dec.completionItem)
+                    }
+                })
+            }
+            CompletionList(false, result)
         }
-
-        return Result.of(CompletionList(false, result))
     }
 }
 

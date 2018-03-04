@@ -24,9 +24,8 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
-import com.ruin.lsp.values.Position
+import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
-import org.jetbrains.annotations.NotNull
 import java.io.File
 import java.io.IOException
 import java.net.URI

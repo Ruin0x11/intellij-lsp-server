@@ -9,27 +9,31 @@ import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.errorResult
 import com.ruin.lsp.commands.find.offsetToPosition
 import com.ruin.lsp.commands.hover.generateType
+import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
-import com.ruin.lsp.values.*
+import org.eclipse.lsp4j.*
+import java.util.concurrent.CompletableFuture
 
 class DocumentSymbolCommand(
     private val textDocumentIdentifier: TextDocumentIdentifier
 ) : Command<List<SymbolInformation>> {
 
-    override fun execute(project: Project, file: PsiFile): Result<List<SymbolInformation>, Exception> {
-        val uri = textDocumentIdentifier.uri
-        val document = getDocument(file) ?: return errorResult("No document found.")
-        val symbols = mutableListOf<SymbolInformation>()
-        DocumentSymbolPsiVisitor(file) { element ->
-            val kind = element.symbolKind()
-            val name = element.symbolName()
-            if (kind != null && name != null) {
-                symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
-            }
-        }.visit()
-        symbols.sortBy { positionToOffset(document, it.location.range.start) }
-        return Result.of(symbols)
+    override fun execute(project: Project, file: PsiFile): CompletableFuture<List<SymbolInformation>> {
+        return CompletableFuture.supplyAsync {
+            val uri = textDocumentIdentifier.uri
+            val document = getDocument(file) ?: throw LanguageServerException("No document found.")
+            val symbols = mutableListOf<SymbolInformation>()
+            DocumentSymbolPsiVisitor(file) { element ->
+                val kind = element.symbolKind()
+                val name = element.symbolName()
+                if (kind != null && name != null) {
+                    symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
+                }
+            }.visit()
+            symbols.sortBy { positionToOffset(document, it.location.range.start) }
+            symbols
+        }
     }
 }
 
@@ -49,36 +53,36 @@ private fun PsiElement.symbolName(): String? =
         else -> null
     }
 
-private fun PsiElement.symbolKind(): Int? =
+private fun PsiElement.symbolKind(): SymbolKind? =
     when (this) {
-        is PsiFile -> SymbolKind.FILE
-        is PsiPackageStatement -> SymbolKind.PACKAGE
-        is PsiImportStatement -> SymbolKind.MODULE
+        is PsiFile -> SymbolKind.File
+        is PsiPackageStatement -> SymbolKind.Package
+        is PsiImportStatement -> SymbolKind.Module
         is PsiClass -> when {
-            isAnnotationType || isInterface -> SymbolKind.INTERFACE
-            isEnum -> SymbolKind.ENUM
-            else -> SymbolKind.CLASS
+            isAnnotationType || isInterface -> SymbolKind.Interface
+            isEnum -> SymbolKind.Enum
+            else -> SymbolKind.Class
         }
-        is PsiClassInitializer -> SymbolKind.CONSTRUCTOR
-        is PsiMethod -> if (isConstructor) SymbolKind.CONSTRUCTOR else SymbolKind.METHOD
-        is PsiEnumConstant -> SymbolKind.ENUM_MEMBER
+        is PsiClassInitializer -> SymbolKind.Constructor
+        is PsiMethod -> if (isConstructor) SymbolKind.Constructor else SymbolKind.Method
+        is PsiEnumConstant -> SymbolKind.Enum // TODO: Replace when lsp4j has EnumMember
         is PsiField ->
             if (hasModifier(JvmModifier.STATIC) && hasModifier(JvmModifier.FINAL)) {
-                SymbolKind.CONSTANT
+                SymbolKind.Constant
             } else {
-                SymbolKind.FIELD
+                SymbolKind.Field
             }
-        is PsiVariable -> SymbolKind.VARIABLE
-        is PsiAnnotation -> SymbolKind.PROPERTY
+        is PsiVariable -> SymbolKind.Variable
+        is PsiAnnotation -> SymbolKind.Property
         is PsiLiteralExpression -> {
-            (type as? PsiClassType)?.let { if (it.name == "String") SymbolKind.STRING else null }
+            (type as? PsiClassType)?.let { if (it.name == "String") SymbolKind.String else null }
                 ?: when (this.type) {
-                    PsiType.BOOLEAN -> SymbolKind.BOOLEAN
+                    PsiType.BOOLEAN -> SymbolKind.Boolean
                     PsiType.BYTE, PsiType.DOUBLE, PsiType.FLOAT, PsiType.INT, PsiType.LONG, PsiType.SHORT ->
-                        SymbolKind.NUMBER
-                    PsiType.CHAR -> SymbolKind.STRING
-                    PsiType.NULL, PsiType.VOID -> SymbolKind.NULL
-                    else -> SymbolKind.CONSTANT
+                        SymbolKind.Number
+                    PsiType.CHAR -> SymbolKind.String
+                    // PsiType.NULL, PsiType.VOID -> SymbolKind.Null // TODO: Add when lsp4j has Null
+                    else -> SymbolKind.Constant
                 }
         }
         else -> null

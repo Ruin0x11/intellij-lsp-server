@@ -12,27 +12,29 @@ import com.ruin.lsp.commands.find.FindUsagesCommand
 import com.ruin.lsp.commands.highlight.DocumentHighlightCommand
 import com.ruin.lsp.commands.hover.HoverCommand
 import com.ruin.lsp.commands.symbol.DocumentSymbolCommand
-import com.ruin.lsp.values.*
+import org.eclipse.lsp4j.*
 
 fun defaultServerCapabilities() : ServerCapabilities {
-    return ServerCapabilities(textDocumentSync = null,
-            hoverProvider = true,
-            completionProvider = CompletionOptions(false, listOf(".", "@", "#")),
-            signatureHelpProvider = null,
-            definitionProvider = true,
-            referencesProvider = true,
-            documentHighlightProvider = true,
-            documentSymbolProvider = true,
-            workspaceSymbolProvider = false,
-            codeActionProvider = false,
-            codeLensProvider = null,
-            documentFormattingProvider = false,
-            documentRangeFormattingProvider = false,
-            documentOnTypeFormattingProvider = null,
-            renameProvider = false,
-            documentLinkProvider = null,
-            executeCommandProvider = null,
-            experimental = null)
+    return ServerCapabilities().apply {
+        textDocumentSync = null
+        hoverProvider = true
+        completionProvider = CompletionOptions(false, listOf(".", "@", "#")),
+        signatureHelpProvider = null
+        definitionProvider = true
+        referencesProvider = true
+        documentHighlightProvider = true
+        documentSymbolProvider = true
+        workspaceSymbolProvider = false
+        codeActionProvider = false
+        codeLensProvider = null
+        documentFormattingProvider = false
+        documentRangeFormattingProvider = false
+        documentOnTypeFormattingProvider = null
+        renameProvider = false
+        documentLinkProvider = null
+        executeCommandProvider = null
+        experimental = null
+    }
 }
 
 fun workspace() = ServiceManager.getService<WorkspaceManager>(WorkspaceManager::class.java)!!
