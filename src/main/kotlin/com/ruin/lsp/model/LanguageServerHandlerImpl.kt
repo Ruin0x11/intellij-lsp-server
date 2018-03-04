@@ -45,7 +45,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
                               capabilities: ClientCapabilities) : InitializeResult {
         context.wasInitialized = true
         context.clientCapabilities = capabilities
-        LOG.info("INIT LSP")
+        LOG.info("Received initialize")
         return InitializeResult(defaultServerCapabilities())
     }
 
@@ -112,7 +112,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     override fun onTextDocumentDocumentSymbol(textDocumentIdentifier: TextDocumentIdentifier): List<SymbolInformation> {
         checkInitialized()
 
-        return execute(DocumentSymbolCommand(),
+        return execute(DocumentSymbolCommand(textDocumentIdentifier),
             textDocumentIdentifier.uri)
     }
 

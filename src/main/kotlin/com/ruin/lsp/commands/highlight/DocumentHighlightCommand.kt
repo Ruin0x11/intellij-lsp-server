@@ -189,8 +189,9 @@ private fun getUsageTargets(editor: Editor, file: PsiFile): Array<UsageTarget>? 
     }
 
     if (usageTargets == null) {
-        usageTargets = getUsageTargetsFromPolyvariantReference(editor)
+        usageTargets = getUsageTargetsFromPolyVariantReference(editor)
     }
+
     return usageTargets
 }
 
@@ -207,7 +208,7 @@ private fun getUsageTargetsFromNavItem(editor: Editor, file: PsiFile): Array<Usa
     return null
 }
 
-private fun getUsageTargetsFromPolyvariantReference(editor: Editor): Array<UsageTarget>? {
+private fun getUsageTargetsFromPolyVariantReference(editor: Editor): Array<UsageTarget>? {
     val ref = TargetElementUtil.findReference(editor)
 
     if (ref is PsiPolyVariantReference) {

@@ -174,7 +174,6 @@ class WorkspaceManager {
             ManagedTextDocument(
                 VersionedTextDocumentIdentifier(edit.textDocument.uri, null),
                 normalizeText(text)
-
             )
 
         return true

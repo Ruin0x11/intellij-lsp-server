@@ -45,8 +45,6 @@ class CompletionCommand(val textDocumentIdentifier: TextDocumentIdentifier,
 fun performCompletion(parameters: CompletionParameters,
                       prefix: String?,
                       consumer: Consumer<CompletionResult>?): Array<LookupElement> {
-
-
     val lookupSet = LinkedHashSet<LookupElement>()
 
     getVariantsFromContributors(parameters, prefix, null, Consumer { result ->
