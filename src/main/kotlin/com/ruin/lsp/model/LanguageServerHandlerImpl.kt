@@ -155,12 +155,12 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
         workspace().onTextDocumentSaved(textDocument, text)
     }
 
-    fun checkInitialized() {
+    private fun checkInitialized() {
         if (!initialized()) {
             throw LanguageServerException("Server was not initialized.")
         }
     }
-    fun initialized() = context.wasInitialized
+    private fun initialized() = context.wasInitialized
 }
 
 // TODO: Use invokeAndWait + Executor to get result from Future instead

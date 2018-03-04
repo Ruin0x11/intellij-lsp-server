@@ -31,15 +31,15 @@ class FindUsagesCommand(val textDocumentIdentifier: TextDocumentIdentifier,
             return Result.of(listOf())
         }
 
-        val results = rawResults.mapNotNull(::extractLocationFromRaw)
+        val results = rawResults.mapNotNull { it.extractLocation() }
 
         return Result.of(results)
     }
 }
 
-fun extractLocationFromRaw(usage: Usage): Location? {
-    if (usage is UsageInfo2UsageAdapter) {
-        val element = usage.element
+fun Usage.extractLocation(): Location? {
+    if (this is UsageInfo2UsageAdapter) {
+        val element = this.element
         if (element != null) {
             return elementToLocation(element)
         }

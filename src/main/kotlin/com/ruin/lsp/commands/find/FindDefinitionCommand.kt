@@ -57,10 +57,10 @@ fun offsetToPosition(doc: Document, offset: Int): Position {
     return Position(line, column)
 }
 
-fun textRangeToRange(doc: Document, textRange: TextRange): Range =
+fun TextRange.toRange(doc: Document): Range =
     Range(
-        offsetToPosition(doc, textRange.startOffset),
-        offsetToPosition(doc, textRange.endOffset)
+        offsetToPosition(doc, this.startOffset),
+        offsetToPosition(doc, this.endOffset)
     )
 
 
@@ -72,9 +72,11 @@ fun elementToLocation(psi: PsiElement): Location {
     return Location(uri, Range(position, position))
 }
 
+fun PsiElement.toRange(doc: Document) = this.textRange.toRange(doc)
+
 fun elementToLocationWithRange(psi: PsiElement): Location {
     val uri = getURIForFile(psi.containingFile)
     val doc = getDocument(psi.containingFile)!!
-    val range = textRangeToRange(doc, psi.textRange)
+    val range = psi.toRange(doc)
     return Location(uri, range)
 }

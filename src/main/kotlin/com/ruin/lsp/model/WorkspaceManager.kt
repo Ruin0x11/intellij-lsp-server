@@ -27,6 +27,8 @@ val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
+    fun getCurrentDocumentVersion(uri: DocumentUri): Int? = managedTextDocuments[uri]?.identifier?.version
+
     fun onTextDocumentOpened(textDocument: TextDocumentItem) {
         if(managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("URI ${textDocument.uri} was opened again without being closed")
