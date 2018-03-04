@@ -57,11 +57,16 @@ interface LanguageServerHandler {
     fun onTextDocumentDocumentSymbol(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier): List<SymbolInformation>
 
-
     @JsonRpcMethod("textDocument/hover")
     fun onTextDocumentHover(
         @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
         @JsonRpcParam(value="position") position: Position) : Hover?
+
+    @JsonRpcMethod("textDocument/rename")
+    fun onTextDocumentRename(
+        @JsonRpcParam(value="textDocument") textDocumentIdentifier: TextDocumentIdentifier,
+        @JsonRpcParam(value="position") position: Position,
+        @JsonRpcParam(value="newName") newName: String): WorkspaceEdit?
 
 
     @JsonRpcMethod("initialized")

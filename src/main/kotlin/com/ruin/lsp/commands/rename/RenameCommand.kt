@@ -20,12 +20,11 @@ import com.ruin.lsp.values.*
 
 val LOG = Logger.getInstance(RenameCommand::class.java)
 
-class RenameCommand(val textDocumentIdentifier: VersionedTextDocumentIdentifier,
+// TODO: Doesn't work with this.thing = thing;
+class RenameCommand(val textDocumentIdentifier: TextDocumentIdentifier,
                     val position: Position,
                     val newName: String) : Command<WorkspaceEdit> {
     override fun execute(project: Project, file: PsiFile): Result<WorkspaceEdit, Exception> {
-        val doc = getDocument(file) ?: return errorResult("Document not found.")
-
         val ref: Ref<List<RenameRange>> = Ref()
         withEditor(this, file, position) { editor ->
             val element = findTargetElement(editor) ?: return@withEditor
@@ -42,7 +41,7 @@ class RenameCommand(val textDocumentIdentifier: VersionedTextDocumentIdentifier,
         }
 
         val edits = rawResults.mapNotNull { range ->
-            range.toEditAndFile(doc)
+            range.toEditAndFile()
         }
         val results = groupEdits(edits)
 
@@ -52,7 +51,8 @@ class RenameCommand(val textDocumentIdentifier: VersionedTextDocumentIdentifier,
 
 private fun emptyResult() = Result.of(WorkspaceEdit(documentChanges = listOf()))
 
-private fun RenameRange.toEditAndFile(doc: Document): Pair<DocumentUri, TextEdit>? {
+private fun RenameRange.toEditAndFile(): Pair<DocumentUri, TextEdit>? {
+    val doc = getDocument(file)!!
     val range = textRange.toRange(doc)
     val uri = getURIForFile(file)
     val edit = TextEdit(range, newName)
@@ -71,7 +71,11 @@ private fun groupEdits(edits: List<Pair<DocumentUri, TextEdit>>): List<TextDocum
     }
 
     return documentChanges.map { (uri, edits) ->
-        val identifier = VersionedTextDocumentIdentifier(uri, workspace.getCurrentDocumentVersion(uri))
-        TextDocumentEdit(identifier, edits)
+        val identifier = VersionedTextDocumentIdentifier(uri,
+            // If the file was opened on the server, we should be able to send 'null' indicating the file
+            // on disk is the ground truth. However, lsp-mode always expects the version to be a number.
+            workspace.getCurrentDocumentVersion(uri) ?: 0)
+        // For some reason an edit is counted twice when renaming a class.
+        TextDocumentEdit(identifier, edits.distinct())
     }
 }

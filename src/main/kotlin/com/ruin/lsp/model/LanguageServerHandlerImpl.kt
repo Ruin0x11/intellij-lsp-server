@@ -11,6 +11,7 @@ import com.ruin.lsp.commands.find.FindImplementationCommand
 import com.ruin.lsp.commands.find.FindUsagesCommand
 import com.ruin.lsp.commands.highlight.DocumentHighlightCommand
 import com.ruin.lsp.commands.hover.HoverCommand
+import com.ruin.lsp.commands.rename.RenameCommand
 import com.ruin.lsp.commands.symbol.DocumentSymbolCommand
 import com.ruin.lsp.values.*
 
@@ -29,7 +30,7 @@ fun defaultServerCapabilities() : ServerCapabilities {
             documentFormattingProvider = false,
             documentRangeFormattingProvider = false,
             documentOnTypeFormattingProvider = null,
-            renameProvider = false,
+            renameProvider = true,
             documentLinkProvider = null,
             executeCommandProvider = null,
             experimental = null)
@@ -124,6 +125,16 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
 
         return if(result.value.isEmpty()) null else Hover(result, null)
     }
+
+    override fun onTextDocumentRename(textDocumentIdentifier: TextDocumentIdentifier, position: Position, newName: String): WorkspaceEdit? {
+        checkInitialized()
+
+        val result = execute(RenameCommand(textDocumentIdentifier, position, newName),
+            textDocumentIdentifier.uri)
+
+        return if(result.documentChanges == null || result.documentChanges.isEmpty()) null else result
+    }
+
 
     override fun onNotifyInitialized() {
         context.wasInitialized = true

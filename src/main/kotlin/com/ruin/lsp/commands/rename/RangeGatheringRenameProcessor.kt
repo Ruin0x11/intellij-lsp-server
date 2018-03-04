@@ -5,16 +5,14 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.JavaTokenType
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.*
 import com.intellij.psi.meta.PsiMetaOwner
 import com.intellij.psi.meta.PsiWritableMetaData
 import com.intellij.refactoring.rename.BindablePsiReference
 import com.intellij.refactoring.rename.PsiElementRenameHandler
 import com.intellij.refactoring.rename.RenameProcessor
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
+import com.intellij.refactoring.rename.naming.AutomaticOverloadsRenamerFactory
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.IncorrectOperationException
 import com.ruin.lsp.commands.find.toRange
@@ -25,6 +23,11 @@ class RangeGatheringRenameProcessor(proj: Project, val element: PsiElement, val 
     substituteElementToRename(element, editor) ?: element,
     name, false, false) {
     val refs: MutableList<RenameRange> = mutableListOf()
+
+    init {
+        // Always rename overloaded methods.
+        addRenamerFactory(AutomaticOverloadsRenamerAlwaysFactory())
+    }
 
     override fun doRun() {
         val usagesRef: Ref<Array<UsageInfo>> = Ref()
@@ -46,6 +49,16 @@ class RangeGatheringRenameProcessor(proj: Project, val element: PsiElement, val 
         }
     }
 }
+
+/**
+ * AutomaticRenamerFactory that will always rename overloaded methods.
+ *
+ * This can be made into a user config option at some point.
+ */
+internal class AutomaticOverloadsRenamerAlwaysFactory : AutomaticOverloadsRenamerFactory() {
+    override fun isEnabled() = true
+}
+
 
 private fun substituteElementToRename(element: PsiElement?, editor: Editor?): PsiElement? {
     if (element == null) return null
@@ -72,15 +85,25 @@ private fun getRenames(namedElement: PsiElement, newName: String, usages: Array<
     }
 
     // Rename the element itself.
-    // NEEDS TO BE IDENTIFIER
-    val elementRename = RenameRange(namedElement.textRange, namedElement.containingFile, newName)
+    // When getting the text range, it has to be from the element's identifier, not the element itself (which
+    // encompasses a larger area)
+    val identifier = (namedElement as? PsiNameIdentifierOwner)?.nameIdentifier
+    val elementRename = if (identifier != null) {
+        RenameRange(identifier.textRange, identifier.containingFile, newName)
+    } else {
+        null
+    }
 
     val doc = getDocument(namedElement.containingFile)!!
     val theRange = namedElement.textRange.toRange(doc)
     // Rename the places where the element is referenced.
     val usageRenames = getRenamesOfReferences(usages, newName)
 
-    return usageRenames.plus(elementRename)
+    return if (elementRename != null) {
+        usageRenames.plus(elementRename)
+    } else {
+        usageRenames
+    }
 }
 
 private fun getRenamesOfReferences(usages: Array<UsageInfo>, newName: String): List<RenameRange> =
