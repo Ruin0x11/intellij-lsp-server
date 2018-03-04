@@ -111,7 +111,7 @@ class LanguageServerHandlerImpl(val context: Context) : LanguageServerHandler {
     override fun onTextDocumentDocumentSymbol(textDocumentIdentifier: TextDocumentIdentifier): List<SymbolInformation> {
         checkInitialized()
 
-        return execute(DocumentSymbolCommand(),
+        return execute(DocumentSymbolCommand(textDocumentIdentifier),
             textDocumentIdentifier.uri)
     }
 
