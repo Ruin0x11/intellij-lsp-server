@@ -8,11 +8,9 @@ import com.ruin.lsp.values.TextDocumentIdentifier
 import org.intellivim.FileEditingTestCase
 
 abstract class CompletionCommandTestBase : FileEditingTestCase() {
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
+    override val filePath = DUMMY_FILE_PATH
 
-    override val projectName: String
-        get() = JAVA_PROJECT
+    override val projectName = JAVA_PROJECT
 
     protected fun checkContainsCompletion(line: Int, char: Int, snippet: Boolean, expected: String) {
         val command = CompletionCommand(TextDocumentIdentifier(file.url), Position(line, char),

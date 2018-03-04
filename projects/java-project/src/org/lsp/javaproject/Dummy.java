@@ -51,7 +51,13 @@ public class Dummy {
         return 42;
     }
 
-    void assignThingy(int thingy) {
+    void assignThingy(int thingy, int otherThingy) {
         this.thingy = thingy;
+        this.thingy = otherThingy;
+        thingy = this.thingy;
+    }
+
+    void assignThingyWithoutThis(int otherThingy) {
+        thingy = otherThingy;
     }
 }

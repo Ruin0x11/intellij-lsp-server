@@ -8,11 +8,9 @@ import com.ruin.lsp.values.TextDocumentIdentifier
 import org.intellivim.FileEditingTestCase
 
 abstract class HoverCommandTestBase : FileEditingTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
+    override val projectName = JAVA_PROJECT
 
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
+    override val filePath = DUMMY_FILE_PATH
 
     protected fun checkHoverEquals(line: Int, char: Int, expected: String?) {
         val command = HoverCommand(TextDocumentIdentifier(file.url), Position(line, char))

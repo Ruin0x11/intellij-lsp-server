@@ -29,7 +29,7 @@ class RenameCommand(val textDocumentIdentifier: TextDocumentIdentifier,
         withEditor(this, file, position) { editor ->
             val element = findTargetElement(editor) ?: return@withEditor
             // TODO: Make "search in text/comments" configurable?
-            val processor = RangeGatheringRenameProcessor(project, element, newName, editor)
+            val processor = RangeGatheringRenameProcessor(project, element, newName)
             processor.doRun()
             ref.set(processor.refs.toList())
         }

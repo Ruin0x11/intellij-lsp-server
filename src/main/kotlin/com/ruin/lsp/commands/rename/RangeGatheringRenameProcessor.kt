@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import com.intellij.psi.impl.source.tree.CompositeElement
 import com.intellij.psi.meta.PsiMetaOwner
 import com.intellij.psi.meta.PsiWritableMetaData
 import com.intellij.refactoring.rename.BindablePsiReference
@@ -18,10 +19,8 @@ import com.intellij.util.IncorrectOperationException
 import com.ruin.lsp.commands.find.toRange
 import com.ruin.lsp.util.getDocument
 
-class RangeGatheringRenameProcessor(proj: Project, val element: PsiElement, val name: String, editor: Editor)
-    : RenameProcessor(proj,
-    substituteElementToRename(element, editor) ?: element,
-    name, false, false) {
+class RangeGatheringRenameProcessor(proj: Project, val element: PsiElement, val name: String)
+    : RenameProcessor(proj, element, name, false, false) {
     val refs: MutableList<RenameRange> = mutableListOf()
 
     init {
@@ -59,14 +58,6 @@ internal class AutomaticOverloadsRenamerAlwaysFactory : AutomaticOverloadsRename
     override fun isEnabled() = true
 }
 
-
-private fun substituteElementToRename(element: PsiElement?, editor: Editor?): PsiElement? {
-    if (element == null) return null
-    val processor = RenamePsiElementProcessor.forElement(element)
-    val substituted = processor.substituteElementToRename(element, editor)
-    return if (substituted == null || !PsiElementRenameHandler.canRename(element.project, editor, substituted)) null else substituted
-}
-
 private fun canRenameElement(namedElement: PsiElement): Boolean {
     var writableMetaData: PsiWritableMetaData? = null
     if (namedElement is PsiMetaOwner) {
@@ -94,8 +85,6 @@ private fun getRenames(namedElement: PsiElement, newName: String, usages: Array<
         null
     }
 
-    val doc = getDocument(namedElement.containingFile)!!
-    val theRange = namedElement.textRange.toRange(doc)
     // Rename the places where the element is referenced.
     val usageRenames = getRenamesOfReferences(usages, newName)
 
@@ -110,10 +99,22 @@ private fun getRenamesOfReferences(usages: Array<UsageInfo>, newName: String): L
     usages.mapNotNull { usage ->
         val ref = usage.reference ?: return@mapNotNull null
         if (ref !is BindablePsiReference) {
-            RenameRange(ref.element.textRange, ref.element.containingFile, newName)
+            RenameRange(ref.element.localTextRange(), ref.element.containingFile, newName)
         } else
             null
     }
 
+/**
+ * Gets the TextRange from a PsiElement accounting for cases like assignment to a field with 'this'
+ */
+private fun PsiElement.localTextRange(): TextRange {
+    // The reference may refer to an expression like "this.thing = thing"
+    if (this is PsiReferenceExpression && this is CompositeElement) {
+        if(this.firstChild is PsiThisExpression) {
+            return this.lastChild.textRange
+        }
+    }
+    return this.textRange
+}
 
 data class RenameRange(val textRange: TextRange, val file: PsiFile, val newName: String)

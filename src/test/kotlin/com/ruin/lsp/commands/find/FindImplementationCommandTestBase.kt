@@ -7,8 +7,7 @@ import com.ruin.lsp.values.Position
 import com.ruin.lsp.values.TextDocumentIdentifier
 
 abstract class FindImplementationCommandTestBase : FindCommandTestBase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
+    override val projectName = JAVA_PROJECT
 
     override fun command(at: Position, uri: String): Command<List<Location>> =
         FindImplementationCommand(TextDocumentIdentifier(uri), at)
