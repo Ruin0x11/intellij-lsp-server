@@ -19,6 +19,8 @@ val DATA_FILE_PATH = "src/org/lsp/javaproject/MyData.java"
 val TESTABLE_FILE_PATH = "src/org/lsp/runnable/test/Testable.java"
 val PROBLEMATIC_FILE_PATH = "src/org/lsp/javaproject/Problematic.java"
 val PROBLEMATIC_TWICE_FILE_PATH = "src/org/lsp/javaproject/ProblematicTwice.java"
+val CONSTANTS_FILE_PATH = "src/org/lsp/javaproject/Constants.java"
+val ENUM_TYPE_FILE_PATH = "src/org/lsp/javaproject/EnumType.java"
 
 val MULTI_MODULE_APP_PATH = "application/src/main/java/hello/app/DemoApplication.java"
 val MAVEN_MULTI_MODULE_APP_PATH = "first-module/src/main/java/com/ruin/lsp/App.java"
