@@ -90,7 +90,7 @@ project(":") {
 
     dependencies {
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
-        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.3.0")
+        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0.M6")
     }
 
     tasks.withType<Test> {
