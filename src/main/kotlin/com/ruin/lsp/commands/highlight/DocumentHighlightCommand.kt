@@ -1,6 +1,5 @@
 package com.ruin.lsp.commands.highlight
 
-import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandler
 import com.intellij.codeInsight.highlighting.HighlightUsagesHandlerBase
@@ -18,19 +17,22 @@ import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.util.ThrowableComputable
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiPolyVariantReference
+import com.intellij.psi.PsiReference
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetUtil
 import com.intellij.util.containers.ContainerUtil
+import com.ruin.lsp.commands.Command
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
-import com.ruin.lsp.commands.Command
-import com.ruin.lsp.model.asInvokeAndWaitFuture
-import org.eclipse.lsp4j.*
-import java.util.concurrent.CompletableFuture
+import org.eclipse.lsp4j.DocumentHighlight
+import org.eclipse.lsp4j.DocumentHighlightKind
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 
 class DocumentHighlightCommand(val position: Position) : Command<MutableList<DocumentHighlight>> {
     override fun execute(project: Project, file: PsiFile): MutableList<DocumentHighlight> {

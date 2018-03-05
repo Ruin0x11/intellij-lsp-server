@@ -14,7 +14,7 @@ abstract class DocumentHighlightCommandTestBase : BaseTestCase() {
 
     protected fun checkHighlightsFound(filePath: String, at: Position, expected: List<DocumentHighlight>) {
         val file = getVirtualFile(project, filePath)
-        val command = DocumentHighlightCommand(TextDocumentIdentifier(file.url), at)
+        val command = DocumentHighlightCommand(at)
         val result = invokeCommandAndWait(command, file.url)
         assertSameElements(result, expected)
     }

@@ -9,5 +9,5 @@ abstract class FindUsagesCommandTestBase : FindCommandTestBase() {
         get() = JAVA_PROJECT
 
     override fun command(at: Position, uri: String) =
-        FindUsagesCommand(TextDocumentIdentifier(uri), at)
+        FindUsagesCommand(at)
 }

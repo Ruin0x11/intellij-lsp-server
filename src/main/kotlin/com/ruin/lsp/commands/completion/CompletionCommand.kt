@@ -1,23 +1,20 @@
 package com.ruin.lsp.commands.completion
 
-import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.Disposable
-import com.intellij.psi.PsiElement
-import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.ThrowableComputable
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
-import com.ruin.lsp.util.withEditor
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.model.asInvokeAndWaitFuture
-import org.eclipse.lsp4j.*
+import com.ruin.lsp.util.withEditor
+import org.eclipse.lsp4j.CompletionItem
+import org.eclipse.lsp4j.CompletionList
+import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import java.util.LinkedHashSet
-import java.util.concurrent.CompletableFuture
-import javax.annotation.processing.Completion
+import java.util.*
 
 class CompletionCommand(val position: Position,
                         val snippetSupport: Boolean) : Command<Either<MutableList<CompletionItem>, CompletionList>>, Disposable {

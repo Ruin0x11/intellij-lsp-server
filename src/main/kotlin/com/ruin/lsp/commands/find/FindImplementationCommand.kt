@@ -1,24 +1,21 @@
 package com.ruin.lsp.commands.find
 
-import com.github.kittinunf.result.Result
 import com.intellij.codeInsight.TargetElementUtil
-import com.intellij.psi.PsiElement
-import com.ruin.lsp.commands.Command
-import com.ruin.lsp.model.positionToOffset
 import com.intellij.codeInsight.navigation.ImplementationSearcher
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.ThrowableComputable
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.ruin.lsp.util.*
-import com.ruin.lsp.commands.errorResult
+import com.ruin.lsp.commands.Command
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.asInvokeAndWaitFuture
-import org.eclipse.lsp4j.*
-import java.util.concurrent.CompletableFuture
-
+import com.ruin.lsp.model.positionToOffset
+import com.ruin.lsp.util.ensureTargetElement
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.util.withEditor
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.Position
 
 class FindImplementationCommand(val position: Position) : Command<MutableList<Location>> {
     override fun execute(project: Project, file: PsiFile): MutableList<Location> {

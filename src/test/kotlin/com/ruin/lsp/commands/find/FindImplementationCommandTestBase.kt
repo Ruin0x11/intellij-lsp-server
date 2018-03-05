@@ -11,5 +11,5 @@ abstract class FindImplementationCommandTestBase : FindCommandTestBase() {
         get() = JAVA_PROJECT
 
     override fun command(at: Position, uri: String) =
-        FindImplementationCommand(TextDocumentIdentifier(uri), at)
+        FindImplementationCommand(at)
 }

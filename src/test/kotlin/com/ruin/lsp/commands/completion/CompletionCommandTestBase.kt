@@ -15,10 +15,9 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
         get() = JAVA_PROJECT
 
     protected fun checkContainsCompletion(line: Int, char: Int, snippet: Boolean, expected: String) {
-        val command = CompletionCommand(TextDocumentIdentifier(file.url), Position(line, char),
-            null, null, snippet)
+        val command = CompletionCommand(Position(line, char), snippet)
         val result = invokeCommandAndWait(command, file.url)
-        assertTrue("Expected $expected to be included but got: \n${result.items}",
-            result.items.any { it.label == expected || it.insertText == expected })
+        assertTrue("Expected $expected to be included but got: \n${result.right}",
+            result.right.items.any { it.label == expected || it.insertText == expected })
     }
 }

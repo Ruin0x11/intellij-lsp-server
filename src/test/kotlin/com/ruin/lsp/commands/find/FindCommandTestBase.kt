@@ -19,7 +19,6 @@ abstract class FindCommandTestBase : BaseTestCase() {
                                      uri: String,
                                      expectedFile: String,
                                      expectedPos: Position) {
-        val (project, file) = ensurePsiFromUri(uri)
         val result = invokeCommandAndWait(command, uri)
         assertTrue("Expected ($expectedFile, $expectedPos to be included in results but got: " +
             "\n$result",
@@ -36,7 +35,6 @@ abstract class FindCommandTestBase : BaseTestCase() {
 
     private fun checkFindsNothing(command: Command<MutableList<Location>>,
                                     uri: String) {
-        val (project, file) = ensurePsiFromUri(uri)
         val result = invokeCommandAndWait(command, uri)
         assertTrue("Expected nothing to be found but got: \n$result", result.isEmpty())
     }

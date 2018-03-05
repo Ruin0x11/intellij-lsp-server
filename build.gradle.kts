@@ -89,19 +89,8 @@ project(":") {
     }
 
     dependencies {
-        compile("com.github.briandilley.jsonrpc4j:jsonrpc4j:1.5.3") {
-            exclude(module = "slf4j-api")
-        }
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
-        compile("com.fasterxml.jackson.core:jackson-core:2.9.4")
-        compile("com.fasterxml.jackson.core:jackson-databind:2.9.4")
-        compile("com.fasterxml.jackson.core:jackson-annotations:2.9.4")
-        compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4")
-        compile("com.github.kittinunf.result:result:1.3.0")
         compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.3.0")
-
-        testCompile("org.mockito:mockito-core:2.15.0")
-        testCompile("com.nhaarman:mockito-kotlin:1.5.0")
     }
 
     tasks.withType<Test> {

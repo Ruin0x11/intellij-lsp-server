@@ -190,14 +190,11 @@ class WorkspaceManager {
     fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, callback: (Document) -> Unit): Boolean {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
-        val fileOpenedByServer = managedTextDoc.identifier.version == null
-        if (!fileOpenedByServer) {
-            // Version number of our document should be (theirs - 1)
-            if(managedTextDoc.identifier.version != (textDocument.version!! - 1)) {
-                LOG.warn("Version mismatch on document change - " +
-                    "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
-                return false
-            }
+        // Version number of our document should be (theirs - 1)
+        if (managedTextDoc.identifier.version != (textDocument.version - 1)) {
+            LOG.warn("Version mismatch on document change - " +
+                "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
+            return false
         }
 
         val pair = resolvePsiFromUri(textDocument.uri)
@@ -234,7 +231,7 @@ class WorkspaceManager {
                     PsiDocumentManager.getInstance(project).commitDocument(doc)
 
                     // Update the ground truth
-                    val newVersion = if (fileOpenedByServer) 0 else textDocument.version
+                    val newVersion = textDocument.version
                     val newDoc =
                         ManagedTextDocument(
                             VersionedTextDocumentIdentifier().apply {

@@ -1,21 +1,16 @@
 package com.ruin.lsp.commands.symbol
 
-import com.github.kittinunf.result.Result
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.*
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.commands.errorResult
 import com.ruin.lsp.commands.find.offsetToPosition
 import com.ruin.lsp.commands.hover.generateType
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.asInvokeAndWaitFuture
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
 import org.eclipse.lsp4j.*
-import java.util.concurrent.CompletableFuture
 
 class DocumentSymbolCommand(
     private val textDocumentIdentifier: TextDocumentIdentifier

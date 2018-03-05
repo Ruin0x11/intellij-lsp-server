@@ -1,23 +1,20 @@
 package com.ruin.lsp.commands.find
 
-import com.github.kittinunf.result.Result
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.searches.SuperMethodsSearch
-import com.ruin.lsp.util.*
 import com.ruin.lsp.commands.Command
-import com.ruin.lsp.commands.errorResult
-import com.ruin.lsp.commands.highlight.textRangeToRange
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.asInvokeAndWaitFuture
 import com.ruin.lsp.model.positionToOffset
-import org.eclipse.lsp4j.*
-import java.util.concurrent.CompletableFuture
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.util.getURIForFile
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 
 class FindDefinitionCommand(val position: Position) : Command<MutableList<Location>> {
     override fun execute(project: Project, file: PsiFile): MutableList<Location> {

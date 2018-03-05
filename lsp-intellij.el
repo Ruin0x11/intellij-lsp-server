@@ -46,6 +46,11 @@
     (error str)))
 
 (defun lsp-intellij--initialize-client (client)
+  ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
+  ;; so the proper coding system needs to be set to capture the \r\n.
+  (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
+  (setq-local coding-system-for-read 'binary)
+  (setq-local coding-system-for-write 'binary)
   (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root '("ruby")
