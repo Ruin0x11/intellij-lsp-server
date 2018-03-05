@@ -4,12 +4,14 @@ import com.github.kittinunf.result.Result
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.*
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.errorResult
 import com.ruin.lsp.commands.find.offsetToPosition
 import com.ruin.lsp.commands.hover.generateType
 import com.ruin.lsp.model.LanguageServerException
+import com.ruin.lsp.model.asInvokeAndWaitFuture
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
 import org.eclipse.lsp4j.*
@@ -17,23 +19,21 @@ import java.util.concurrent.CompletableFuture
 
 class DocumentSymbolCommand(
     private val textDocumentIdentifier: TextDocumentIdentifier
-) : Command<List<SymbolInformation>> {
+) : Command<MutableList<SymbolInformation>> {
 
-    override fun execute(project: Project, file: PsiFile): CompletableFuture<List<SymbolInformation>> {
-        return CompletableFuture.supplyAsync {
-            val uri = textDocumentIdentifier.uri
-            val document = getDocument(file) ?: throw LanguageServerException("No document found.")
-            val symbols = mutableListOf<SymbolInformation>()
-            DocumentSymbolPsiVisitor(file) { element ->
-                val kind = element.symbolKind()
-                val name = element.symbolName()
-                if (kind != null && name != null) {
-                    symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
-                }
-            }.visit()
-            symbols.sortBy { positionToOffset(document, it.location.range.start) }
-            symbols
-        }
+    override fun execute(project: Project, file: PsiFile): MutableList<SymbolInformation> {
+        val uri = textDocumentIdentifier.uri
+        val document = getDocument(file) ?: throw LanguageServerException("No document found.")
+        val symbols = mutableListOf<SymbolInformation>()
+        DocumentSymbolPsiVisitor(file) { element ->
+            val kind = element.symbolKind()
+            val name = element.symbolName()
+            if (kind != null && name != null) {
+                symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
+            }
+        }.visit()
+        symbols.sortBy { positionToOffset(document, it.location.range.start) }
+        return symbols.toMutableList()
     }
 }
 
@@ -81,7 +81,7 @@ private fun PsiElement.symbolKind(): SymbolKind? =
                     PsiType.BYTE, PsiType.DOUBLE, PsiType.FLOAT, PsiType.INT, PsiType.LONG, PsiType.SHORT ->
                         SymbolKind.Number
                     PsiType.CHAR -> SymbolKind.String
-                    // PsiType.NULL, PsiType.VOID -> SymbolKind.Null // TODO: Add when lsp4j has Null
+                // PsiType.NULL, PsiType.VOID -> SymbolKind.Null // TODO: Add when lsp4j has Null
                     else -> SymbolKind.Constant
                 }
         }
@@ -99,7 +99,7 @@ private fun PsiElement.toLocation(doc: Document, uri: String) =
     }
 
 private fun annotationLabel(annotation: PsiAnnotation): String =
-    (annotation.nameReferenceElement?.text ?: annotation.qualifiedName)?.let { "@$it"}
+    (annotation.nameReferenceElement?.text ?: annotation.qualifiedName)?.let { "@$it" }
         ?: "<unknown>"
 
 /** Return a method label including simplified parameter types. */

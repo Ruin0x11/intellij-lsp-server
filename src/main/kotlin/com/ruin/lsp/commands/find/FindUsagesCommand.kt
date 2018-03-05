@@ -1,4 +1,4 @@
- package com.ruin.lsp.commands.find
+package com.ruin.lsp.commands.find
 
 import com.github.kittinunf.result.Result
 import com.intellij.openapi.project.Project
@@ -11,6 +11,8 @@ import com.intellij.usages.UsageInfo2UsageAdapter
 import com.intellij.openapi.editor.Editor
 import com.intellij.find.findUsages.FindUsagesManager
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.ThrowableComputable
+import com.ruin.lsp.model.asInvokeAndWaitFuture
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
@@ -18,24 +20,19 @@ import java.util.ArrayList
 import java.util.concurrent.CompletableFuture
 import org.eclipse.lsp4j.*
 
- class FindUsagesCommand(val textDocumentIdentifier: TextDocumentIdentifier,
-                        val position: Position) : Command<MutableList<Location>> {
-    override fun execute(project: Project, file: PsiFile): CompletableFuture<MutableList<Location>> {
-        return CompletableFuture.supplyAsync {
-            val ref: Ref<List<Usage>> = Ref()
-            withEditor(this, file, position) { editor ->
-                ref.set(findUsages(editor))
-            }
-            val rawResults = ref.get()
-
-            if (rawResults.isEmpty()) {
-                return@supplyAsync mutableListOf<Location>()
-            }
-
-            val results = rawResults.mapNotNull(::extractLocationFromRaw).toMutableList()
-
-            results
+class FindUsagesCommand(val position: Position) : Command<MutableList<Location>> {
+    override fun execute(project: Project, file: PsiFile): MutableList<Location> {
+        val ref: Ref<List<Usage>> = Ref()
+        withEditor(this, file, position) { editor ->
+            ref.set(findUsages(editor))
         }
+        val rawResults = ref.get()
+
+        if (rawResults.isEmpty()) {
+            return mutableListOf<Location>()
+        }
+
+        return rawResults.mapNotNull(::extractLocationFromRaw).toMutableList()
     }
 }
 
@@ -108,7 +105,7 @@ internal class UsageCollectingViewManager(val project: Project, private val resu
     }
 
     override fun process(usage: Usage?): Boolean {
-        if(usage != null)
+        if (usage != null)
             results.add(usage)
         return true
     }

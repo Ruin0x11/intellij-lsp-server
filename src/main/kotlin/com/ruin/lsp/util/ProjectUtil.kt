@@ -33,6 +33,9 @@ import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
+fun ensurePsiFromUri(uri: String) = resolvePsiFromUri(uri)
+    ?: throw IllegalArgumentException("Unable to resolve project and file at $uri")
+
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     val (project, filePath) = resolveProjectFromUri(uri) ?: return null
     val file = getPsiFile(project, filePath) ?: return null

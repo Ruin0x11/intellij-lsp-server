@@ -1,7 +1,7 @@
 package com.ruin.lsp.commands.find
 
 import com.ruin.lsp.DUMMY_FILE_PATH
-import com.ruin.lsp.values.Position
+import org.eclipse.lsp4j.Position
 
 class FindUsagesCommandTestCase : FindUsagesCommandTestBase() {
     fun `test finds no usages`() = checkFindsNothing(DUMMY_FILE_PATH,

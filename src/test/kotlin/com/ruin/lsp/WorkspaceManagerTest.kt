@@ -2,6 +2,7 @@ package com.ruin.lsp
 
 import com.ruin.lsp.model.WorkspaceManager
 import com.ruin.lsp.values.*
+import org.eclipse.lsp4j.*
 import org.intellivim.FileEditingTestCase
 
 class WorkspaceManagerTest : FileEditingTestCase() {
@@ -14,11 +15,13 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test increments version number on write`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
-        manager.onTextDocumentChanged(makeVersionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+        )
 
         assertEquals(1, manager.managedTextDocuments[file.url]!!.identifier.version)
     }
@@ -26,11 +29,13 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test full text update`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
-        manager.onTextDocumentChanged(makeVersionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+        )
 
         assertEquals("dood", manager.managedTextDocuments[file.url]!!.contents)
         assertPsiContentsChanged()
@@ -39,12 +44,14 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test partial text update`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
 
-        val range = Range(Position(11, 28), Position(11, 30))
+        val range = range(11, 28, 11, 30)
         val changes =
             listOf(TextDocumentContentChangeEvent(range, 2, "dood"))
-        manager.onTextDocumentChanged(makeVersionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+        )
 
         assert(manager.managedTextDocuments[file.url]!!.contents.contains("System.out.println(\"dood\");"))
         assertPsiContentsChanged()
@@ -53,7 +60,9 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test workspace edit`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(
+            DidOpenTextDocumentParams(makeTextDocumentItem(0))
+        )
 
         // not currently opened
         val otherId = makeVersionedTextDocumentIdentifier(SUBCLASS_FILE_PATH, 0)
@@ -67,10 +76,10 @@ class WorkspaceManagerTest : FileEditingTestCase() {
 
         val changes = listOf(firstEdit, secondEdit)
 
-        val workspaceEdit = WorkspaceEdit(documentChanges = changes)
+        val workspaceEdit = WorkspaceEdit(changes)
 
         val result = manager.onWorkspaceApplyEdit(null, workspaceEdit)
-        assert(result.applied, { "Workspace edit wasn't successful"} )
+        assert(result.applied, { "Workspace edit wasn't successful" })
 
         // now the file should have opened
         assert(manager.managedTextDocuments.containsKey(otherId.uri), { "File ${otherId.uri} wasn't opened." })
@@ -82,15 +91,19 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test shutdown`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
-        manager.onTextDocumentChanged(makeVersionedTextDocumentIdentifier(1), changes)
+        manager.onTextDocumentChanged(
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+        )
 
         manager.onShutdown()
 
-        manager.onTextDocumentOpened(makeTextDocumentItem(0))
+        manager.onTextDocumentOpened(
+            DidOpenTextDocumentParams(makeTextDocumentItem(0))
+        )
         assert("dood" != manager.managedTextDocuments[file.url]!!.contents)
     }
 }

@@ -10,31 +10,30 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.util.*
 import com.ruin.lsp.commands.errorResult
 import com.ruin.lsp.model.LanguageServerException
+import com.ruin.lsp.model.asInvokeAndWaitFuture
 import org.eclipse.lsp4j.*
 import java.util.concurrent.CompletableFuture
 
 
-class FindImplementationCommand(val textDocumentIdentifier: TextDocumentIdentifier,
-                                val position: Position) : Command<MutableList<Location>> {
-    override fun execute(project: Project, file: PsiFile): CompletableFuture<MutableList<Location>> {
-        return CompletableFuture.supplyAsync {
-            val doc = getDocument(file)
-                ?: throw LanguageServerException("No document found.")
+class FindImplementationCommand(val position: Position) : Command<MutableList<Location>> {
+    override fun execute(project: Project, file: PsiFile): MutableList<Location> {
+        val doc = getDocument(file)
+            ?: throw LanguageServerException("No document found.")
 
-            val offset = positionToOffset(doc, position)
-            val ref: Ref<Array<PsiElement>?> = Ref()
-            withEditor(this, file, position) { editor ->
-                val element = ensureTargetElement(editor)
-                ref.set(searchImplementations(editor, element, offset))
-            }
-            val implementations = ref.get()
-
-            implementations?.map(::elementToLocation)?.toMutableList() ?: mutableListOf()
+        val offset = positionToOffset(doc, position)
+        val ref: Ref<Array<PsiElement>?> = Ref()
+        withEditor(this, file, position) { editor ->
+            val element = ensureTargetElement(editor)
+            ref.set(searchImplementations(editor, element, offset))
         }
+        val implementations = ref.get()
+
+        return implementations?.map(::elementToLocation)?.toMutableList() ?: mutableListOf()
     }
 }
 

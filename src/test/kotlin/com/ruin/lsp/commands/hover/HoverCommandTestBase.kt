@@ -2,9 +2,8 @@ package com.ruin.lsp.commands.hover
 
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
-import com.ruin.lsp.model.execute
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.TextDocumentIdentifier
+import com.ruin.lsp.model.invokeCommandAndWait
+import org.eclipse.lsp4j.Position
 import org.intellivim.FileEditingTestCase
 
 abstract class HoverCommandTestBase : FileEditingTestCase() {
@@ -15,9 +14,16 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         get() = DUMMY_FILE_PATH
 
     protected fun checkHoverEquals(line: Int, char: Int, expected: String?) {
-        val command = HoverCommand(TextDocumentIdentifier(file.url), Position(line, char))
-        val result = execute(command, file.url)
-        assertEquals("Expected \"$expected\" but got: \n$result",
-            expected, result.value)
+        val command = HoverCommand(Position(line, char))
+        val result = invokeCommandAndWait(command, file.url)
+        val value = result.contents.first().right.value
+        assertEquals("Expected \"$expected\" but got: \n$value",
+            expected, value)
+    }
+
+    protected fun checkHoverIsEmpty(line: Int, char: Int)  {
+        val command = HoverCommand(Position(line, char))
+        val result = invokeCommandAndWait(command, file.url)
+        assertEmpty(result.contents)
     }
 }

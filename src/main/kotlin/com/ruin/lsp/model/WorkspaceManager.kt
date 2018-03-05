@@ -16,7 +16,7 @@ import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
 
 
-val LOG = Logger.getInstance(WorkspaceManager::class.java)
+private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 
 /**
  * Manages files opened by LSP clients.
@@ -28,7 +28,9 @@ val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
-    fun onTextDocumentOpened(textDocument: TextDocumentItem) {
+    fun onTextDocumentOpened(params: DidOpenTextDocumentParams) {
+        val textDocument = params.textDocument
+
         if(managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("URI ${textDocument.uri} was opened again without being closed")
             return
@@ -58,7 +60,9 @@ class WorkspaceManager {
             )
     }
 
-    fun onTextDocumentClosed(textDocument: VersionedTextDocumentIdentifier) {
+    fun onTextDocumentClosed(params: DidCloseTextDocumentParams) {
+        val textDocument = params.textDocument
+
         if(!managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("Attempted to close insertText document at ${textDocument.uri} without opening it")
             return
@@ -68,16 +72,13 @@ class WorkspaceManager {
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
-        if(managedTextDoc.identifier.version != textDocument.version) {
-            LOG.warn("Document version differed on close - " +
-                "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
-        }
-
         managedTextDocuments.remove(textDocument.uri)
     }
 
-    fun onTextDocumentChanged(textDocument: VersionedTextDocumentIdentifier,
-                              contentChanges: List<TextDocumentContentChangeEvent>) {
+    fun onTextDocumentChanged(params: DidChangeTextDocumentParams) {
+        val textDocument = params.textDocument
+        val contentChanges = params.contentChanges
+
         if(!managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("Tried handling didChange for ${textDocument.uri}, but it wasn't open")
             return
@@ -97,7 +98,10 @@ class WorkspaceManager {
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
     }
 
-    fun onTextDocumentSaved(textDocument: VersionedTextDocumentIdentifier, text: String?) {
+    fun onTextDocumentSaved(params: DidSaveTextDocumentParams) {
+        val textDocument = params.textDocument
+        val text = params.text
+
         if (!managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("Tried handling didSave for ${textDocument.uri}, but it wasn't open")
             return
@@ -106,10 +110,6 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didSave for ${textDocument.uri}")
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
-
-        assertEquals("Document version differed on save - " +
-            "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}",
-            textDocument.version, managedTextDoc.identifier.version)
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {
@@ -255,7 +255,7 @@ class WorkspaceManager {
     }
 
     fun onShutdown() {
-        managedTextDocuments.values.forEach { onTextDocumentClosed(it.identifier) }
+        managedTextDocuments.values.forEach { onTextDocumentClosed(DidCloseTextDocumentParams(it.identifier)) }
     }
 }
 

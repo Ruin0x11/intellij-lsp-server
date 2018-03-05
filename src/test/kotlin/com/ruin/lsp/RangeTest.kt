@@ -2,8 +2,8 @@ package com.ruin.lsp
 
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.model.rangeToTextRange
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.Range
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.intellivim.FileEditingTestCase
 
 class RangeTest : FileEditingTestCase() {
@@ -17,8 +17,8 @@ class RangeTest : FileEditingTestCase() {
         val doc = getDocument(psiFile)!!
 
         val range = Range(
-            start = Position(startLine, startChar),
-            end = Position(endLine, endChar)
+            Position(startLine, startChar),
+            Position(endLine, endChar)
         )
 
         val textRange = rangeToTextRange(doc, range)

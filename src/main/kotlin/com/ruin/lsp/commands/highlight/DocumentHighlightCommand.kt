@@ -18,6 +18,7 @@ import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.*
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -27,24 +28,22 @@ import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.model.asInvokeAndWaitFuture
 import org.eclipse.lsp4j.*
 import java.util.concurrent.CompletableFuture
 
-class DocumentHighlightCommand(val textDocumentIdentifier: TextDocumentIdentifier,
-                               val position: Position) : Command<List<DocumentHighlight>> {
-    override fun execute(project: Project, file: PsiFile): CompletableFuture<List<DocumentHighlight>> {
-        return CompletableFuture.supplyAsync {
-            val ref: Ref<List<DocumentHighlight>> = Ref()
-            withEditor(this, file, position) { editor ->
-                try {
-                    ref.set(findHighlights(project, editor, file))
-                } catch (ex: IndexNotReadyException) {
-                    DumbService.getInstance(project).showDumbModeNotification(ActionsBundle.message("action.HighlightUsagesInFile.not.ready"))
-                }
+class DocumentHighlightCommand(val position: Position) : Command<MutableList<DocumentHighlight>> {
+    override fun execute(project: Project, file: PsiFile): MutableList<DocumentHighlight> {
+        val ref: Ref<List<DocumentHighlight>> = Ref()
+        withEditor(this, file, position) { editor ->
+            try {
+                ref.set(findHighlights(project, editor, file))
+            } catch (ex: IndexNotReadyException) {
+                DumbService.getInstance(project).showDumbModeNotification(ActionsBundle.message("action.HighlightUsagesInFile.not.ready"))
             }
-
-            ref.get()
         }
+
+        return ref.get().toMutableList()
     }
 }
 
@@ -82,7 +81,7 @@ private fun getHighlightsFromHandler(handler: HighlightUsagesHandlerBase<PsiElem
     // NOTE: Not able to use handler.selectTargets()
     handler.computeUsages(handler.targets)
 
-    val reads  = textRangesToHighlights(handler.readUsages, editor, DocumentHighlightKind.Read)
+    val reads = textRangesToHighlights(handler.readUsages, editor, DocumentHighlightKind.Read)
     val writes = textRangesToHighlights(handler.writeUsages, editor, DocumentHighlightKind.Write)
 
     return reads.plus(writes)

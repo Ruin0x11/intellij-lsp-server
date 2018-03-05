@@ -10,9 +10,9 @@ import com.ruin.lsp.BaseTestCase
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.getPsiFile
 import com.ruin.lsp.util.getVirtualFile
-import com.ruin.lsp.values.TextDocumentItem
-import com.ruin.lsp.values.VersionedTextDocumentIdentifier
 import junit.framework.TestCase
+import org.eclipse.lsp4j.TextDocumentItem
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import java.io.FileNotFoundException
 import java.io.IOException
 
@@ -86,11 +86,11 @@ abstract class FileEditingTestCase : BaseTestCase() {
     }
 
     fun makeVersionedTextDocumentIdentifier(version: Int) =
-        VersionedTextDocumentIdentifier(file.url, version)
+        VersionedTextDocumentIdentifier(version).apply{ uri = file.url }
 
     fun makeVersionedTextDocumentIdentifier(filePath: String, version: Int): VersionedTextDocumentIdentifier {
         val file = getVirtualFile(project, filePath)
-        return VersionedTextDocumentIdentifier(file.url, version)
+        return VersionedTextDocumentIdentifier(version).apply { uri = file.url }
     }
 
     fun contentsChanged(original: ByteArray, updatedContents: ByteArray): Boolean {

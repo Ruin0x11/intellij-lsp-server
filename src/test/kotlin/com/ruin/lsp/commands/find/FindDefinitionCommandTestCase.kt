@@ -2,7 +2,7 @@ package com.ruin.lsp.commands.find
 
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.SUBCLASS_FILE_PATH
-import com.ruin.lsp.values.Position
+import org.eclipse.lsp4j.Position
 
 class FindDefinitionCommandTestCase : FindDefinitionCommandTestBase() {
     fun `test finds superclass from subclass`() =

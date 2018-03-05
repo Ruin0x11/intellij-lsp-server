@@ -2,11 +2,12 @@ package com.ruin.lsp.commands.symbol
 
 import com.ruin.lsp.BaseTestCase
 import com.ruin.lsp.JAVA_PROJECT
-import com.ruin.lsp.model.execute
+import com.ruin.lsp.model.invokeCommandAndWait
 import com.ruin.lsp.util.getVirtualFile
-import com.ruin.lsp.values.Range
-import com.ruin.lsp.values.SymbolInformation
-import com.ruin.lsp.values.TextDocumentIdentifier
+import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.SymbolInformation
+import org.eclipse.lsp4j.SymbolKind
+import org.eclipse.lsp4j.TextDocumentIdentifier
 
 abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
     override val projectName = JAVA_PROJECT
@@ -14,7 +15,7 @@ abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
     protected fun getSymbols(filePath: String): List<SymbolInformation> {
         val file = getVirtualFile(project, filePath)
         val command = DocumentSymbolCommand(TextDocumentIdentifier(file.url))
-        val result = execute(command, file.url)
+        val result = invokeCommandAndWait(command, file.url)
         command.dispose()
         return result
     }
@@ -22,7 +23,7 @@ abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
     protected fun List<SymbolInformation>.assertHasSymbol(
         expectedName: String,
         expectedParent: String?,
-        expectedKind: Int,
+        expectedKind: SymbolKind,
         expectedRange: Range): List<SymbolInformation> = apply {
         val symbol = asSequence().firstOrNull {
             it.name == expectedName && it.containerName == expectedParent

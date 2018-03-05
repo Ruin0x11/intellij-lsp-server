@@ -13,6 +13,5 @@ class HoverCommandTestCase : HoverCommandTestBase() {
     fun `test hover finds variable info`() = checkHoverEquals(15, 10,
         "ArrayList<String> list = new ArrayList<String>()")
 
-    fun `test hover finds nothing`() = checkHoverEquals(32, 1,
-        "")
+    fun `test hover finds nothing`() = checkHoverIsEmpty(32, 1)
 }

@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.googlecode.jsonrpc4j.JsonRpcBasicServer
 import com.googlecode.jsonrpc4j.JsonRpcServer
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.Range
+import com.ruin.lsp.commands.Command
+import com.ruin.lsp.util.ensurePsiFromUri
+import com.ruin.lsp.values.DocumentUri
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
