@@ -1,10 +1,8 @@
 package com.ruin.lsp.commands.find
 
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.ruin.lsp.commands.Command

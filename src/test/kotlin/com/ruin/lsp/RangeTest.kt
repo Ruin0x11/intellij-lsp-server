@@ -1,7 +1,7 @@
 package com.ruin.lsp
 
-import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.model.rangeToTextRange
+import com.ruin.lsp.util.getDocument
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.intellivim.FileEditingTestCase

@@ -5,7 +5,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Factory
 import com.intellij.openapi.util.Ref
-import com.intellij.psi.PsiFile
 import com.intellij.usages.*
 import com.intellij.util.Processor
 import com.ruin.lsp.commands.Command

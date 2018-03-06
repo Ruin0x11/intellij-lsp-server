@@ -1,10 +1,13 @@
 package com.ruin.lsp.model
 
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Computable
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
+import com.ruin.lsp.commands.diagnostics.DiagnosticsCommand
 import com.ruin.lsp.commands.find.FindImplementationCommand
 import com.ruin.lsp.util.DUMMY
 import com.ruin.lsp.util.ensurePsiFromUri
@@ -18,6 +21,7 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageClientAware {
     private val LOG = Logger.getInstance(MyLanguageServer::class.java)
@@ -29,6 +33,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     var myWorkspaceService = MyWorkspaceService(this)
 
     var client: LanguageClient? = null
+    var diagnosticsFutures: HashMap<DocumentUri, Future<*>> = HashMap()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
         return CompletableFuture.supplyAsync {
@@ -54,6 +59,20 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         this.client = client
     }
 
+    fun computeDiagnostics(uri: DocumentUri) {
+        diagnosticsFutures[uri]?.cancel(true)
+
+        LOG.info("Computing diagnostics for $uri")
+
+        diagnosticsFutures[uri] = ApplicationManager.getApplication().executeOnPooledThread {
+            val diagnostics = runReadAction {
+                executeAndGetResult(uri, DiagnosticsCommand())
+            }
+            LOG.info("Now publishing diagnostics for $uri to client")
+            client?.publishDiagnostics(diagnostics)
+        }
+    }
+
     override fun getTextDocumentService() = myTextDocumentService
 
     override fun getWorkspaceService() = myWorkspaceService
@@ -65,28 +84,31 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 fun <T: Any> asInvokeAndWaitFuture(
     uri: DocumentUri,
     command: Command<T>,
-    client: LanguageClient?): CompletableFuture<T> =
+    client: LanguageClient? = null,
+    server: LanguageServer? = null): CompletableFuture<T> =
      CompletableFuture.supplyAsync {
-        executeAndGetResult(uri, client, command)
+        executeAndGetResult(uri, command, client, server)
     }
 
 fun <T: Any> asCancellableInvokeAndWaitFuture(
     uri: DocumentUri,
     command: Command<T>,
-    client: LanguageClient?): CompletableFuture<T> =
+    client: LanguageClient? = null,
+    server: LanguageServer? = null): CompletableFuture<T> =
     CompletableFutures.computeAsync { cancelToken ->
-        executeAndGetResult(uri, client, command, cancelToken)
+        executeAndGetResult(uri, command, client, server, cancelToken)
     }
 
 private fun <T : Any> executeAndGetResult(
     uri: DocumentUri,
-    client: LanguageClient?,
     command: Command<T>,
+    client: LanguageClient? = null,
+    server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
     return invokeAndWaitIfNeeded(Computable<T> {
         val (project, file) = ensurePsiFromUri(uri)
         val profiler = if (client != null) startProfiler(client) else DUMMY
-        val context = ExecutionContext(project, file, client, profiler, cancelToken)
+        val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
         profiler.finish("Done")
         val result = command.execute(context)
         command.dispose()

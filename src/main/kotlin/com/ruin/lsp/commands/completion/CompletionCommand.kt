@@ -4,9 +4,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.util.Consumer
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext

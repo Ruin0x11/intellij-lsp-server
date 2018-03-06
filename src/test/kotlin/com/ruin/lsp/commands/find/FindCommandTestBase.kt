@@ -1,10 +1,9 @@
 package com.ruin.lsp.commands.find
 
 import com.ruin.lsp.BaseTestCase
-import com.ruin.lsp.util.getVirtualFile
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.model.invokeCommandAndWait
-import com.ruin.lsp.util.ensurePsiFromUri
+import com.ruin.lsp.util.getVirtualFile
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 

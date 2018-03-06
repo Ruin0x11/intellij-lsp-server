@@ -2,16 +2,15 @@ package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.util.diff.Diff
-import com.ruin.lsp.util.*
-import groovy.util.GroovyTestCase.assertEquals
-import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.util.diff.Diff
+import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
 

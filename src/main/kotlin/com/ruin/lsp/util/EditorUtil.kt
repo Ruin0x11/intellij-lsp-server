@@ -2,9 +2,9 @@ package com.ruin.lsp.util
 
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.openapi.Disposable
-import com.intellij.psi.PsiElement
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.eclipse.lsp4j.Position
 
@@ -28,7 +28,7 @@ fun findTargetElement(editor: Editor): PsiElement? =
  * For some reason the Disposer doesn't release editor instances, so this is just working around the resulting
  * boilerplate.
  */
-fun withEditor(context: Disposable, file: PsiFile, position: Position, callback: (Editor) -> Unit) {
+fun withEditor(context: Disposable, file: PsiFile, position: Position = Position(0, 0), callback: (Editor) -> Unit) {
     val editor = createEditor(context, file, position)
 
     callback(editor)

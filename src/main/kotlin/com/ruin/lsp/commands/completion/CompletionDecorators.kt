@@ -3,8 +3,6 @@ package com.ruin.lsp.commands.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.intellij.psi.PsiVariable
-import com.intellij.psi.PsiPackage
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
