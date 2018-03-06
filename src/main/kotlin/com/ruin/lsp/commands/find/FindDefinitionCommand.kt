@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
@@ -17,17 +18,17 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
 class FindDefinitionCommand(val position: Position) : Command<MutableList<Location>> {
-    override fun execute(project: Project, file: PsiFile): MutableList<Location> {
-        val doc = getDocument(file)
+    override fun execute(ctx: ExecutionContext): MutableList<Location> {
+        val doc = getDocument(ctx.file)
             ?: throw LanguageServerException("No document found.")
 
         val offset = positionToOffset(doc, position)
-        val ref = file.findReferenceAt(offset)
+        val ref = ctx.file.findReferenceAt(offset)
 
         var lookup = ref?.resolve()
 
         if (lookup == null) {
-            val element = file.findElementAt(offset)
+            val element = ctx.file.findElementAt(offset)
             val parent = element?.parent
             if (parent != null && parent is PsiMethod) {
                 val superSignature =

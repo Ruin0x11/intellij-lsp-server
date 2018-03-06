@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.ElementPattern
 import com.intellij.util.Consumer
+import org.eclipse.lsp4j.jsonrpc.CancelChecker
 
 /**
  * Created by dhleong on 11/5/14.
@@ -16,7 +17,8 @@ internal class CompletionResultSetImpl(consumer: Consumer<CompletionResult>, pri
                                        private val contributor: CompletionContributor,
                                        private val parameters: CompletionParameters,
                                        private val sorter: CompletionSorter,
-                                       private val original: CompletionResultSetImpl?) : CompletionResultSet(prefixMatcher, consumer, contributor) {
+                                       private val original: CompletionResultSetImpl?,
+                                       private val cancelToken: CancelChecker?) : CompletionResultSet(prefixMatcher, consumer, contributor) {
 
     override fun addElement(element: LookupElement) {
         if (!element.isValid) {
@@ -31,7 +33,7 @@ internal class CompletionResultSetImpl(consumer: Consumer<CompletionResult>, pri
     }
 
     override fun withPrefixMatcher(matcher: PrefixMatcher): CompletionResultSet {
-        return CompletionResultSetImpl(consumer, myLengthOfTextBeforePosition, matcher, contributor, parameters, sorter, this)
+        return CompletionResultSetImpl(consumer, myLengthOfTextBeforePosition, matcher, contributor, parameters, sorter, this, cancelToken)
     }
 
     override fun stopHere() {
@@ -53,7 +55,7 @@ internal class CompletionResultSetImpl(consumer: Consumer<CompletionResult>, pri
 
     override fun withRelevanceSorter(sorter: CompletionSorter): CompletionResultSet {
         return CompletionResultSetImpl(consumer, myLengthOfTextBeforePosition, prefixMatcher,
-            contributor, parameters, sorter as CompletionSorterImpl, this)
+            contributor, parameters, sorter as CompletionSorterImpl, this, cancelToken)
     }
 
     override fun addLookupAdvertisement(text: String) {
@@ -84,7 +86,7 @@ internal class CompletionResultSetImpl(consumer: Consumer<CompletionResult>, pri
         if (stop) {
             stopHere()
         }
-        getVariantsFromContributors(parameters, prefixMatcher.prefix, contributor, consumer)
+        getVariantsFromContributors(parameters, prefixMatcher.prefix, contributor, cancelToken, consumer)
     }
 
     companion object {

@@ -27,6 +27,7 @@ import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetUtil
 import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.DocumentHighlight
@@ -35,13 +36,13 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
 class DocumentHighlightCommand(val position: Position) : Command<MutableList<DocumentHighlight>> {
-    override fun execute(project: Project, file: PsiFile): MutableList<DocumentHighlight> {
+    override fun execute(ctx: ExecutionContext): MutableList<DocumentHighlight> {
         val ref: Ref<List<DocumentHighlight>> = Ref()
-        withEditor(this, file, position) { editor ->
+        withEditor(this, ctx.file, position) { editor ->
             try {
-                ref.set(findHighlights(project, editor, file))
+                ref.set(findHighlights(ctx.project, editor, ctx.file))
             } catch (ex: IndexNotReadyException) {
-                DumbService.getInstance(project).showDumbModeNotification(ActionsBundle.message("action.HighlightUsagesInFile.not.ready"))
+                throw ex
             }
         }
 

@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.commands.find.offsetToPosition
 import com.ruin.lsp.commands.hover.generateType
 import com.ruin.lsp.model.LanguageServerException
@@ -16,11 +17,11 @@ class DocumentSymbolCommand(
     private val textDocumentIdentifier: TextDocumentIdentifier
 ) : Command<MutableList<SymbolInformation>> {
 
-    override fun execute(project: Project, file: PsiFile): MutableList<SymbolInformation> {
+    override fun execute(ctx: ExecutionContext): MutableList<SymbolInformation> {
         val uri = textDocumentIdentifier.uri
-        val document = getDocument(file) ?: throw LanguageServerException("No document found.")
+        val document = getDocument(ctx.file) ?: throw LanguageServerException("No document found.")
         val symbols = mutableListOf<SymbolInformation>()
-        DocumentSymbolPsiVisitor(file) { element ->
+        DocumentSymbolPsiVisitor(ctx.file, ctx.cancelToken) { element ->
             val kind = element.symbolKind()
             val name = element.symbolName()
             if (kind != null && name != null) {

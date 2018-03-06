@@ -9,22 +9,24 @@ import com.intellij.psi.PsiFile
 import com.intellij.usages.*
 import com.intellij.util.Processor
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.util.findTargetElement
 import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import java.util.*
 
 class FindUsagesCommand(val position: Position) : Command<MutableList<Location>> {
-    override fun execute(project: Project, file: PsiFile): MutableList<Location> {
+    override fun execute(ctx: ExecutionContext): MutableList<Location> {
         val ref: Ref<List<Usage>> = Ref()
-        withEditor(this, file, position) { editor ->
-            ref.set(findUsages(editor))
+        withEditor(this, ctx.file, position) { editor ->
+            ref.set(findUsages(editor, ctx.cancelToken))
         }
         val rawResults = ref.get()
 
         if (rawResults.isEmpty()) {
-            return mutableListOf<Location>()
+            return mutableListOf()
         }
 
         return rawResults.mapNotNull(::extractLocationFromRaw).toMutableList()
@@ -41,19 +43,22 @@ fun extractLocationFromRaw(usage: Usage): Location? {
     return null
 }
 
-fun findUsages(editor: Editor): List<Usage> {
+fun findUsages(editor: Editor, cancelToken: CancelChecker?): List<Usage> {
     val project = editor.project ?: return listOf()
 
     val element = findTargetElement(editor) ?: return listOf()
 
     val rawResults = ArrayList<Usage>()
     val manager = FindUsagesManager(project,
-        UsageCollectingViewManager(project, rawResults))
+        UsageCollectingViewManager(project, rawResults, cancelToken))
     manager.findUsages(element, null, null, false, null)
     return rawResults
 }
 
-internal class UsageCollectingViewManager(val project: Project, private val results: MutableList<Usage>) : UsageViewManager(), Processor<Usage> {
+internal class UsageCollectingViewManager(val project: Project,
+                                          private val results: MutableList<Usage>,
+                                          private val cancelToken: CancelChecker?)
+    : UsageViewManager(), Processor<Usage> {
     override fun showUsages(searchedFor: Array<out UsageTarget>,
                             foundUsages: Array<out Usage>,
                             presentation: UsageViewPresentation,
@@ -100,6 +105,7 @@ internal class UsageCollectingViewManager(val project: Project, private val resu
     }
 
     override fun process(usage: Usage?): Boolean {
+        cancelToken?.checkCanceled()
         if (usage != null)
             results.add(usage)
         return true

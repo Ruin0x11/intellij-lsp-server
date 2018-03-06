@@ -76,7 +76,7 @@
   "List all implementations for the Java element at point."
   (interactive)
   (let* ((impls (lsp--send-request (lsp--make-request
-                                    "textDocument/implementation"
+                                    "idea/implementations"
                                     (lsp--text-document-position-params))))
          (items (lsp--locations-to-xref-items impls)))
     (if items

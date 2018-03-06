@@ -8,7 +8,7 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams
 import org.eclipse.lsp4j.services.WorkspaceService
 import java.util.concurrent.CompletableFuture
 
-class MyWorkspaceService(val context: Context) : WorkspaceService {
+class MyWorkspaceService(val context: MyLanguageServer) : WorkspaceService {
     val workspace: WorkspaceManager by lazy { ServiceManager.getService<WorkspaceManager>(WorkspaceManager::class.java)!! }
 
     override fun didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {

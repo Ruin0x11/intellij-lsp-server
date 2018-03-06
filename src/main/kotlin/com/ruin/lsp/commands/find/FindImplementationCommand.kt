@@ -9,6 +9,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.Command
+import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.ensureTargetElement
@@ -18,13 +19,13 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 
 class FindImplementationCommand(val position: Position) : Command<MutableList<Location>> {
-    override fun execute(project: Project, file: PsiFile): MutableList<Location> {
-        val doc = getDocument(file)
+    override fun execute(ctx: ExecutionContext): MutableList<Location> {
+        val doc = getDocument(ctx.file)
             ?: throw LanguageServerException("No document found.")
 
         val offset = positionToOffset(doc, position)
         val ref: Ref<Array<PsiElement>?> = Ref()
-        withEditor(this, file, position) { editor ->
+        withEditor(this, ctx.file, position) { editor ->
             val element = ensureTargetElement(editor)
             ref.set(searchImplementations(editor, element, offset))
         }
