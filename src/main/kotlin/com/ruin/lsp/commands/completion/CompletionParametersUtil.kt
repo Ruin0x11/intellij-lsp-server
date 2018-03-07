@@ -9,9 +9,9 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.util.DocumentUtil
+import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.createFileCopy
 import com.ruin.lsp.util.runUndoTransparentWriteCommand
-import com.ruin.lsp.model.positionToOffset
 import org.eclipse.lsp4j.Position
 import java.io.IOException
 import java.lang.reflect.Constructor

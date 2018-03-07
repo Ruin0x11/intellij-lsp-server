@@ -8,7 +8,6 @@ import com.intellij.featureStatistics.FeatureUsageTracker
 import com.intellij.find.FindManager
 import com.intellij.find.findUsages.PsiElement2UsageTargetAdapter
 import com.intellij.find.impl.FindManagerImpl
-import com.intellij.idea.ActionsBundle
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.navigation.NavigationItem
 import com.intellij.openapi.editor.Editor

@@ -72,14 +72,17 @@ class MyTextDocumentService(val context: MyLanguageServer) : TextDocumentService
 
     override fun didOpen(params: DidOpenTextDocumentParams) {
         workspace.onTextDocumentOpened(params)
+        context.computeDiagnostics(params.textDocument.uri)
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {
         workspace.onTextDocumentChanged(params)
+        context.computeDiagnostics(params.textDocument.uri)
     }
 
     override fun didSave(params: DidSaveTextDocumentParams) {
         workspace.onTextDocumentSaved(params)
+        context.computeDiagnostics(params.textDocument.uri)
     }
 
     override fun didClose(params: DidCloseTextDocumentParams) {

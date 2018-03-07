@@ -4,10 +4,8 @@ import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.navigation.ImplementationSearcher
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException

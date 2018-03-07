@@ -6,7 +6,6 @@ import com.ruin.lsp.model.invokeCommandAndWait
 import com.ruin.lsp.util.getVirtualFile
 import org.eclipse.lsp4j.DocumentHighlight
 import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.TextDocumentIdentifier
 
 abstract class DocumentHighlightCommandTestBase : BaseTestCase() {
     override val projectName: String

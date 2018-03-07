@@ -3,9 +3,7 @@ package com.ruin.lsp.commands.hover
 import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.IndexNotReadyException
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
-import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.util.withEditor

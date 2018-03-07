@@ -59,15 +59,3 @@ fun <T> invokeAndWaitIfNeeded(computable: Computable<T>): T {
     app.invokeAndWait({ ref.set(computable.compute()) }, app.defaultModalityState)
     return ref.get()
 }
-
-/**
- * Like [UIUtil.invokeAndWaitIfNeeded], but
- * uses [Application.invokeAndWait],
- * so you can safely access PSI stuff
- */
-fun <T> invokeAndWaitIfNeeded(computable: ThrowableComputable<T, Exception>): T {
-    val ref: Ref<T> = Ref.create()
-    val app = ApplicationManager.getApplication()
-    app.invokeAndWait({ ref.set(computable.compute()) }, app.defaultModalityState)
-    return ref.get()
-}

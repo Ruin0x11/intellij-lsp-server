@@ -2,16 +2,16 @@ package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.util.diff.Diff
-import com.ruin.lsp.util.*
-import groovy.util.GroovyTestCase.assertEquals
-import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.util.diff.Diff
+import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
 
@@ -32,8 +32,8 @@ class WorkspaceManager {
         val textDocument = params.textDocument
 
         if(managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("URI ${textDocument.uri} was opened again without being closed")
-            return
+            LOG.warn("URI ${textDocument.uri} was opened again without being closed, resetting")
+            managedTextDocuments.remove(textDocument.uri)
         }
 
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
@@ -70,8 +70,6 @@ class WorkspaceManager {
 
         LOG.debug("Handling textDocument/didClose for ${textDocument.uri}")
 
-        val managedTextDoc = managedTextDocuments[textDocument.uri]!!
-
         managedTextDocuments.remove(textDocument.uri)
     }
 
@@ -89,11 +87,9 @@ class WorkspaceManager {
         LOG.debug("contentChanges: $contentChanges")
         LOG.debug("Version before: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
 
-
         runDocumentUpdate(textDocument) { doc ->
             applyContentChangeEventChanges(doc, contentChanges)
         }
-
 
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
     }
@@ -110,6 +106,13 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didSave for ${textDocument.uri}")
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
+
+        ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
+            val (project, file) = resolvePsiFromUri(textDocument.uri) ?: return@Runnable
+            val document = getDocument(file) ?: return@Runnable
+            reloadDocument(document, project)
+            LOG.debug("Reloaded document at ${textDocument.uri}")
+        }))
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {

@@ -222,7 +222,7 @@ fun reloadDocument(doc: Document, project: Project) {
     PsiDocumentManager.getInstance(project).commitDocument(doc)
 }
 
-fun createEditor(context: Disposable, file: PsiFile, position: Position) : EditorEx {
+fun createEditor(context: Disposable, file: PsiFile, position: Position = Position(0, 0)) : EditorEx {
     val doc = getDocument(file)!!
     val editorFactory = EditorFactory.getInstance()
     val created = editorFactory.createEditor(doc, file.project) as EditorEx

@@ -2,7 +2,6 @@ package com.ruin.lsp.commands.symbol
 
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
