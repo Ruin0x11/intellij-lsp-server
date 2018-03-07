@@ -18,6 +18,10 @@ Can also find super method if available.
 ![Go to definition](https://sub.god.jp/f/lcocla.gif)
 ### Go to implementation
 ![Go to implementation](https://sub.god.jp/f/uighbt.gif)
+### Diagnostics
+Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
+
+![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
 
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
