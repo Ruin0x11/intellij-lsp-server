@@ -37,7 +37,7 @@ open class LanguageServerServiceImpl : LanguageServerService {
             val client = launcher.remoteProxy
             // TODO handle other connection types
             LOG.info("Connecting to client.")
-            //languageServer.connect(client)
+            languageServer.connect(client)
             LOG.info("Listening for commands.")
             listening = launcher.startListening()
         }

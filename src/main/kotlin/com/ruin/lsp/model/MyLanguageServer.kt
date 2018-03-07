@@ -1,18 +1,21 @@
 package com.ruin.lsp.model
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeAndWaitIfNeed
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.util.Computable
+import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.commands.diagnostics.DiagnosticsCommand
+import com.ruin.lsp.commands.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.find.FindImplementationCommand
-import com.ruin.lsp.util.DUMMY
-import com.ruin.lsp.util.ensurePsiFromUri
-import com.ruin.lsp.util.invokeAndWaitIfNeeded
-import com.ruin.lsp.util.startProfiler
+import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
@@ -60,17 +63,22 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     fun computeDiagnostics(uri: DocumentUri) {
+        if (client == null) {
+            return
+        }
+
+        val (doc, file) = invokeAndWaitIfNeeded( Computable<Pair<Document, PsiFile>?> {
+            val (_, file) = resolvePsiFromUri(uri) ?: return@Computable null
+            val doc = getDocument(file) ?: return@Computable null
+            Pair(doc, file)
+        }) ?: return
+
         diagnosticsFutures[uri]?.cancel(true)
 
         LOG.info("Computing diagnostics for $uri")
 
-        diagnosticsFutures[uri] = ApplicationManager.getApplication().executeOnPooledThread {
-            val diagnostics = runReadAction {
-                executeAndGetResult(uri, DiagnosticsCommand())
-            }
-            LOG.info("Now publishing diagnostics for $uri to client")
-            client?.publishDiagnostics(diagnostics)
-        }
+        diagnosticsFutures[uri] = ApplicationManager.getApplication()
+            .executeOnPooledThread(DiagnosticsThread(file, doc, client!!))
     }
 
     override fun getTextDocumentService() = myTextDocumentService
@@ -152,4 +160,3 @@ fun defaultServerCapabilities() =
         executeCommandProvider = null
         experimental = null
     }
-

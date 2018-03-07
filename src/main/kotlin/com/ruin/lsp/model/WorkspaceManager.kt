@@ -69,8 +69,6 @@ class WorkspaceManager {
 
         LOG.debug("Handling textDocument/didClose for ${textDocument.uri}")
 
-        val managedTextDoc = managedTextDocuments[textDocument.uri]!!
-
         managedTextDocuments.remove(textDocument.uri)
     }
 

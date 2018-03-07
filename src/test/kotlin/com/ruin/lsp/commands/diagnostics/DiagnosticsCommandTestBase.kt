@@ -22,30 +22,19 @@ import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture
 import com.ruin.lsp.BaseTestCase
 
 
-val projectRef = Ref<Project>()
-
-
 abstract class DiagnosticsCommandTestBase : BaseTestCase() {
-    protected var myFixture: JavaCodeInsightTestFixture? = null
-
     override val projectName: String
         get() = JAVA_PROJECT
 
     protected fun checkDiagnosticsFound(filePath: String, expected: List<Diagnostic>) {
-
-        val project = ensureProject("projects/" + JAVA_PROJECT + "/" + JAVA_PROJECT + ".iml")
         val file = getVirtualFile(project, filePath)
-        ProjectUtil.closeAndDispose(project)
-        val (projectb, psiFile) = ensurePsiFromUri(file.url)
+        val (_, psiFile) = ensurePsiFromUri(file.url)
         val doc = getDocument(file.url)!!
-        val disposable = Disposer.newDisposable()
-        val editor = createEditor(disposable, psiFile)
-        val thing = DiagnosticsThread(psiFile, editor)
-        ApplicationManager.getApplication().executeOnPooledThread(thing).get()
 
-        assert(thing.infos != null)
+        val thread = DiagnosticsThread(psiFile, doc, null)
+        ApplicationManager.getApplication().executeOnPooledThread(thread).get()
 
-        EditorFactory.getInstance().releaseEditor(editor)
+        assert(thread.diags != null)
+        assertSameElements(thread.diags!!, expected)
     }
-
 }
