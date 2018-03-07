@@ -23,10 +23,8 @@ open class Profiler(private var context: LanguageClient?) {
         last = start
     }
 
-    open fun mark(label: String?) {
-        if (label == null) {
-            throw IllegalArgumentException("Label must not be null")
-        } else if (!ENABLED) {
+    open fun mark(label: String) {
+        if (!ENABLED) {
             // don't bother
             return
         }
@@ -63,7 +61,7 @@ open class Profiler(private var context: LanguageClient?) {
 private val ENABLED = true
 
 val DUMMY = object : Profiler(null) {
-    override fun mark(label: String?) {
+    override fun mark(label: String) {
         // nop
     }
 

@@ -29,12 +29,14 @@ import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.net.URLEncoder
+import java.nio.file.Paths
 import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 fun ensurePsiFromUri(uri: String) = resolvePsiFromUri(uri)
-    ?: throw IllegalArgumentException("Unable to resolve project and file at $uri")
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     val (project, filePath) = resolveProjectFromUri(uri) ?: return null
@@ -42,9 +44,12 @@ fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     return Pair(project, file)
 }
 
+fun ensureProjectFromUri(uri: String) = resolveProjectFromUri(uri)
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
+
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
-    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
-    // otherwise it gets confusing to have to look up the line and column being tested in the test project
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the document from them
+    // otherwise it gets confusing to have to look up the line and column being tested in the test document
     val newUri = normalizeUri(uri)
     val uri_b = URI(newUri)
     val topFile = File(uri_b)
@@ -62,7 +67,7 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         directory = directory.parentFile
     }
 
-    LOG.warn("Unable to resolve project from URI $newUri")
+    LOG.warn("Unable to resolve document from URI $newUri")
     return null
 }
 
@@ -70,7 +75,7 @@ val sProjectCache = HashMap<String, Project>()
 
 fun ensureProject(projectPath: String): Project {
     val project = getProject(projectPath)
-        ?: throw IllegalArgumentException("Couldn't find project at " + projectPath)
+        ?: throw IllegalArgumentException("Couldn't find document at " + projectPath)
     if (project.isDisposed)
         throw IllegalArgumentException("Project $project was already disposed!")
 
@@ -85,7 +90,7 @@ fun getProject(projectPath: String): Project? {
         if (!cached.isDisposed) {
             return cached
         } else {
-            LOG.info("Cached project at $projectPath was disposed, reopening.")
+            LOG.info("Cached document at $projectPath was disposed, reopening.")
         }
     }
 
@@ -115,7 +120,7 @@ fun getProject(projectPath: String): Project? {
                 projectRef.set(project)
 
                 hideProjectWindow(project)
-                //mockMessageView(project)
+                //mockMessageView(document)
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: JDOMException) {
@@ -125,16 +130,16 @@ fun getProject(projectPath: String): Project? {
             }
         }
 
-        val project = projectRef.get() ?: throw IOException("Failed to obtain project " + projectPath)
+        val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
 
-        LOG.info("Caching project that was found at $projectPath.")
+        LOG.info("Caching document that was found at $projectPath.")
         sProjectCache[projectPath] = project
         return project
     } catch (e: IOException) {
         e.printStackTrace()
     }
 
-    LOG.warn("Exception occurred trying to find project for path $projectPath")
+    LOG.warn("Exception occurred trying to find document for path $projectPath")
     return null
 }
 
@@ -253,6 +258,8 @@ fun normalizeUri(uri: String): String {
 }
 
 fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
+fun uriToPath(uri: String) = Paths.get("^file:/+".toRegex().replace(normalizeUri(uri), ""))
+    .toString().replace("\\", "/")
 
 private fun hideProjectWindow(project: Project?) {
         val mgr = WindowManager.getInstance();

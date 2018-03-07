@@ -18,7 +18,7 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.ruin.lsp.commands.hover.OneLineJavaDocInfoGeneratorFactory" />
+        <applicationService serviceImplementation="com.ruin.lsp.commands.document.hover.OneLineJavaDocInfoGeneratorFactory" />
         <applicationService serviceImplementation="com.ruin.lsp.model.WorkspaceManager" />
         <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerService"
                             serviceImplementation="com.ruin.lsp.model.LanguageServerServiceImpl" />
