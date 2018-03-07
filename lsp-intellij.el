@@ -4,6 +4,7 @@
 
 ;; Author:  Ruin0x11
 ;; Keywords: java
+;; Package-Requires: ((emacs "25.1") (lsp-mode "3.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,17 +22,25 @@
 ;;; Commentary:
 
 ;; lsp-mode client for intellij-lsp-server.
+;; After installing lsp-mode, you can use it as follows:
+
+;; (with-eval-after-load 'lsp-mode
+;;   (require 'lsp-intellij)
+;;   (add-hook 'java-mode-hook #'lsp-intellij-enable))
+
+;; Then, after opening and configuring a project in your instance of
+;; IDEA that has intellij-lsp-server, navigate to a Java file tracked
+;; by that project.
 
 ;;; Code:
-
-;; TODO: create CI workflow with ert
 
 (require 'lsp-mode)
 
 (defun lsp-intellij--get-root ()
   (let ((file (locate-dominating-file (buffer-file-name)
                                       (lambda (parent)
-                                        (directory-files parent nil ".*.iml")))))
+                                        (when (directory-name-p parent)
+                                          (directory-files parent nil ".*.iml"))))))
     (when (not file)
       (error "No root found."))
     (file-name-directory file)))
@@ -45,6 +54,15 @@
 	(buffer-string))
     (error str)))
 
+(defconst lsp-intellij-dummy-executable
+  (if (eq system-type 'windows-nt)
+      '("cmd")
+    '("sh"))
+  "Program that lsp-mode will open when initializing lsp-intellij.
+
+lsp-mode requires a process to be opened when starting a server over
+TCP, even if it isn't the one being communicated with.")
+
 (defun lsp-intellij--initialize-client (client)
   ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
   ;; so the proper coding system needs to be set to capture the \r\n.
@@ -53,7 +71,7 @@
   (setq-local coding-system-for-write 'binary)
   (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
 
-(lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root '("ruby")
+(lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
                        "127.0.0.1" 8080
                        :initialize #'lsp-intellij--initialize-client)
 
@@ -78,7 +96,7 @@
   (let* ((impls (lsp--send-request (lsp--make-request
                                     "idea/implementations"
                                     (lsp--text-document-position-params))))
-         (items (lsp--locations-to-xref-items impls)))
+         (items (lsp-intellij--locations-to-xref-items impls)))
     (if items
         (xref--show-xrefs items nil)
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
