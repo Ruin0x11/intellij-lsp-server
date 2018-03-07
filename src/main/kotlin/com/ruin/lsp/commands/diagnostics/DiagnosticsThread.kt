@@ -5,16 +5,13 @@ import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.find.offsetToPosition
-import com.ruin.lsp.model.MyLanguageServer
 import com.ruin.lsp.util.getURIForFile
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
@@ -22,6 +19,11 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.services.LanguageClient
 
+/**
+ * Runnable for computing and publishing diagnostics.
+ *
+ * Unlike the other commands, this has to be run using executeOnPooledThread instead of on the EDT.
+ */
 class DiagnosticsThread(val file: PsiFile, val document: Document, val client: LanguageClient?) : Runnable {
     var diags: List<Diagnostic>? = null
 
