@@ -1,5 +1,6 @@
 package com.ruin.lsp.util
 
+import com.intellij.openapi.diagnostic.Logger
 import org.eclipse.lsp4j.services.LanguageClient
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
@@ -12,6 +13,7 @@ import kotlin.collections.forEach
  * @author dhleong
  */
 open class Profiler(private var context: LanguageClient?) {
+    private val LOG = Logger.getInstance(Profiler::class.java)
     private val start: Long = System.nanoTime()
     private val intervals = ArrayList<Pair<String, Long>>()
 
@@ -46,9 +48,9 @@ open class Profiler(private var context: LanguageClient?) {
         mark(label)
         val total = System.nanoTime() - start
         intervals.forEach { (label, duration) ->
-            context?.telemetryEvent(format(duration, label))
+            LOG.debug(format(duration, label))
         }
-        context?.telemetryEvent(format(total, "Total"))
+        LOG.debug(format(total, "Total"))
     }
 
     open fun switchContext(newContext: LanguageClient) {
