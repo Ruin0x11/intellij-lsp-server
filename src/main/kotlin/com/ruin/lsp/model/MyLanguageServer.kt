@@ -1,18 +1,13 @@
 package com.ruin.lsp.model
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeAndWaitIfNeed
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.Command
 import com.ruin.lsp.commands.ExecutionContext
-import com.ruin.lsp.commands.diagnostics.DiagnosticsCommand
 import com.ruin.lsp.commands.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.find.FindImplementationCommand
 import com.ruin.lsp.util.*
