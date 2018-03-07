@@ -28,7 +28,7 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
-    fun onTextDocumentOpened(params: DidOpenTextDocumentParams) {
+    fun onTextDocumentOpened(params: DidOpenTextDocumentParams, client: MyLanguageClient? = null) {
         val textDocument = params.textDocument
 
         if(managedTextDocuments.containsKey(textDocument.uri)) {
@@ -42,6 +42,9 @@ class WorkspaceManager {
             val doc = getDocument(textDocument.uri) ?: return@Computable false
             val project = resolveProjectFromUri(textDocument.uri)?.first ?: return@Computable false
             reloadDocument(doc, project)
+            if (client != null) {
+                registerIndexNotifier(project, client)
+            }
             true
         }))
 

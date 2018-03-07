@@ -71,7 +71,7 @@ class MyTextDocumentService(val context: MyLanguageServer) : TextDocumentService
     }
 
     override fun didOpen(params: DidOpenTextDocumentParams) {
-        workspace.onTextDocumentOpened(params)
+        workspace.onTextDocumentOpened(params, context.client)
         context.computeDiagnostics(params.textDocument.uri)
     }
 

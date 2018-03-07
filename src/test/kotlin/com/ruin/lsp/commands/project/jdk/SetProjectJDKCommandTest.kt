@@ -16,11 +16,6 @@ class SetProjectJDKCommandTest : PlatformTestCase() {
     var jdkBefore: Sdk? = null
     var jdkAfter: Sdk? = null
 
-    override fun setUp() {
-        super.setUp()
-        //jdk = JavaTestUtil.getTestJdk()
-    }
-
     override fun initApplication() {
         super.initApplication()
         jdk = JavaTestUtil.getTestJdk()
@@ -34,7 +29,6 @@ class SetProjectJDKCommandTest : PlatformTestCase() {
             jdkTable.removeJdk(jdk)
         }
     }
-
 
     fun `test sets jdk`() {
         val uri = getURIForFile(jdk!!.homeDirectory!!)

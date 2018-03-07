@@ -34,7 +34,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     var myTextDocumentService = MyTextDocumentService(this)
     var myWorkspaceService = MyWorkspaceService(this)
 
-    var client: LanguageClient? = null
+    var client: MyLanguageClient? = null
     var diagnosticsFutures: HashMap<DocumentUri, Future<*>> = HashMap()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
@@ -58,7 +58,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     override fun connect(client: LanguageClient?) {
-        this.client = client
+        this.client = client as MyLanguageClient
     }
 
     fun computeDiagnostics(uri: DocumentUri) {

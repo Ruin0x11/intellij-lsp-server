@@ -35,6 +35,7 @@
 ;;; Code:
 
 (require 'lsp-mode)
+(require 'cl)
 
 (defun lsp-intellij--get-root ()
   (let ((file (locate-dominating-file (buffer-file-name)
@@ -44,36 +45,6 @@
     (when (not file)
       (error "No root found."))
     (file-name-directory file)))
-
-(defun lsp-intellij--render-string (str)
-  (condition-case nil
-      (with-temp-buffer
-	(delay-mode-hooks (java-mode))
-	(insert str)
-	(font-lock-ensure)
-	(buffer-string))
-    (error str)))
-
-(defconst lsp-intellij-dummy-executable
-  (if (eq system-type 'windows-nt)
-      '("cmd")
-    '("sh"))
-  "Program that lsp-mode will open when initializing lsp-intellij.
-
-lsp-mode requires a process to be opened when starting a server over
-TCP, even if it isn't the one being communicated with.")
-
-(defun lsp-intellij--initialize-client (client)
-  ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
-  ;; so the proper coding system needs to be set to capture the \r\n.
-  (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
-  (setq-local coding-system-for-read 'binary)
-  (setq-local coding-system-for-write 'binary)
-  (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
-
-(lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
-                       "127.0.0.1" 8080
-                       :initialize #'lsp-intellij--initialize-client)
 
 (defun lsp-intellij--locations-to-xref-items (locations)
   "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."
@@ -100,6 +71,84 @@ TCP, even if it isn't the one being communicated with.")
     (if items
         (xref--show-xrefs items nil)
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
+
+(defconst lsp-intellij--javac-names
+  '("bin/javac" "bin/javac.exe"))
+
+(defconst lsp-intellij--runtime-jar-names
+  '("jre/lib/rt.jar"         ;; JDK
+    "lib/rt.jar"             ;; JRE
+    "lib/jrt-fs.jar"         ;; Jigsaw JDK/JRE
+    "modules/java.base"      ;; Jigsaw JDK/JRE
+    "../Classes/classes.jar" ;; Apple JDK
+    "jre/lib/vm.jar"         ;; IBM JDK
+    "classes/"               ;; custom build
+    ))
+
+(defun lsp-intellij--valid-jdk-root-p (jdk-root)
+  (when (file-exists-p jdk-root)
+    (let* ((pred (lambda (f) (file-exists-p
+                              (expand-file-name f jdk-root))))
+           (has-jre (cl-some pred lsp-intellij--runtime-jar-names))
+           (has-jdk (and has-jre
+                         (cl-some pred lsp-intellij--javac-names))))
+      has-jdk)))
+
+(defun lsp-intellij--make-set-project-jdk-params (jdk-root)
+  (plist-put (list :textDocument (lsp--text-document-identifier))
+             :rootPath jdk-root))
+
+(defun lsp-intellij-set-project-jdk (jdk-root)
+  "Set the current project's JDK."
+  (interactive
+   (let ((jdk-root
+          (read-directory-name "Path to JDK: " (or (getenv "JAVA_HOME") nil))))
+
+     (if (lsp-intellij--valid-jdk-root-p jdk-root)
+         (lsp--send-request (lsp--make-request "idea/setProjectJdk"
+                                               (lsp-intellij--make-set-project-jdk-params jdk-root)))
+         (error (format "Path does not lead to a valid JDK: %s" jdk-root)))
+     )))
+
+(defun lsp-intellij--render-string (str)
+  (condition-case nil
+      (with-temp-buffer
+	(delay-mode-hooks (java-mode))
+	(insert str)
+	(font-lock-ensure)
+	(buffer-string))
+    (error str)))
+
+(defconst lsp-intellij-dummy-executable
+  (if (eq system-type 'windows-nt)
+      '("cmd")
+    '("sh"))
+  "Program that lsp-mode will open when initializing lsp-intellij.
+
+lsp-mode requires a process to be opened when starting a server over
+TCP, even if it isn't the one being communicated with.")
+
+(defconst lsp-intellij--handlers
+  '(("idea/indexStarted" .
+     (lambda (_w _p)
+       (setq lsp-status "(indexing)")))
+    ("idea/indexFinished" .
+     (lambda (_w _p)
+       ((setq lsp-status nil))))))
+
+(defun lsp-intellij--initialize-client (client)
+  (mapcar #'(lambda (p) (lsp-client-on-notification client (car p) (cdr p)))
+	  lsp-intellij--handlers)
+  ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
+  ;; so the proper coding system needs to be set to capture the \r\n.
+  (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
+  (setq-local coding-system-for-read 'binary)
+  (setq-local coding-system-for-write 'binary)
+  (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
+
+(lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
+                       "127.0.0.1" 8080
+                       :initialize #'lsp-intellij--initialize-client)
 
 (provide 'lsp-intellij)
 ;;; lsp-intellij.el ends here

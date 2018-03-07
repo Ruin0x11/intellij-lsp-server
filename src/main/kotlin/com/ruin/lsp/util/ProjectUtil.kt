@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.Computable
@@ -24,12 +25,12 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
+import com.ruin.lsp.model.MyLanguageClient
 import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.net.URI
-import java.net.URLEncoder
 import java.nio.file.Paths
 import java.util.*
 
@@ -71,7 +72,36 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
     return null
 }
 
-val sProjectCache = HashMap<String, Project>()
+data class CachedProject(val project: Project, var disposable: Disposable? = null)
+
+val sProjectCache = HashMap<String, CachedProject>()
+
+internal class DumbModeNotifier(private val client: MyLanguageClient?) : DumbService.DumbModeListener {
+    override fun enteredDumbMode() {
+        client?.notifyIndexingStarted()
+    }
+
+    override fun exitDumbMode() {
+        client?.notifyIndexingEnded()
+    }
+}
+
+fun registerIndexNotifier(project: Project, client: MyLanguageClient) {
+    val cached = sProjectCache.values.find { it.project == project } ?: return
+    if(cached.disposable != null) {
+        return
+    }
+    cached.disposable = Disposer.newDisposable()
+    project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client))
+}
+
+fun cacheProject(absolutePath: String, project: Project) {
+    LOG.info("Caching project that was found at $absolutePath.")
+    if(sProjectCache.containsKey(absolutePath)) {
+        sProjectCache[absolutePath]!!.disposable?.dispose()
+    }
+    sProjectCache[absolutePath] = CachedProject(project)
+}
 
 fun ensureProject(projectPath: String): Project {
     val project = getProject(projectPath)
@@ -87,8 +117,8 @@ fun getProject(projectPath: String): Project? {
 
     val cached = sProjectCache[projectPath]
     if (cached != null) {
-        if (!cached.isDisposed) {
-            return cached
+        if (!cached.project.isDisposed) {
+            return cached.project
         } else {
             LOG.info("Cached document at $projectPath was disposed, reopening.")
         }
@@ -132,8 +162,7 @@ fun getProject(projectPath: String): Project? {
 
         val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
 
-        LOG.info("Caching document that was found at $projectPath.")
-        sProjectCache[projectPath] = project
+        cacheProject(projectPath, project)
         return project
     } catch (e: IOException) {
         e.printStackTrace()
