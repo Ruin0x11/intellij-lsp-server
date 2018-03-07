@@ -22,10 +22,10 @@ import java.util.*
 class OneLineJavaDocInfoGenerator(val myProject: Project, val myElement: PsiElement) : JavaDocInfoGenerator(myProject, myElement) {
     override fun generateDocInfoCore(buffer: StringBuilder, generatePrologueAndEpilogue: Boolean): Boolean {
         when (myElement) {
-            is PsiClass -> generateClassJavaDoc(buffer, myElement)
-            is PsiMethod -> generateMethodJavaDoc(buffer, myElement)
-            is PsiField -> generateFieldJavaDoc(buffer, myElement)
-            is PsiVariable -> generateVariableJavaDoc(buffer, myElement)
+            is PsiClass -> generateClassJavaDoc(buffer, myElement, true)
+            is PsiMethod -> generateMethodJavaDoc(buffer, myElement, true)
+            is PsiField -> generateFieldJavaDoc(buffer, myElement, true)
+            is PsiVariable -> generateVariableJavaDoc(buffer, myElement, true)
             else -> {
                 LOG.debug("Documentation not handled for $myElement")
                 return false
@@ -41,8 +41,9 @@ private val THROWS_KEYWORD = "throws"
 private val LT = "<"
 private val GT = ">"
 private val NBSP = " "
+private val VERBOSE_PACKAGES = false
 
-private fun generateClassJavaDoc(buffer: StringBuilder, aClass: PsiClass) {
+private fun generateClassJavaDoc(buffer: StringBuilder, aClass: PsiClass, useShortNames: Boolean) {
     if (aClass is PsiAnonymousClass) return
 
     val file = aClass.containingFile
@@ -55,10 +56,10 @@ private fun generateClassJavaDoc(buffer: StringBuilder, aClass: PsiClass) {
         }
     }
 
-    generateClassSignature(buffer, aClass)
+    generateClassSignature(buffer, aClass, useShortNames)
 }
 
-private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boolean {
+private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass, useShortNames: Boolean): Boolean {
     val modifiers = PsiFormatUtil.formatModifiers(aClass, PsiFormatUtilBase.JAVADOC_MODIFIERS_ONLY)
     if (!modifiers.isEmpty()) {
         buffer.append(modifiers)
@@ -74,13 +75,13 @@ private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boo
     val labelText = JavaDocUtil.getLabelText(aClass.project, aClass.manager, refText, aClass)
     buffer.append(labelText)
 
-    buffer.append(generateTypeParameters(aClass, false))
+    buffer.append(generateTypeParameters(aClass, useShortNames))
 
     buffer.append(" ")
 
     var refs = aClass.extendsListTypes
 
-    val qName = aClass.qualifiedName
+    val qName = if (useShortNames) aClass.qualifiedName else aClass.name
 
     if (refs.isNotEmpty() || !aClass.isInterface && (qName == null || qName != CommonClassNames.JAVA_LANG_OBJECT)) {
         buffer.append("extends ")
@@ -88,7 +89,7 @@ private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boo
             buffer.append(CommonClassNames.JAVA_LANG_OBJECT)
         } else {
             for (i in refs.indices) {
-                generateType(buffer, refs[i], aClass)
+                generateType(buffer, refs[i], aClass, useShortNames)
                 if (i < refs.size - 1) {
                     buffer.append(",")
                     buffer.append(NBSP)
@@ -100,10 +101,10 @@ private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boo
 
     refs = aClass.implementsListTypes
 
-    if (refs.size > 0) {
+    if (refs.isNotEmpty()) {
         buffer.append("implements ")
         for (i in refs.indices) {
-            generateType(buffer, refs[i], aClass)
+            generateType(buffer, refs[i], aClass, useShortNames)
             if (i < refs.size - 1) {
                 buffer.append(",")
                 buffer.append(NBSP)
@@ -117,11 +118,11 @@ private fun generateClassSignature(buffer: StringBuilder, aClass: PsiClass): Boo
     return false
 }
 
-private fun generateMethodJavaDoc(buffer: StringBuilder, method: PsiMethod) {
-    generateMethodSignature(buffer, method)
+private fun generateMethodJavaDoc(buffer: StringBuilder, method: PsiMethod, useShortNames: Boolean) {
+    generateMethodSignature(buffer, method, useShortNames)
 }
 
-private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
+private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod, useShortNames: Boolean) {
     val modifiers = PsiFormatUtil.formatModifiers(method, PsiFormatUtilBase.JAVADOC_MODIFIERS_ONLY)
     if (!modifiers.isEmpty()) {
         buffer.append(modifiers)
@@ -136,7 +137,7 @@ private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
     }
 
     if (method.returnType != null) {
-        generateType(buffer, method.returnType!!, method)
+        generateType(buffer, method.returnType!!, method, useShortNames)
         buffer.append(NBSP)
     }
     val name = method.name
@@ -147,7 +148,7 @@ private fun generateMethodSignature(buffer: StringBuilder, method: PsiMethod) {
     val parameters = method.parameterList.parameters
     for (i in parameters.indices) {
         val parm = parameters[i]
-        generateType(buffer, parm.type, method)
+        generateType(buffer, parm.type, method, useShortNames)
         buffer.append(NBSP)
         if (parm.name != null) {
             buffer.append(parm.name)
@@ -186,17 +187,17 @@ fun generateType(buffer: StringBuilder, type: PsiType, context: PsiElement): Int
 /**
  * @return Length of the generated label.
  */
-fun generateType(buffer: StringBuilder, type: PsiType, context: PsiElement, generateLink: Boolean): Int {
-    return generateType(buffer, type, context, generateLink, false)
+fun generateType(buffer: StringBuilder, type: PsiType, context: PsiElement, useShortNames: Boolean): Int {
+    return generateType(buffer, type, context, useShortNames, false)
 }
 
 /**
  * @return Length of the generated label.
  */
-fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, generateLink: Boolean, useShortNames: Boolean): Int {
+fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, useShortNames: Boolean, generateLink: Boolean): Int {
     var typeToGen = type
     if (typeToGen is PsiPrimitiveType) {
-        val text = typeToGen.canonicalText
+        val text = if (useShortNames) typeToGen.presentableText else typeToGen.canonicalText
         buffer.append(text)
         return text.length
     }
@@ -244,13 +245,12 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
         val psiSubst = result.substitutor
 
         if (psiClass == null) {
-            val canonicalText = typeToGen.canonicalText
-            val text = canonicalText
+            val text = if (useShortNames) typeToGen.presentableText else typeToGen.canonicalText
             buffer.append(text)
-            return canonicalText.length
+            return text.length
         }
 
-        val qName = psiClass.qualifiedName
+        val qName = if (useShortNames) psiClass.qualifiedName else psiClass.name
 
         if (qName == null || psiClass is PsiTypeParameter) {
             val text = if (useShortNames) typeToGen.presentableText else typeToGen.canonicalText
@@ -318,7 +318,7 @@ fun generateType(buffer: StringBuilder, type: PsiType?, context: PsiElement, gen
                     buffer.append(separator)
                     length += 3
                 }
-                length += generateType(buffer, psiType, context, true, useShortNames)
+                length += generateType(buffer, psiType, context, useShortNames)
             }
             return length
         }
@@ -343,7 +343,7 @@ private fun generateTypeParameters(owner: PsiTypeParameterListOwner, useShortNam
             if (refs.isNotEmpty()) {
                 buffer.append(" extends ")
                 for (j in refs.indices) {
-                    generateType(buffer, refs[j], owner, true, useShortNames)
+                    generateType(buffer, refs[j], owner, useShortNames)
                     if (j < refs.size - 1) {
                         buffer.append(" & ")
                     }
@@ -362,40 +362,40 @@ private fun generateTypeParameters(owner: PsiTypeParameterListOwner, useShortNam
     return ""
 }
 
-private fun generateFieldJavaDoc(buffer: StringBuilder, field: PsiField) {
-    generateFieldSignature(buffer, field)
+private fun generateFieldJavaDoc(buffer: StringBuilder, field: PsiField, useShortNames: Boolean) {
+    generateFieldSignature(buffer, field, useShortNames)
 
     ColorUtil.appendColorPreview(field, buffer)
 }
 
-private fun generateFieldSignature(buffer: StringBuilder, field: PsiField) {
+private fun generateFieldSignature(buffer: StringBuilder, field: PsiField, useShortNames: Boolean) {
     val modifiers = PsiFormatUtil.formatModifiers(field, PsiFormatUtilBase.JAVADOC_MODIFIERS_ONLY)
     if (!modifiers.isEmpty()) {
         buffer.append(modifiers)
         buffer.append(" ")
     }
-    generateType(buffer, field.type, field)
+    generateType(buffer, field.type, field, useShortNames)
     buffer.append(" ")
     buffer.append(field.name)
-    appendInitializer(buffer, field)
+    appendInitializer(buffer, field, useShortNames)
     JavaDocInfoGenerator.enumConstantOrdinal(buffer, field, field.containingClass, "\n")
 }
 
-private fun generateVariableJavaDoc(buffer: StringBuilder, variable: PsiVariable) {
+private fun generateVariableJavaDoc(buffer: StringBuilder, variable: PsiVariable, useShortNames: Boolean) {
     val modifiers = PsiFormatUtil.formatModifiers(variable, PsiFormatUtilBase.JAVADOC_MODIFIERS_ONLY)
     if (!modifiers.isEmpty()) {
         buffer.append(modifiers)
         buffer.append(" ")
     }
-    generateType(buffer, variable.getType(), variable)
+    generateType(buffer, variable.type, variable, useShortNames)
     buffer.append(" ")
-    buffer.append(variable.getName())
-    appendInitializer(buffer, variable)
+    buffer.append(variable.name)
+    appendInitializer(buffer, variable, useShortNames)
 
     ColorUtil.appendColorPreview(variable, buffer)
 }
 
-private fun appendInitializer(buffer: StringBuilder, variable: PsiVariable) {
+private fun appendInitializer(buffer: StringBuilder, variable: PsiVariable, useShortNames: Boolean) {
     val initializer = variable.initializer
     if (initializer != null) {
         buffer.append(" = ")
@@ -413,7 +413,7 @@ private fun appendInitializer(buffer: StringBuilder, variable: PsiVariable) {
             buffer.append(text)
             buffer.append("...")
         } else {
-            initializer.accept(MyVisitor(buffer))
+            initializer.accept(MyVisitor(buffer, useShortNames))
         }
         val constantInitializer = JavaDocInfoGenerator.calcInitializerExpression(variable)
         if (constantInitializer != null) {
@@ -439,12 +439,12 @@ fun appendExpressionValue(buffer: StringBuilder, initializer: PsiExpression, lab
     }
 }
 
-private class MyVisitor internal constructor(private val myBuffer: StringBuilder) : JavaElementVisitor() {
+private class MyVisitor internal constructor(private val myBuffer: StringBuilder, private val useShortNames: Boolean) : JavaElementVisitor() {
     override fun visitNewExpression(expression: PsiNewExpression) {
         myBuffer.append("new ")
         val type = expression.type
         if (type != null) {
-            generateType(myBuffer, type, expression)
+            generateType(myBuffer, type, expression, useShortNames)
         }
         val dimensions = expression.arrayDimensions
         if (dimensions.isNotEmpty()) {
@@ -469,7 +469,7 @@ private class MyVisitor internal constructor(private val myBuffer: StringBuilder
             expression.accept(this)
             myBuffer.append(separator)
         }
-        if (expressions.size > 0) {
+        if (expressions.isNotEmpty()) {
             myBuffer.setLength(myBuffer.length - separator.length)
         }
         myBuffer.append(")")

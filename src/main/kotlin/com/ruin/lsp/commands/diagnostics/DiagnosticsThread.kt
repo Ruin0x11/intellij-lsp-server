@@ -24,9 +24,15 @@ import org.eclipse.lsp4j.services.LanguageClient
 
 class DiagnosticsThread(val file: PsiFile, val document: Document, val client: LanguageClient?) : Runnable {
     var diags: List<Diagnostic>? = null
-    private val LOG = Logger.getInstance(DiagnosticsThread::class.java)
 
     override fun run() {
+        // Wait in case the user is updating a lot of text at once
+        try {
+            Thread.sleep(1000)
+        } catch (e: InterruptedException) {
+
+        }
+
         val infos = getHighlights(file, document)
         diags = infos.mapNotNull { it.toDiagnostic(document) }
         client?.publishDiagnostics(PublishDiagnosticsParams(getURIForFile(file), diags))

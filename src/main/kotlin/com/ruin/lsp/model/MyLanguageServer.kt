@@ -75,8 +75,6 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 
         diagnosticsFutures[uri]?.cancel(true)
 
-        LOG.info("Computing diagnostics for $uri")
-
         diagnosticsFutures[uri] = ApplicationManager.getApplication()
             .executeOnPooledThread(DiagnosticsThread(file, doc, client!!))
     }
