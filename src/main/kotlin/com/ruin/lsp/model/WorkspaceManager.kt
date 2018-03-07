@@ -5,6 +5,7 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
@@ -31,8 +32,8 @@ class WorkspaceManager {
         val textDocument = params.textDocument
 
         if(managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("URI ${textDocument.uri} was opened again without being closed")
-            return
+            LOG.warn("URI ${textDocument.uri} was opened again without being closed, resetting")
+            managedTextDocuments.remove(textDocument.uri)
         }
 
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
@@ -86,11 +87,9 @@ class WorkspaceManager {
         LOG.debug("contentChanges: $contentChanges")
         LOG.debug("Version before: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
 
-
         runDocumentUpdate(textDocument) { doc ->
             applyContentChangeEventChanges(doc, contentChanges)
         }
-
 
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
     }
@@ -107,6 +106,13 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didSave for ${textDocument.uri}")
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
+
+        ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
+            val (project, file) = resolvePsiFromUri(textDocument.uri) ?: return@Runnable
+            val document = getDocument(file) ?: return@Runnable
+            reloadDocument(document, project)
+            LOG.debug("Reloaded document at ${textDocument.uri}")
+        }))
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {
