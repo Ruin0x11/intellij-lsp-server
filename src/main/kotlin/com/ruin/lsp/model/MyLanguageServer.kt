@@ -88,9 +88,10 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
         asInvokeAndWaitFuture(params.textDocument.uri, FindImplementationCommand(params.position), client)
 
-    override fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(params.textDocument.uri, SetProjectJDKCommand(params.jdkRootUri))
+    override fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<SetProjectJDKResult> =
+        asInvokeAndWaitFuture(params.textDocument.uri, SetProjectJDKCommand(params.jdkRootUri, params.kind))
 }
+
 
 fun <T: Any> asInvokeAndWaitFuture(
     uri: DocumentUri,
@@ -101,7 +102,6 @@ fun <T: Any> asInvokeAndWaitFuture(
             command.execute(project)
         })
     }
-
 
 fun <T: Any> asInvokeAndWaitFuture(
     uri: DocumentUri,
@@ -121,14 +121,16 @@ fun <T: Any> asCancellableInvokeAndWaitFuture(
         executeAndGetResult(uri, command, client, server, cancelToken)
     }
 
+private val LOG = Logger.getInstance(MyLanguageServer::class.java)
+
 private fun <T : Any> executeAndGetResult(
     uri: DocumentUri,
     command: DocumentCommand<T>,
     client: LanguageClient? = null,
     server: LanguageServer? = null,
-    cancelToken: CancelChecker? = null): T =
-    invokeAndWaitIfNeeded(Computable<T> {
-        val (project, file) = ensurePsiFromUri(uri)
+    cancelToken: CancelChecker? = null): T {
+    val (project, file) = ensurePsiFromUri(uri)
+    return invokeAndWaitIfNeeded(Computable<T> {
         val profiler = if (client != null) startProfiler(client) else DUMMY
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
         profiler.finish("Done")
@@ -136,7 +138,7 @@ private fun <T : Any> executeAndGetResult(
         command.dispose()
         result
     })
-
+}
 
 
 fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,

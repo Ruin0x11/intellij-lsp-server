@@ -60,6 +60,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
+        setPlugins("DevKit", "properties")
     }
 
     tasks.withType<KotlinCompile> {
@@ -112,7 +113,6 @@ project(":") {
         }
     }
 }
-
 fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties")

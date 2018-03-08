@@ -33,7 +33,9 @@ class ProjectUtilTest : BaseTestCase() {
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
             "file://E:\\Program Files\\test.txt",
-            "file:///E:/Program Files/test.txt"
+            "file:///E:/Program Files/test.txt",
+            "file:///E:/Program%20Files/test.txt",
+            "file:///E:/Program%20Files/test.txt/"
         ).map(::normalizeUri)
 
         cases.forEach {

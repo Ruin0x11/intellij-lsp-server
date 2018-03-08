@@ -8,6 +8,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
@@ -80,8 +81,9 @@ fun doHighlighting(context: Disposable,
 
     Disposer.register(context, progress)
 
+    val project = psiFile.project
+
     return ProgressManager.getInstance().runProcess(Computable {
-        val project = psiFile.project
         val analyzer = DaemonCodeAnalyzerEx.getInstanceEx(project)
 
         // ensure we get fresh results; the restart also seems to
@@ -90,9 +92,13 @@ fun doHighlighting(context: Disposable,
 
         ReadAction.compute<List<HighlightInfo>, Exception> {
             // analyze!
-            analyzer.restart(psiFile)
-            analyzer.runMainPasses(
-                psiFile, doc, progress)
+            try {
+                analyzer.restart(psiFile)
+                analyzer.runMainPasses(
+                    psiFile, doc, progress)
+            } catch (e: IndexNotReadyException) {
+                listOf()
+            }
         }
 
     }, progress)

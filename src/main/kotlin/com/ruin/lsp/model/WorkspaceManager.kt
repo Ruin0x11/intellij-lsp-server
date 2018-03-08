@@ -6,6 +6,7 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
@@ -44,6 +45,10 @@ class WorkspaceManager {
             reloadDocument(doc, project)
             if (client != null) {
                 registerIndexNotifier(project, client)
+                val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+                if (projectSdk == null) {
+                    client?.showMessage(MessageParams(MessageType.Warning, "Project SDK is not defined. Use idea/setProjectSdk to set it up."))
+                }
             }
             true
         }))

@@ -85,6 +85,10 @@
     "classes/"               ;; custom build
     ))
 
+(defconst lsp-intellij--sdk-kinds
+  '(("JDK" 1)
+    ("IntelliJ Platform Plugin SDK" 2)))
+
 (defun lsp-intellij--valid-jdk-root-p (jdk-root)
   (when (file-exists-p jdk-root)
     (let* ((pred (lambda (f) (file-exists-p
@@ -94,25 +98,32 @@
                          (cl-some pred lsp-intellij--javac-names))))
       has-jdk)))
 
-(defun lsp-intellij--make-set-project-jdk-params (jdk-root)
+(defun lsp-intellij--make-set-project-jdk-params (jdk-root sdk-kind)
   (list :textDocument (lsp--text-document-identifier)
-        :jdkRootUri (lsp--path-to-uri jdk-root)))
+        :jdkRootUri (lsp--path-to-uri jdk-root)
+        :kind sdk-kind))
 
-(defun lsp-intellij-set-project-jdk (jdk-root)
-  "Set the current project's JDK."
+(defun lsp-intellij-set-project-sdk (jdk-root sdk-kind)
+  "Set the current project's SDK."
   (interactive
    (let ((jdk-root
-          (read-directory-name "Path to JDK: " (or (getenv "JAVA_HOME") nil))))
-
+          (read-directory-name "Path to JDK: " (or (getenv "JAVA_HOME") nil)))
+         (sdk-kind
+          (cadr (assoc (completing-read "SDK kind: " lsp-intellij--sdk-kinds)
+                       lsp-intellij--sdk-kinds))))
      (if (lsp-intellij--valid-jdk-root-p jdk-root)
-         (let ((response (lsp--send-request
-                          (lsp--make-request "idea/setProjectJdk"
-                                             (lsp-intellij--make-set-project-jdk-params jdk-root)))))
-           (if response
-               (message "Project JDK set.")
-             (message (format "Failed to set project JDK: %s" jdk-root))))
-       (error (format "Path does not lead to a valid JDK: %s" jdk-root)))
-     )))
+         (lsp-intellij--set-project-jdk-request jdk-root sdk-kind)
+       (error (format "Path does not lead to a valid JDK: %s" jdk-root))))))
+
+(defun lsp-intellij--set-project-jdk-request (jdk-root sdk-kind)
+  (let* ((response (lsp--send-request
+                   (lsp--make-request "idea/setProjectJdk"
+                                      (lsp-intellij--make-set-project-jdk-params jdk-root sdk-kind))))
+         (success (gethash "success" response))
+         (version (gethash "version" response)))
+    (if success
+        (message (format "Set project to JDK version: %s" version))
+      (message (format "Failed to set project JDK: %s" jdk-root)))))
 
 (defun lsp-intellij--render-string (str)
   (condition-case nil
@@ -138,7 +149,7 @@ TCP, even if it isn't the one being communicated with.")
        (setq lsp-status "(indexing)")))
     ("idea/indexFinished" .
      (lambda (_w _p)
-       ((setq lsp-status nil))))))
+       (setq lsp-status nil)))))
 
 (defun lsp-intellij--initialize-client (client)
   (mapcar #'(lambda (p) (lsp-client-on-notification client (car p) (cdr p)))

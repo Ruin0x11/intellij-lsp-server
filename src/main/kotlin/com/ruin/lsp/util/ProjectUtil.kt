@@ -79,11 +79,11 @@ val sProjectCache = HashMap<String, CachedProject>()
 
 internal class DumbModeNotifier(private val client: MyLanguageClient?) : DumbService.DumbModeListener {
     override fun enteredDumbMode() {
-        client?.notifyIndexingStarted()
+        client?.notifyIndexStarted()
     }
 
     override fun exitDumbMode() {
-        client?.notifyIndexingEnded()
+        client?.notifyIndexFinished()
     }
 }
 
@@ -150,7 +150,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                hideProjectWindow(project)
+                //hideProjectWindow(project)
                 //mockMessageView(document)
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -282,16 +282,25 @@ fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
  */
 fun normalizeUri(uri: String): String {
     val protocolRegex = "^file:/+".toRegex()
-
-    return protocolRegex.replace(uri, "file:///")
-        .replace("\\", "/")
+    val trailingSlashRegex = "/$".toRegex()
+    var decodedUri = URLDecoder.decode(uri, "UTF-8")
+    decodedUri = trailingSlashRegex.replace(decodedUri, "")
+    decodedUri = protocolRegex.replace(decodedUri, "file:///")
+    return decodedUri.replace("\\", "/")
 }
 
 fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
 fun uriToPath(uri: String): String {
     val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
-    return Paths.get("^file:/+".toRegex().replace(newUri, ""))
-        .toString().replace("\\", "/")
+
+    val isWindowsPath = """^file:/+\w:""".toRegex().containsMatchIn(newUri)
+
+    return if (isWindowsPath)
+        Paths.get("^file:/+".toRegex().replace(newUri, ""))
+            .toString().replace("\\", "/")
+    else {
+        "^file:/+".toRegex().replace(newUri, "/")
+    }
 }
 
 private fun hideProjectWindow(project: Project?) {
