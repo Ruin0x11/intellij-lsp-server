@@ -26,6 +26,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
 import com.ruin.lsp.model.MyLanguageClient
+import com.ruin.lsp.model.MyLanguageServer
 import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
 import java.io.File
@@ -77,23 +78,25 @@ data class CachedProject(val project: Project, var disposable: Disposable? = nul
 
 val sProjectCache = HashMap<String, CachedProject>()
 
-internal class DumbModeNotifier(private val client: MyLanguageClient?) : DumbService.DumbModeListener {
+internal class DumbModeNotifier(private val client: MyLanguageClient?,
+                                private val server: MyLanguageServer?) : DumbService.DumbModeListener {
     override fun enteredDumbMode() {
         client?.notifyIndexStarted()
     }
 
     override fun exitDumbMode() {
         client?.notifyIndexFinished()
+        server?.computeAllDiagnostics()
     }
 }
 
-fun registerIndexNotifier(project: Project, client: MyLanguageClient) {
+fun registerIndexNotifier(project: Project, client: MyLanguageClient, server: MyLanguageServer) {
     val cached = sProjectCache.values.find { it.project == project } ?: return
     if(cached.disposable != null) {
         return
     }
     cached.disposable = Disposer.newDisposable()
-    project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client))
+    project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client, server))
 
     if(DumbService.isDumb(project)) {
         client.notifyIndexStarted()
@@ -165,6 +168,11 @@ fun getProject(projectPath: String): Project? {
         }
 
         val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
+
+        // Wait until the project is initialized to prevent invokeAndWait hangs
+        while(!project.isInitialized) {
+            Thread.sleep(1000)
+        }
 
         cacheProject(projectPath, project)
         return project
