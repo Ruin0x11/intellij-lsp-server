@@ -5,7 +5,7 @@ buildscript {
 apply plugin: 'java'
 
 jar {
-    baseName = 'multi-module-project'
+    baseName = 'multi-module-document'
     version = '0.0.1-SNAPSHOT'
 }
 sourceCompatibility = 1.8

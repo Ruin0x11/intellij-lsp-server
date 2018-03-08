@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.Computable
@@ -24,17 +25,20 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
+import com.ruin.lsp.model.MyLanguageClient
 import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.net.URLDecoder
+import java.nio.file.Paths
 import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 fun ensurePsiFromUri(uri: String) = resolvePsiFromUri(uri)
-    ?: throw IllegalArgumentException("Unable to resolve project and file at $uri")
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
 fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     val (project, filePath) = resolveProjectFromUri(uri) ?: return null
@@ -42,9 +46,12 @@ fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
     return Pair(project, file)
 }
 
+fun ensureProjectFromUri(uri: String) = resolveProjectFromUri(uri)
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
+
 fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
-    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
-    // otherwise it gets confusing to have to look up the line and column being tested in the test project
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the document from them
+    // otherwise it gets confusing to have to look up the line and column being tested in the test document
     val newUri = normalizeUri(uri)
     val uri_b = URI(newUri)
     val topFile = File(uri_b)
@@ -62,15 +69,48 @@ fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
         directory = directory.parentFile
     }
 
-    LOG.warn("Unable to resolve project from URI $newUri")
+    LOG.warn("Unable to resolve document from URI $newUri")
     return null
 }
 
-val sProjectCache = HashMap<String, Project>()
+data class CachedProject(val project: Project, var disposable: Disposable? = null)
+
+val sProjectCache = HashMap<String, CachedProject>()
+
+internal class DumbModeNotifier(private val client: MyLanguageClient?) : DumbService.DumbModeListener {
+    override fun enteredDumbMode() {
+        client?.notifyIndexStarted()
+    }
+
+    override fun exitDumbMode() {
+        client?.notifyIndexFinished()
+    }
+}
+
+fun registerIndexNotifier(project: Project, client: MyLanguageClient) {
+    val cached = sProjectCache.values.find { it.project == project } ?: return
+    if(cached.disposable != null) {
+        return
+    }
+    cached.disposable = Disposer.newDisposable()
+    project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client))
+
+    if(DumbService.isDumb(project)) {
+        client.notifyIndexStarted()
+    }
+}
+
+fun cacheProject(absolutePath: String, project: Project) {
+    LOG.info("Caching project that was found at $absolutePath.")
+    if(sProjectCache.containsKey(absolutePath)) {
+        sProjectCache[absolutePath]!!.disposable?.dispose()
+    }
+    sProjectCache[absolutePath] = CachedProject(project)
+}
 
 fun ensureProject(projectPath: String): Project {
     val project = getProject(projectPath)
-        ?: throw IllegalArgumentException("Couldn't find project at " + projectPath)
+        ?: throw IllegalArgumentException("Couldn't find document at " + projectPath)
     if (project.isDisposed)
         throw IllegalArgumentException("Project $project was already disposed!")
 
@@ -82,10 +122,10 @@ fun getProject(projectPath: String): Project? {
 
     val cached = sProjectCache[projectPath]
     if (cached != null) {
-        if (!cached.isDisposed) {
-            return cached
+        if (!cached.project.isDisposed) {
+            return cached.project
         } else {
-            LOG.info("Cached project at $projectPath was disposed, reopening.")
+            LOG.info("Cached document at $projectPath was disposed, reopening.")
         }
     }
 
@@ -114,8 +154,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                hideProjectWindow(project)
-                //mockMessageView(project)
+                hideProjectFrame(project)
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: JDOMException) {
@@ -125,16 +164,15 @@ fun getProject(projectPath: String): Project? {
             }
         }
 
-        val project = projectRef.get() ?: throw IOException("Failed to obtain project " + projectPath)
+        val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
 
-        LOG.info("Caching project that was found at $projectPath.")
-        sProjectCache[projectPath] = project
+        cacheProject(projectPath, project)
         return project
     } catch (e: IOException) {
         e.printStackTrace()
     }
 
-    LOG.warn("Exception occurred trying to find project for path $projectPath")
+    LOG.warn("Exception occurred trying to find document for path $projectPath")
     return null
 }
 
@@ -247,28 +285,50 @@ fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
  */
 fun normalizeUri(uri: String): String {
     val protocolRegex = "^file:/+".toRegex()
-
-    return protocolRegex.replace(uri, "file:///")
-        .replace("\\", "/")
+    val trailingSlashRegex = "/$".toRegex()
+    var decodedUri = URLDecoder.decode(uri, "UTF-8")
+    decodedUri = trailingSlashRegex.replace(decodedUri, "")
+    decodedUri = protocolRegex.replace(decodedUri, "file:///")
+    return decodedUri.replace("\\", "/")
 }
 
 fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
+fun uriToPath(uri: String): String {
+    val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
 
-private fun hideProjectWindow(project: Project?) {
-        val mgr = WindowManager.getInstance();
-        val existing = mgr.getFrame(project);
-        if (null != existing) {
-            // hide any existing frames. We may want this
-            //  to be a preference... Not sure
-            existing.isVisible = false
-            return // already done
-        }
+    val isWindowsPath = """^file:/+\w:""".toRegex().containsMatchIn(newUri)
 
-        if (mgr !is WindowManagerImpl) {
-            // unit test?
-            return
-        }
-
-        val impl = mgr.allocateFrame(project!!)
-        impl.isVisible = false
+    return if (isWindowsPath)
+        Paths.get("^file:/+".toRegex().replace(newUri, ""))
+            .toString().replace("\\", "/")
+    else {
+        "^file:/+".toRegex().replace(newUri, "/")
     }
+}
+
+private fun hideProjectFrame(project: Project?) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        // hide any existing frames. We may want this
+        //  to be a preference... Not sure
+        existing.isVisible = false
+        return // already done
+    }
+
+    if (mgr !is WindowManagerImpl) {
+        // unit test?
+        return
+    }
+
+    val impl = mgr.allocateFrame(project!!)
+    impl.isVisible = false
+}
+
+fun toggleProjectFrame(project: Project) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        existing.isVisible = !existing.isVisible
+    }
+}

@@ -60,6 +60,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
+        setPlugins("DevKit", "properties")
     }
 
     tasks.withType<KotlinCompile> {
@@ -91,6 +92,7 @@ project(":") {
     dependencies {
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
         compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0.M6")
+        testCompile("org.jetbrains.kotlin:kotlin-test:1.2.21")
     }
 
     tasks.withType<Test> {
@@ -111,7 +113,6 @@ project(":") {
         }
     }
 }
-
 fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties")

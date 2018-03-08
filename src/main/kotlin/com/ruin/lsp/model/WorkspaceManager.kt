@@ -6,6 +6,7 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
@@ -28,7 +29,7 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
-    fun onTextDocumentOpened(params: DidOpenTextDocumentParams) {
+    fun onTextDocumentOpened(params: DidOpenTextDocumentParams, client: MyLanguageClient? = null) {
         val textDocument = params.textDocument
 
         if(managedTextDocuments.containsKey(textDocument.uri)) {
@@ -42,6 +43,14 @@ class WorkspaceManager {
             val doc = getDocument(textDocument.uri) ?: return@Computable false
             val project = resolveProjectFromUri(textDocument.uri)?.first ?: return@Computable false
             reloadDocument(doc, project)
+            if (client != null) {
+                registerIndexNotifier(project, client)
+                val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+                if (projectSdk == null) {
+                    client.showMessage(MessageParams(MessageType.Warning,
+                        "Project SDK is not defined. Use idea/openProjectStructure to set it up."))
+                }
+            }
             true
         }))
 

@@ -1,12 +1,12 @@
 package com.ruin.lsp.model
 
 import com.intellij.openapi.components.ServiceManager
-import com.ruin.lsp.commands.completion.CompletionCommand
-import com.ruin.lsp.commands.find.FindDefinitionCommand
-import com.ruin.lsp.commands.find.FindUsagesCommand
-import com.ruin.lsp.commands.highlight.DocumentHighlightCommand
-import com.ruin.lsp.commands.hover.HoverCommand
-import com.ruin.lsp.commands.symbol.DocumentSymbolCommand
+import com.ruin.lsp.commands.document.completion.CompletionCommand
+import com.ruin.lsp.commands.document.find.FindDefinitionCommand
+import com.ruin.lsp.commands.document.find.FindUsagesCommand
+import com.ruin.lsp.commands.document.highlight.DocumentHighlightCommand
+import com.ruin.lsp.commands.document.hover.HoverCommand
+import com.ruin.lsp.commands.document.symbol.DocumentSymbolCommand
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.TextDocumentService
@@ -71,7 +71,7 @@ class MyTextDocumentService(val context: MyLanguageServer) : TextDocumentService
     }
 
     override fun didOpen(params: DidOpenTextDocumentParams) {
-        workspace.onTextDocumentOpened(params)
+        workspace.onTextDocumentOpened(params, context.client)
         context.computeDiagnostics(params.textDocument.uri)
     }
 
