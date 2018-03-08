@@ -49,7 +49,23 @@ class ProjectUtilTest : BaseTestCase() {
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
             "file://E:\\Program Files\\test.txt",
-            "file:///E:/Program Files/test.txt"
+            "file:///E:/Program Files/test.txt",
+            "file:///E:/Program%20Files/test.txt"
+        ).map(::uriToPath)
+
+        cases.forEach {
+            assert(expected.equals(it, true), {
+                "Expected: $expected\n" +
+                    "Got: $it"
+            }) }
+    }
+
+    fun `test converts unix URI to path`() {
+        val expected = "/home/ruin/My Folder/test.txt"
+        val cases = listOf(
+            "file://home/ruin/My Folder/test.txt",
+            "file:///home/ruin/My Folder/test.txt",
+            "file:///home/ruin/My%20Folder/test.txt"
         ).map(::uriToPath)
 
         cases.forEach {

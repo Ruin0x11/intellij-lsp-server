@@ -31,6 +31,7 @@ import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.net.URLDecoder
 import java.nio.file.Paths
 import java.util.*
 
@@ -287,8 +288,11 @@ fun normalizeUri(uri: String): String {
 }
 
 fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
-fun uriToPath(uri: String) = Paths.get("^file:/+".toRegex().replace(normalizeUri(uri), ""))
-    .toString().replace("\\", "/")
+fun uriToPath(uri: String): String {
+    val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
+    return Paths.get("^file:/+".toRegex().replace(newUri, ""))
+        .toString().replace("\\", "/")
+}
 
 private fun hideProjectWindow(project: Project?) {
         val mgr = WindowManager.getInstance();

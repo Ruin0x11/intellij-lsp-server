@@ -88,16 +88,8 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
         asInvokeAndWaitFuture(params.textDocument.uri, FindImplementationCommand(params.position), client)
 
-    override fun setProjectJDK(params: SetProjectJDKParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(params.uri, SetProjectJDKCommand(params.jdkRootUri))
-
-    override fun indexStarted() {
-
-    }
-
-    override fun indexFinished() {
-
-    }
+    override fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<Boolean> =
+        asInvokeAndWaitFuture(params.textDocument.uri, SetProjectJDKCommand(params.jdkRootUri))
 }
 
 fun <T: Any> asInvokeAndWaitFuture(

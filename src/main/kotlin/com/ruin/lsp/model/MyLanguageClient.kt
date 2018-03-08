@@ -4,9 +4,9 @@ import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
 import org.eclipse.lsp4j.services.LanguageClient
 
 interface MyLanguageClient : LanguageClient {
-    @JsonNotification("idea/notifyIndexingStarted")
+    @JsonNotification("idea/indexStarted")
     fun notifyIndexingStarted()
 
-    @JsonNotification("idea/notifyIndexingEnded")
+    @JsonNotification("idea/indexEnded")
     fun notifyIndexingEnded()
 }

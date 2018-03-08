@@ -2,6 +2,7 @@ package com.ruin.lsp.model
 
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.TextDocumentPositionParams
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
@@ -12,11 +13,8 @@ import java.util.concurrent.CompletableFuture
 interface MyLanguageServerExtensions {
     @JsonRequest fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>>
 
-    @JsonRequest fun setProjectJDK(params: SetProjectJDKParams): CompletableFuture<Boolean>
-
-    @JsonNotification fun indexStarted()
-    @JsonNotification fun indexFinished()
+    @JsonRequest fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<Boolean>
 }
 
 
-data class SetProjectJDKParams(val uri: DocumentUri, val jdkRootUri: String)
+data class SetProjectJDKParams(val textDocument: TextDocumentIdentifier, val jdkRootUri: String)

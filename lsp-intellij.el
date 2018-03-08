@@ -95,8 +95,8 @@
       has-jdk)))
 
 (defun lsp-intellij--make-set-project-jdk-params (jdk-root)
-  (plist-put (list :textDocument (lsp--text-document-identifier))
-             :rootPath jdk-root))
+  (list :textDocument (lsp--text-document-identifier)
+        :jdkRootUri (lsp--path-to-uri jdk-root)))
 
 (defun lsp-intellij-set-project-jdk (jdk-root)
   "Set the current project's JDK."
@@ -105,9 +105,13 @@
           (read-directory-name "Path to JDK: " (or (getenv "JAVA_HOME") nil))))
 
      (if (lsp-intellij--valid-jdk-root-p jdk-root)
-         (lsp--send-request (lsp--make-request "idea/setProjectJdk"
-                                               (lsp-intellij--make-set-project-jdk-params jdk-root)))
-         (error (format "Path does not lead to a valid JDK: %s" jdk-root)))
+         (let ((response (lsp--send-request
+                          (lsp--make-request "idea/setProjectJdk"
+                                             (lsp-intellij--make-set-project-jdk-params jdk-root)))))
+           (if response
+               (message "Project JDK set.")
+             (message (format "Failed to set project JDK: %s" jdk-root))))
+       (error (format "Path does not lead to a valid JDK: %s" jdk-root)))
      )))
 
 (defun lsp-intellij--render-string (str)
