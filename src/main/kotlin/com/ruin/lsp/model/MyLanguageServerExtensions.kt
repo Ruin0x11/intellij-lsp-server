@@ -13,11 +13,7 @@ import java.util.concurrent.CompletableFuture
 interface MyLanguageServerExtensions {
     @JsonRequest fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>>
 
-    @JsonRequest fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<SetProjectJDKResult>
-}
+    @JsonRequest fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean>
 
-enum class JdkKind(val value: Int) {
-    JDK(1), INTELLIJ(2)
+    @JsonRequest fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean>
 }
-data class SetProjectJDKParams(val textDocument: TextDocumentIdentifier, val jdkRootUri: String, val kind: JdkKind)
-data class SetProjectJDKResult(val success: Boolean, val version: String?)

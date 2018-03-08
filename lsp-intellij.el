@@ -72,58 +72,25 @@
         (xref--show-xrefs items nil)
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
 
-(defconst lsp-intellij--javac-names
-  '("bin/javac" "bin/javac.exe"))
+(defun lsp-intellij-open-project-structure ()
+  "Opens the Project Structure dialogue for the current project."
+  (interactive)
+  (lsp--cur-workspace-check)
+  (lsp--send-request
+   (lsp--make-request
+    "idea/openProjectStructure"
+    (lsp--text-document-position-params))
+   t))
 
-(defconst lsp-intellij--runtime-jar-names
-  '("jre/lib/rt.jar"         ;; JDK
-    "lib/rt.jar"             ;; JRE
-    "lib/jrt-fs.jar"         ;; Jigsaw JDK/JRE
-    "modules/java.base"      ;; Jigsaw JDK/JRE
-    "../Classes/classes.jar" ;; Apple JDK
-    "jre/lib/vm.jar"         ;; IBM JDK
-    "classes/"               ;; custom build
-    ))
-
-(defconst lsp-intellij--sdk-kinds
-  '(("JDK" 1)
-    ("IntelliJ Platform Plugin SDK" 2)))
-
-(defun lsp-intellij--valid-jdk-root-p (jdk-root)
-  (when (file-exists-p jdk-root)
-    (let* ((pred (lambda (f) (file-exists-p
-                              (expand-file-name f jdk-root))))
-           (has-jre (cl-some pred lsp-intellij--runtime-jar-names))
-           (has-jdk (and has-jre
-                         (cl-some pred lsp-intellij--javac-names))))
-      has-jdk)))
-
-(defun lsp-intellij--make-set-project-jdk-params (jdk-root sdk-kind)
-  (list :textDocument (lsp--text-document-identifier)
-        :jdkRootUri (lsp--path-to-uri jdk-root)
-        :kind sdk-kind))
-
-(defun lsp-intellij-set-project-sdk (jdk-root sdk-kind)
-  "Set the current project's SDK."
-  (interactive
-   (let ((jdk-root
-          (read-directory-name "Path to JDK: " (or (getenv "JAVA_HOME") nil)))
-         (sdk-kind
-          (cadr (assoc (completing-read "SDK kind: " lsp-intellij--sdk-kinds)
-                       lsp-intellij--sdk-kinds))))
-     (if (lsp-intellij--valid-jdk-root-p jdk-root)
-         (lsp-intellij--set-project-jdk-request jdk-root sdk-kind)
-       (error (format "Path does not lead to a valid JDK: %s" jdk-root))))))
-
-(defun lsp-intellij--set-project-jdk-request (jdk-root sdk-kind)
-  (let* ((response (lsp--send-request
-                   (lsp--make-request "idea/setProjectJdk"
-                                      (lsp-intellij--make-set-project-jdk-params jdk-root sdk-kind))))
-         (success (gethash "success" response))
-         (version (gethash "version" response)))
-    (if success
-        (message (format "Set project to JDK version: %s" version))
-      (message (format "Failed to set project JDK: %s" jdk-root)))))
+(defun lsp-intellij-toggle-frame-visibility ()
+  "Toggles visibility of the current project's frame."
+  (interactive)
+  (lsp--cur-workspace-check)
+  (lsp--send-request
+   (lsp--make-request
+    "idea/toggleFrameVisibility"
+    (lsp--text-document-position-params))
+   t))
 
 (defun lsp-intellij--render-string (str)
   (condition-case nil

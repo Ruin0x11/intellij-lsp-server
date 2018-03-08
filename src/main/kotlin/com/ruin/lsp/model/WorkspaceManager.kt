@@ -47,7 +47,8 @@ class WorkspaceManager {
                 registerIndexNotifier(project, client)
                 val projectSdk = ProjectRootManager.getInstance(project).projectSdk
                 if (projectSdk == null) {
-                    client?.showMessage(MessageParams(MessageType.Warning, "Project SDK is not defined. Use idea/setProjectSdk to set it up."))
+                    client.showMessage(MessageParams(MessageType.Warning,
+                        "Project SDK is not defined. Use idea/openProjectStructure to set it up."))
                 }
             }
             true

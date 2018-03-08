@@ -1,7 +1,6 @@
 package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeAndWaitIfNeed
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -13,7 +12,8 @@ import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.commands.document.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.document.find.FindImplementationCommand
-import com.ruin.lsp.commands.project.jdk.SetProjectJDKCommand
+import com.ruin.lsp.commands.project.dialog.OpenProjectStructureCommand
+import com.ruin.lsp.commands.project.dialog.ToggleFrameVisibilityCommand
 import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
@@ -88,8 +88,11 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
         asInvokeAndWaitFuture(params.textDocument.uri, FindImplementationCommand(params.position), client)
 
-    override fun setProjectJdk(params: SetProjectJDKParams): CompletableFuture<SetProjectJDKResult> =
-        asInvokeAndWaitFuture(params.textDocument.uri, SetProjectJDKCommand(params.jdkRootUri, params.kind))
+    override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
+        asInvokeAndWaitFuture(params.textDocument.uri, OpenProjectStructureCommand())
+
+    override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
+        asInvokeAndWaitFuture(params.textDocument.uri, ToggleFrameVisibilityCommand())
 }
 
 

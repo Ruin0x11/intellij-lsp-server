@@ -94,6 +94,10 @@ fun registerIndexNotifier(project: Project, client: MyLanguageClient) {
     }
     cached.disposable = Disposer.newDisposable()
     project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client))
+
+    if(DumbService.isDumb(project)) {
+        client.notifyIndexStarted()
+    }
 }
 
 fun cacheProject(absolutePath: String, project: Project) {
@@ -150,8 +154,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                //hideProjectWindow(project)
-                //mockMessageView(document)
+                hideProjectFrame(project)
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: JDOMException) {
@@ -303,21 +306,29 @@ fun uriToPath(uri: String): String {
     }
 }
 
-private fun hideProjectWindow(project: Project?) {
-        val mgr = WindowManager.getInstance();
-        val existing = mgr.getFrame(project);
-        if (null != existing) {
-            // hide any existing frames. We may want this
-            //  to be a preference... Not sure
-            existing.isVisible = false
-            return // already done
-        }
-
-        if (mgr !is WindowManagerImpl) {
-            // unit test?
-            return
-        }
-
-        val impl = mgr.allocateFrame(project!!)
-        impl.isVisible = false
+private fun hideProjectFrame(project: Project?) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        // hide any existing frames. We may want this
+        //  to be a preference... Not sure
+        existing.isVisible = false
+        return // already done
     }
+
+    if (mgr !is WindowManagerImpl) {
+        // unit test?
+        return
+    }
+
+    val impl = mgr.allocateFrame(project!!)
+    impl.isVisible = false
+}
+
+fun toggleProjectFrame(project: Project) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        existing.isVisible = !existing.isVisible
+    }
+}
