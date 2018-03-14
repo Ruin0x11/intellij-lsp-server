@@ -60,7 +60,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
-        setPlugins("DevKit", "properties")
+        setPlugins("devkit", "properties")
     }
 
     tasks.withType<KotlinCompile> {
