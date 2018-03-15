@@ -50,6 +50,15 @@ Try executing `./gradlew :test` first, to download all necessary dependencies
 and launch all code generation tasks. Unfortunately during import IDEA may delete 
 `.idea/runConfigurations`, just revert changes in the directory if this happens.
 
+## Debugging
+
+[`runIde`](https://github.com/JetBrains/gradle-intellij-plugin#running-dsl) task is an extension for [JavaExec](https://github.com/JetBrains/gradle-intellij-plugin#running-dsl) so to start `intellij-lsp-server` with exposed debug port you have to add `--debug-jvm` switch:
+
+```
+./gradlew :runIde --debug-jvm
+```
+
+After that you can connect to it with your favorite remote debugger.
 
 ## Troubleshooting
 
