@@ -161,9 +161,13 @@ class WorkspaceManager {
         LOG.debug("edits: ${edit.edits}")
         LOG.debug("Version before: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
 
-        return runDocumentUpdate(edit.textDocument) { doc ->
+        val result = runDocumentUpdate(edit.textDocument) { doc ->
             applyTextEditChanges(doc, edit.edits)
         }
+
+        LOG.debug("Version after: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
+
+        return result
     }
 
     /**
