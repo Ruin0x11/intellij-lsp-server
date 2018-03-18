@@ -41,7 +41,7 @@ For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` ar
 
 (require 'company-lsp)
 (setq company-lsp-enable-snippet t
-       company-lsp-cache-candidates t)
+      company-lsp-cache-candidates t)
 (push 'company-lsp company-backends)
 (push 'java-mode company-global-modes)
 ```
