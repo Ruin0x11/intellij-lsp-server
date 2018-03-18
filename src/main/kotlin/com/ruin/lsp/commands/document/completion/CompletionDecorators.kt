@@ -15,11 +15,11 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
             kind = kind
             insertText = formatInsertText()
             documentation = formatDoc()
-            insertTextFormat = insertTextFormat
+            insertTextFormat = myInsertTextFormat
         }
 
     var clientSupportsSnippets = false
-    private val insertTextFormat: InsertTextFormat
+    private val myInsertTextFormat: InsertTextFormat
         get() = if (clientSupportsSnippets) InsertTextFormat.Snippet else InsertTextFormat.PlainText
     abstract val kind: CompletionItemKind
 

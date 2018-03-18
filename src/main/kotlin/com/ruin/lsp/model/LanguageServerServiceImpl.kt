@@ -36,8 +36,7 @@ open class LanguageServerServiceImpl : LanguageServerService {
         LOG.info("Starting the LSP server.")
 
         return ApplicationManager.getApplication().executeOnPooledThread {
-            val trace = LogPrintWriter(LOG, StringWriter())
-
+            val trace = LogPrintWriter(LOG)
             val launcher = Launcher.createLauncher(languageServer, MyLanguageClient::class.java,
                 connection.input, connection.output, false, trace)
             val client = launcher.remoteProxy
