@@ -126,6 +126,8 @@ TCP, even if it isn't the one being communicated with.")
   (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
   (setq-local coding-system-for-read 'binary)
   (setq-local coding-system-for-write 'binary)
+  ;; Ensure the client uses the server's sync method
+  (setq-local lsp-document-sync-method nil)
   (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable

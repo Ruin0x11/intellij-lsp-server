@@ -8,10 +8,13 @@ import com.intellij.lang.LangBundle
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
+import com.intellij.psi.search.EverythingGlobalScope
 import com.intellij.psi.util.PsiFormatUtil
 import com.intellij.psi.util.PsiFormatUtilBase
+import com.intellij.xml.util.XmlStringUtil
 import java.lang.StringBuilder
 import java.util.*
 
@@ -19,7 +22,18 @@ import java.util.*
  * Creates a one-line documentation string for use in minibuffers and the like when hovering over a symbol.
  * Mainly copied from JavaDocInfoGenerator.
  */
-class OneLineJavaDocInfoGenerator(val myProject: Project, val myElement: PsiElement) : JavaDocInfoGenerator(myProject, myElement) {
+class OneLineJavaDocInfoGenerator(myProject: Project, private val myElement: PsiElement)
+    : JavaDocInfoGenerator(myProject, myElement) {
+    override fun generateDocInfo(docURLs: MutableList<String>?): String? {
+        val buffer = StringBuilder()
+
+        if (!generateDocInfoCore(buffer, true)) {
+            return null
+        }
+
+        return buffer.toString()
+    }
+
     override fun generateDocInfoCore(buffer: StringBuilder, generatePrologueAndEpilogue: Boolean): Boolean {
         when (myElement) {
             is PsiClass -> generateClassJavaDoc(buffer, myElement, true)

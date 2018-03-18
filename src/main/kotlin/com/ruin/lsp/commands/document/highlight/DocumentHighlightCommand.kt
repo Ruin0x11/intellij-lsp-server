@@ -41,7 +41,7 @@ class DocumentHighlightCommand(val position: Position) : DocumentCommand<Mutable
             try {
                 ref.set(findHighlights(ctx.project, editor, ctx.file))
             } catch (ex: IndexNotReadyException) {
-                throw ex
+                return@withEditor
             }
         }
 

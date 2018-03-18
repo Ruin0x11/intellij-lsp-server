@@ -19,6 +19,7 @@ import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
@@ -174,7 +175,11 @@ fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<
 
 fun defaultServerCapabilities() =
      ServerCapabilities().apply {
-        textDocumentSync = null
+        textDocumentSync = Either.forRight(TextDocumentSyncOptions().apply {
+            openClose = true
+            this.change = TextDocumentSyncKind.Incremental
+            save = SaveOptions(true)
+        })
         hoverProvider = true
         completionProvider = CompletionOptions(false, listOf(".", "@", "#"))
         signatureHelpProvider = null

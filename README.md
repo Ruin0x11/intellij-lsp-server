@@ -34,6 +34,55 @@ To use the server with Emacs, [lsp-mode](https://github.com/emacs-lsp/lsp-mode) 
 ```
 Then visit a `.java` file tracked by a project you've opened in IDEA.
 
+For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` are required. Here are the respective config options for each.
+```emacs-lisp
+(require 'lsp-ui)
+(add-hook 'lsp-after-open-hook #'lsp-ui-mode)
+
+(require 'company-lsp)
+(setq company-lsp-enable-snippet t
+      company-lsp-cache-candidates t)
+(push 'company-lsp company-backends)
+(push 'java-mode company-global-modes)
+```
+
+### Spacemacs
+
+For Spacemacs you can put the configuration into the private layer (recommended as it's still in the early stages). Minimal required configuration to do so:
+
+* copy `lsp-intellij.el` into `~/.emacs.d/private/lsp-intellij/local/lsp-intellij/`
+* create `packages.el` in `~/.emacs.d/private/lsp-intellij/` with following content as bare minimum:
+
+```emacs-lisp
+(defconst intellij-lsp-packages
+  '(
+    lsp-mode
+    (lsp-intellij :location local)
+    ))
+    
+(defun intellij-lsp/init-lsp-mode ()
+  (use-package lsp-mode))
+
+(defun intellij-lsp/init-lsp-intellij ()
+  (with-eval-after-load 'lsp-mode
+    (use-package lsp-intellij)
+    (add-hook 'java-mode-hook #'lsp-intellij-enable)))
+
+```
+
+After all you should have similar structure:
+
+
+```
+➜  ~ git:(master) ✗ tree ~/.emacs.d/private/lsp-intellij 
+/home/user/.emacs.d/private/lsp-intellij
+├── local
+│   └── lsp-intellij
+│       └── lsp-intellij.el
+└── packages.el
+
+```
+
 ## Caveats
 - Alpha-quality, and probably really unstable.
 - Only targets Java for now, though there is no reason awareness of other languages can't be added.
