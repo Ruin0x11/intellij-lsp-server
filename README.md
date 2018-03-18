@@ -34,6 +34,18 @@ To use the server with Emacs, [lsp-mode](https://github.com/emacs-lsp/lsp-mode) 
 ```
 Then visit a `.java` file tracked by a project you've opened in IDEA.
 
+For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` are required. Here are the respective config options for each.
+```emacs-lisp
+(require 'lsp-ui)
+(add-hook 'lsp-after-open-hook #'lsp-ui-mode)
+
+(require 'company-lsp)
+(setq company-lsp-enable-snippet t
+      company-lsp-cache-candidates t)
+(push 'company-lsp company-backends)
+(push 'java-mode company-global-modes)
+```
+
 ### Spacemacs
 
 For Spacemacs you can put the configuration into the private layer (recommended as it's still in the early stages). Minimal required configuration to do so:

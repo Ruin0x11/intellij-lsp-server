@@ -161,9 +161,13 @@ class WorkspaceManager {
         LOG.debug("edits: ${edit.edits}")
         LOG.debug("Version before: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
 
-        return runDocumentUpdate(edit.textDocument) { doc ->
+        val result = runDocumentUpdate(edit.textDocument) { doc ->
             applyTextEditChanges(doc, edit.edits)
         }
+
+        LOG.debug("Version after: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
+
+        return result
     }
 
     /**
@@ -235,7 +239,12 @@ class WorkspaceManager {
                         LOG.warn("Document at ${textDocument.uri} wasn't writable!")
                         return@Runnable
                     }
-                    callback(doc)
+
+                    try {
+                        callback(doc)
+                    } catch (e: Exception) {
+                        LOG.error("Error on documentChange: " + e.stackTrace)
+                    }
 
                     LOG.debug("Doc after:\n\n${doc.text}\n\n")
 
@@ -280,11 +289,11 @@ fun rangeToTextRange(doc: Document, range: Range) =
         positionToOffset(doc, range.end)
     )
 
-fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>) =
-    contentChanges.forEach { applyChange(doc, it) }
+fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>?) =
+    contentChanges?.forEach { applyChange(doc, it) }
 
-fun applyContentChangeEventChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>) =
-    contentChanges.forEach { applyChange(doc, it) }
+fun applyContentChangeEventChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>?) =
+    contentChanges?.forEach { applyChange(doc, it) }
 
 fun applyChange(doc: Document, change: TextEdit) {
     LOG.debug("Applying change: $change")
