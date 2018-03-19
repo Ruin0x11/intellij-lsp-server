@@ -16,7 +16,11 @@ class LanguageServerStartupActivity : PreloadingActivity() {
         GeneralSettings.getInstance().isShowTipsOnStartup = false
         val server = LanguageServerServiceImpl.getInstance()
 
-        val future = server.connect(SocketConnectionFactory(8080).open())
-        future?.get()
+        while (true){
+            val future = server.connect(SocketConnectionFactory(8080).open())
+
+            // Block until the previous server terminates, then start listening again
+            future?.get()
+        }
     }
 }

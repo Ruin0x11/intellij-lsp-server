@@ -28,24 +28,20 @@ open class LanguageServerServiceImpl : LanguageServerService {
     private var listening: Future<*>? = null
 
     override fun connect(connection: Connection): Future<*>? {
-        if (!started.compareAndSet(false, true)) {
-            LOG.warn("Server was already started.")
-            return null
-        }
-
         LOG.info("Starting the LSP server.")
 
-        return ApplicationManager.getApplication().executeOnPooledThread {
+        ApplicationManager.getApplication().executeOnPooledThread {
             val trace = LogPrintWriter(LOG)
             val launcher = Launcher.createLauncher(languageServer, MyLanguageClient::class.java,
                 connection.input, connection.output, false, trace)
             val client = launcher.remoteProxy
-            // TODO handle other connection types
             LOG.info("Connecting to client.")
             languageServer.connect(client)
             LOG.info("Listening for commands.")
             listening = launcher.startListening()
-        }
+        }.get()
+
+        return listening
     }
 
     override fun hasStarted() = started.get()
