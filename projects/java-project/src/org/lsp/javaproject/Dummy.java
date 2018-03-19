@@ -51,4 +51,8 @@ public class Dummy {
         return 42;
     }
 
+    static int autoImportTestMethod() {
+        // For testing insertion of import directive
+        Has // java.util.HashMap
+    }
 }

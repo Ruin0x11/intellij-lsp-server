@@ -1,5 +1,6 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.intellij.openapi.project.DumbService
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
 import com.ruin.lsp.model.invokeCommandAndWait
@@ -14,8 +15,8 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
     override val projectName: String
         get() = JAVA_PROJECT
 
-    protected fun checkContainsCompletion(line: Int, char: Int, snippet: Boolean, expected: String) {
-        val command = CompletionCommand(Position(line, char), snippet)
+    protected fun checkContainsCompletion(pos: Position, snippet: Boolean, expected: String) {
+        val command = CompletionCommand(pos, snippet)
         val result = invokeCommandAndWait(command, file.url)
         assertTrue(result.right.items.all {
             it.insertTextFormat == InsertTextFormat.PlainText ||

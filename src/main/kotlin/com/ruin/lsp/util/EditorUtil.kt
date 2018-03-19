@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.ruin.lsp.model.LogPrintWriter
 import org.eclipse.lsp4j.Position
 
 /**
@@ -36,7 +37,8 @@ fun withEditor(context: Disposable, file: PsiFile, position: Position = Position
     try {
         callback(editor)
     } catch (e: Exception) {
-        LOG.error("Exception during editor callback:" + e.message)
+        LOG.error("Exception during editor callback: " + e.message)
+        e.printStackTrace(LogPrintWriter(LOG))
     } finally {
         val editorFactory = EditorFactory.getInstance()
         editorFactory.releaseEditor(editor)
