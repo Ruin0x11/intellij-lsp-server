@@ -24,7 +24,7 @@ class ProjectUtilTest : BaseTestCase() {
         val expectedTarget = getPsiFile(project, TESTABLE_FILE_PATH)
         val uri = fileToUri(File(getProjectPath(), TESTABLE_FILE_PATH))
         val pair = resolvePsiFromUri(uri)
-        assertEquals(pair!!.second, expectedTarget)
+        assertEquals(expectedTarget, pair!!.second)
     }
 
     fun `test normalizes URIs`() {

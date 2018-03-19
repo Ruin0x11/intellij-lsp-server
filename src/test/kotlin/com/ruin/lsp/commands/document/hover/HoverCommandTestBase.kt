@@ -1,5 +1,6 @@
 package com.ruin.lsp.commands.document.hover
 
+import com.intellij.openapi.project.DumbService
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
 import com.ruin.lsp.model.invokeCommandAndWait
@@ -14,16 +15,20 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         get() = DUMMY_FILE_PATH
 
     protected fun checkHoverEquals(line: Int, char: Int, expected: String?) {
-        val command = HoverCommand(Position(line, char))
-        val result = invokeCommandAndWait(command, file.url)
-        val value = result.contents.first().right.value
-        assertEquals("Expected \"$expected\" but got: \n$value",
-            expected, value)
+        DumbService.getInstance(project).runWhenSmart {
+            val command = HoverCommand(Position(line, char))
+            val result = invokeCommandAndWait(command, file.url)
+            val value = result.contents.first().right.value
+            assertEquals("Expected \"$expected\" but got: \n$value",
+                expected, value)
+        }
     }
 
-    protected fun checkHoverIsEmpty(line: Int, char: Int)  {
-        val command = HoverCommand(Position(line, char))
-        val result = invokeCommandAndWait(command, file.url)
-        assertEmpty(result.contents)
+    protected fun checkHoverIsEmpty(line: Int, char: Int) {
+        DumbService.getInstance(project).runWhenSmart {
+            val command = HoverCommand(Position(line, char))
+            val result = invokeCommandAndWait(command, file.url)
+            assertEmpty(result.contents)
+        }
     }
 }

@@ -16,6 +16,8 @@
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.properties</depends>
+    <depends>org.jetbrains.idea.maven</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.ruin.lsp.commands.document.hover.OneLineJavaDocInfoGeneratorFactory" />

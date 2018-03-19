@@ -62,6 +62,10 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         this.client = client as MyLanguageClient
     }
 
+    fun computeAllDiagnostics() {
+        workspace.managedTextDocuments.keys.forEach { computeDiagnostics(it) }
+    }
+
     fun computeDiagnostics(uri: DocumentUri) {
         if (client == null) {
             return
@@ -133,8 +137,8 @@ private fun <T : Any> executeAndGetResult(
     client: LanguageClient? = null,
     server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
-    val (project, file) = ensurePsiFromUri(uri)
     return invokeAndWaitIfNeeded(Computable<T> {
+        val (project, file) = ensurePsiFromUri(uri)
         val profiler = if (client != null) startProfiler(client) else DUMMY
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
         profiler.finish("Done")

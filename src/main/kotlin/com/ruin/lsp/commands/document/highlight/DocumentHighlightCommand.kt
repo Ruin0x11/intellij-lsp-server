@@ -36,7 +36,7 @@ import org.eclipse.lsp4j.Range
 
 class DocumentHighlightCommand(val position: Position) : DocumentCommand<MutableList<DocumentHighlight>> {
     override fun execute(ctx: ExecutionContext): MutableList<DocumentHighlight> {
-        val ref: Ref<List<DocumentHighlight>> = Ref()
+        val ref: Ref<List<DocumentHighlight>> = Ref(listOf())
         withEditor(this, ctx.file, position) { editor ->
             try {
                 ref.set(findHighlights(ctx.project, editor, ctx.file))
