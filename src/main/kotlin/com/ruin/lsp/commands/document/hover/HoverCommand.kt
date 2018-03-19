@@ -20,23 +20,20 @@ class HoverCommand(val position: Position) : DocumentCommand<Hover>, Disposable 
         if (DumbService.isDumb(ctx.project)) {
             return Hover(mutableListOf())
         }
-        val ref: Ref<String> = Ref()
+        val ref: Ref<String> = Ref("")
         withEditor(this, ctx.file, position) { editor ->
             val originalElement = ctx.file.findElementAt(editor.caretModel.offset)
 
             val element = DocumentationManager.getInstance(ctx.project).findTargetElement(editor, ctx.file)
 
-            val result = if (element != null) {
+            if (element != null) {
                 // TODO: might want to use something like CtrlMouseHandler instead
                 try {
-                    HoverDocumentationProvider().generateDoc(element, originalElement) ?: ""
+                    val result = HoverDocumentationProvider().generateDoc(element, originalElement) ?: ""
+                    ref.set(result)
                 } catch (ex: IndexNotReadyException) {
-                    ""
                 }
-            } else {
-                ""
             }
-            ref.set(result)
         }
 
         val markedString = MarkedString("java", ref.get())

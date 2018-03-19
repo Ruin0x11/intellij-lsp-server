@@ -21,7 +21,7 @@ class ProjectUtilMultiModuleTest : BaseTestCase() {
         val expectedTarget = getPsiFile(project, MULTI_MODULE_APP_PATH)
         val uri = fileToUri(File(getProjectPath(), MULTI_MODULE_APP_PATH))
         val pair = resolvePsiFromUri(uri)
-        assertEquals(pair!!.second, expectedTarget)
+        assertEquals(expectedTarget, pair!!.second)
     }
 }
 

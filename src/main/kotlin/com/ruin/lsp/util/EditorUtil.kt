@@ -2,6 +2,7 @@ package com.ruin.lsp.util
 
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.psi.PsiElement
@@ -21,6 +22,7 @@ fun findTargetElement(editor: Editor): PsiElement? =
         .findTargetElement(editor,
             TargetElementUtil.getInstance().allAccepted)
 
+private val LOG = Logger.getInstance("#com.ruin.lsp.util.EditorUtil")
 
 /**
  * Creates, uses, then releases an editor.
@@ -31,8 +33,12 @@ fun findTargetElement(editor: Editor): PsiElement? =
 fun withEditor(context: Disposable, file: PsiFile, position: Position = Position(0, 0), callback: (Editor) -> Unit) {
     val editor = createEditor(context, file, position)
 
-    callback(editor)
-
-    val editorFactory = EditorFactory.getInstance()
-    editorFactory.releaseEditor(editor)
+    try {
+        callback(editor)
+    } catch (e: Exception) {
+        LOG.error("Exception during editor callback:" + e.message)
+    } finally {
+        val editorFactory = EditorFactory.getInstance()
+        editorFactory.releaseEditor(editor)
+    }
 }
