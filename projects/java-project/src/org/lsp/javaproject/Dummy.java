@@ -53,6 +53,6 @@ public class Dummy {
 
     static int autoImportTestMethod() {
         // For testing insertion of import directive
-        Has // java.util.HashMap
+        Lin // java.util.LinkedHashMap
     }
 }

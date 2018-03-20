@@ -99,6 +99,7 @@ abstract class UsableSdkTestCase : BaseTestCase() {
         val projectFile = module!!.moduleFile
         val rootDir = projectFile!!.parent
         val compilerFile = rootDir.findChild("compiler.xml")
+        disposable.dispose()
 
         UIUtil.invokeAndWaitIfNeeded(asWriteAction(Runnable {
             try {

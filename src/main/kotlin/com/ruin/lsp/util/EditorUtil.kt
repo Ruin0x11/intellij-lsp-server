@@ -67,6 +67,8 @@ fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): Li
     }
     val oldDoc = getDocument(file) ?: return null
     val newDoc = getDocument(copy) ?: return null
+    LOG.debug("=== Old Doc:\n${oldDoc.text}")
+    LOG.debug("=== New Doc:\n${newDoc.text}")
     return textEditFromDocs(oldDoc, newDoc)
 }
 

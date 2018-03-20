@@ -45,11 +45,6 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     protected fun getProjectPath() = getProjectPath(projectName)
     protected fun getProjectIml() = getProjectIml(projectName)
 
-    override fun tearDown() {
-        ProjectUtil.closeAndDispose(project)
-        super.tearDown()
-    }
-
     override fun getProject(): Project {
         val path = getProjectIml(projectName)
         return ensureProject(path)

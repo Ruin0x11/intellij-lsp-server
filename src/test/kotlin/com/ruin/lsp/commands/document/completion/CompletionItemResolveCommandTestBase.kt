@@ -7,6 +7,7 @@ import com.ruin.lsp.model.invokeCommandAndWait
 import com.ruin.lsp.util.getVirtualFile
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.TextEdit
 import kotlin.test.assertNotNull
 
 abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
@@ -15,7 +16,7 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
     override val projectName: String
         get() = JAVA_PROJECT
 
-    protected fun checkHasAdditionalEdit(pos: Position, selectedItem: String, edit: String) {
+    protected fun checkHasAdditionalEdit(pos: Position, selectedItem: String, edit: TextEdit) {
         val completionCommand = CompletionCommand(pos, false)
         val project = prepareProject(projectName)
         val file = getVirtualFile(project, filePath)
@@ -24,6 +25,9 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
         assertNotNull(itemToImport, "Item $selectedItem not in completion results")
         val command = CompletionItemResolveCommand(itemToImport!!)
         val result = invokeCommandAndWait(command, file.url)
-        assert(result.additionalTextEdits.any { it.newText == edit })
+
+        // There will be a dummy identifier ("IntellijIdeaRulezzz") inserted as part of the completion, so just ignore
+        // it and make sure the change we want is present.
+        assert(result.additionalTextEdits.contains(edit), { "Wanted: $edit\nGot: ${result.additionalTextEdits}" })
     }
 }
