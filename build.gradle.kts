@@ -11,10 +11,17 @@ import java.net.URL
 import java.nio.file.Path
 import kotlin.concurrent.thread
 
+val kotlin_version: String by extra
+
 buildscript {
+    var kotlin_version: String by extra
+    kotlin_version = "1.2.30"
     repositories {
         mavenCentral()
         jcenter()
+    }
+    dependencies {
+        classpath(kotlinModule("gradle-plugin", kotlin_version))
     }
 }
 
@@ -27,6 +34,9 @@ plugins {
     idea
     kotlin("jvm") version "1.2.21"
     id("org.jetbrains.intellij") version "0.2.18"
+}
+apply {
+    plugin("kotlin")
 }
 
 idea {
@@ -152,4 +162,18 @@ fun List<String>.execute(wd: String? = null, ignoreExitCode: Boolean = false): S
     errReader.join()
     if (process.exitValue() != 0 && !ignoreExitCode) error("Non-zero exit status for `$this`")
     return result
+}
+dependencies {
+    compile(kotlinModule("stdlib-jdk8", kotlin_version))
+}
+repositories {
+    mavenCentral()
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }

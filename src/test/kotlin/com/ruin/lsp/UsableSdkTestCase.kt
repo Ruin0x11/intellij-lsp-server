@@ -38,9 +38,9 @@ abstract class UsableSdkTestCase : BaseTestCase() {
     override val projectName: String
         get() = currentProjectName
 
-    override fun getProject(): Project {
+    override fun getProject() =
         throw IllegalStateException("Do not use getProject(); use prepareProject")
-    }
+
 
     /**
      * Call this ONCE at the top of your test cases to get

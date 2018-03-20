@@ -1,6 +1,9 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.JavaCompletionUtil
 import com.intellij.codeInsight.daemon.impl.quickfix.ImportClassFix
+import com.intellij.codeInsight.lookup.PsiTypeLookupItem
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiJavaCodeReferenceElement
@@ -21,14 +24,11 @@ class CompletionItemResolveCommand(val item: CompletionItem)  : DocumentCommand<
         val lookupElement = completionCache.resolveItem(item.data as CompletionResolveIndex) ?: return item
         var newItem = item
 
-        if(lookupElement.psiElement != null) {
+        val elt = lookupElement.psiElement
+        if(elt != null) {
             val importEdits = differenceFromAction(ctx.file) { editor, copy ->
-                val elt = lookupElement.psiElement!!
-                val r = JavaPsiFacade.getInstance(ctx.project).elementFactory
-
-                if (elt is PsiClass) {
-                    val ref = r.createReferenceExpression(elt)
-                    ImportClassFix(ref).invoke(ctx.project, editor, copy)
+                if(elt is PsiClass) {
+                    JavaCompletionUtil.insertClassReference(elt, ctx.file, 0, 0)
                 }
             }
             newItem.additionalTextEdits = importEdits
