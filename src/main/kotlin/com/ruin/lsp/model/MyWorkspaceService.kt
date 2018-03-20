@@ -18,6 +18,4 @@ class MyWorkspaceService(val context: MyLanguageServer) : WorkspaceService {
         CompletableFuture.supplyAsync {
             mutableListOf<SymbolInformation>()
         }
-
-
 }

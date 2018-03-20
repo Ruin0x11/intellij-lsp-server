@@ -91,7 +91,7 @@ abstract class UsableSdkTestCase : BaseTestCase() {
         if (projectFileContents == null || compilerFileContents == null)
             TestCase.fail("Missing project/compiler file contents")
 
-        val project = ensureProject(getProjectPath(currentProjectName!!))
+        val project = ensureProject(getProjectPath(currentProjectName))
 
         // NB The following stuff modifies stuff on disk. We'll want to restore
         //  all that when we're done
@@ -119,7 +119,6 @@ abstract class UsableSdkTestCase : BaseTestCase() {
                 val configurationModule = config.configurationModule
                 return configurationModule.module
             } else if (config is JUnitConfiguration) {
-                val config = config
                 return config.modules.firstOrNull() // I guess...?
             }
 
