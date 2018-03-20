@@ -6,10 +6,15 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.junit.JUnitConfiguration
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.util.Disposer
+import com.intellij.testFramework.PlatformTestCase
 import com.intellij.util.ui.UIUtil
 import com.ruin.lsp.util.asWriteAction
 import com.ruin.lsp.util.ensureProject
@@ -28,19 +33,19 @@ import java.io.IOException
  *
  * @author dhleong
  */
-abstract class UsableSdkTestCase : BaseTestCase() {
+abstract class UsableSdkTestCase : PlatformTestCase() {
 
     private var currentProjectName: String = ""
     private var projectFileContents: ByteArray? = null
     private var compilerFileContents: ByteArray? = null
-    private val disposable = Disposer.newDisposable()
 
-    override val projectName: String
+    val projectName: String
         get() = currentProjectName
 
-    override fun getProject() =
-        throw IllegalStateException("Do not use getProject(); use prepareProject")
-
+    override fun initApplication() {
+        super.initApplication()
+        JavaTestUtil.setupTestJDK(testRootDisposable)
+    }
 
     /**
      * Call this ONCE at the top of your test cases to get
@@ -72,20 +77,26 @@ abstract class UsableSdkTestCase : BaseTestCase() {
         compilerFileContents = compilerFile!!.contentsToByteArray()
 
         UIUtil.invokeAndWaitIfNeeded(Runnable {
-            JavaTestUtil.setupTestJDK(disposable)
             ModuleRootModificationUtil.setModuleSdk(
-                module, JavaTestUtil.getTestJdk())
+                module!!, JavaTestUtil.getTestJdk())
         })
-
-        CompilerTestUtil.setupJavacForTests(project)
-        CompilerTestUtil.enableExternalCompiler()
-        CompilerTestUtil.saveApplicationSettings()
 
         return project
     }
 
     @Throws(Exception::class)
+    private fun clearJdk() = ApplicationManager.getApplication().runWriteAction {
+        val jdkTable = ProjectJdkTable.getInstance()
+        jdkTable.allJdks.forEach { jdk ->
+            if (jdk != null) {
+                jdkTable.removeJdk(jdk)
+            }
+        }
+    }
+
+    @Throws(Exception::class)
     override fun tearDown() {
+        clearJdk()
         super.tearDown()
 
         if (projectFileContents == null || compilerFileContents == null)
@@ -99,7 +110,6 @@ abstract class UsableSdkTestCase : BaseTestCase() {
         val projectFile = module!!.moduleFile
         val rootDir = projectFile!!.parent
         val compilerFile = rootDir.findChild("compiler.xml")
-        disposable.dispose()
 
         UIUtil.invokeAndWaitIfNeeded(asWriteAction(Runnable {
             try {
@@ -123,7 +133,7 @@ abstract class UsableSdkTestCase : BaseTestCase() {
                 return config.modules.firstOrNull() // I guess...?
             }
 
-            throw IllegalStateException("Unable to get module for " + project)
+            throw IllegalStateException("Unable to get module for $project")
         }
     }
 

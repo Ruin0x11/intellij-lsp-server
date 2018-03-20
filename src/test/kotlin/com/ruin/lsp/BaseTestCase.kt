@@ -30,17 +30,6 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     /** Which example project does this test reference?  */
     protected abstract val projectName: String
 
-    protected fun getProjectIml(projectName: String): String {
-        val root = File(".")
-        val pathToIml = "projects/$projectName/$projectName.iml"
-        return File(root, pathToIml).canonicalFile.absolutePath
-    }
-
-    protected fun getProjectPath(projectName: String): String {
-        val root = File(".")
-        val pathToProject = "projects/$projectName/"
-        return File(root, pathToProject).canonicalFile.absolutePath
-    }
 
     protected fun getProjectPath() = getProjectPath(projectName)
     protected fun getProjectIml() = getProjectIml(projectName)
@@ -51,4 +40,16 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     protected fun fixtureProject() = myFixture.project
+}
+
+fun getProjectIml(projectName: String): String {
+    val root = File(".")
+    val pathToIml = "projects/$projectName/$projectName.iml"
+    return File(root, pathToIml).canonicalFile.absolutePath
+}
+
+fun getProjectPath(projectName: String): String {
+    val root = File(".")
+    val pathToProject = "projects/$projectName/"
+    return File(root, pathToProject).canonicalFile.absolutePath
 }
