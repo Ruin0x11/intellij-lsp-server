@@ -54,5 +54,6 @@ public class Dummy {
     static int autoImportTestMethod() {
         // For testing insertion of import directive
         Lin // java.util.LinkedHashMap
+        Arr // java.util.ArrayList
     }
 }

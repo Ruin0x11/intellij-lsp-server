@@ -9,4 +9,8 @@ class CompletionItemResolveCommandTestCase : CompletionItemResolveCommandTestBas
         checkHasAdditionalEdit(Position(55, 11),
             "java.util.LinkedHashMap",
             TextEdit(range(3, 0, 3, 0), "import java.util.LinkedHashMap;\n"))
+
+    fun `test doesn't import twice`() =
+        checkHasNoAdditionalEdits(Position(56, 10),
+            "java.util.ArrayList")
 }
