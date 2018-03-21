@@ -40,6 +40,11 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     protected fun fixtureProject() = myFixture.project
+
+    override fun tearDown() {
+        ProjectUtil.closeAndDispose(project)
+        super.tearDown()
+    }
 }
 
 fun getProjectIml(projectName: String): String {
