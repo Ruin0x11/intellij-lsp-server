@@ -6,11 +6,12 @@ import org.eclipse.lsp4j.TextEdit
 
 class CompletionItemResolveCommandTestCase : CompletionItemResolveCommandTestBase() {
     fun `test resolves autoimport directive`() =
-        checkHasAdditionalEdit(Position(55, 11),
-            "java.util.LinkedHashMap",
-            TextEdit(range(3, 0, 3, 0), "import java.util.LinkedHashMap;\n"))
+        checkHasAdditionalEdits(Position(54, 11), "java.util.LinkedHashMap",
+            listOf(
+                TextEdit(range(3, 0, 3, 0), "import java.util.LinkedHashMap;\n")
+            )
+        )
 
     fun `test doesn't import twice`() =
-        checkHasNoAdditionalEdits(Position(56, 10),
-            "java.util.ArrayList")
+        checkHasAdditionalEdits(Position(58, 11),"java.util.ArrayList", listOf())
 }

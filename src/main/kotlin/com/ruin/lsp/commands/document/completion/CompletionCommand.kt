@@ -45,7 +45,7 @@ class CompletionCommand(val position: Position,
             })
         }
 
-        completionCache.cacheCompletion(lookupElements)
+        completionCache.cacheCompletion(ctx.file, lookupElements)
 
         return Either.forRight(CompletionList(false, result))
     }

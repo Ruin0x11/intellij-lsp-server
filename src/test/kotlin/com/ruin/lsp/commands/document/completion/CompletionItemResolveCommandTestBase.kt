@@ -1,5 +1,6 @@
 package com.ruin.lsp.commands.document.completion;
 
+import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.project.Project
 import com.ruin.lsp.DUMMY_FILE_PATH
@@ -16,6 +17,16 @@ import kotlin.test.assertNotNull
 abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
     var proj: Project? = null
 
+    override fun setUp() {
+        super.setUp()
+        proj = prepareProject(JAVA_PROJECT)
+    }
+
+    override fun tearDown() {
+        ProjectUtil.closeAndDispose(proj!!)
+        super.tearDown()
+    }
+
     private fun runCommand(pos: Position, selectedItem: String): CompletionItem {
         val completionCommand = CompletionCommand(pos, false)
         val file = getVirtualFile(proj!!, DUMMY_FILE_PATH)
@@ -26,29 +37,9 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
         return invokeCommandAndWait(command, file.url)
     }
 
-    override fun tearDown() {
-        ProjectUtil.closeAndDispose(proj!!)
-        super.tearDown()
-    }
-
-    override fun setUp() {
-        super.setUp()
-        proj = prepareProject(JAVA_PROJECT)
-    }
-
-    protected fun checkHasAdditionalEdit(pos: Position, selectedItem: String, edit: TextEdit) {
+    protected fun checkHasAdditionalEdits(pos: Position, selectedItem: String, edits: List<TextEdit>) {
         val result = runCommand(pos, selectedItem)
 
-        // There will be a dummy identifier ("IntellijIdeaRulezzz") inserted as part of the completion, so just ignore
-        // it and make sure the change we want is present.
-        assert(result.additionalTextEdits.contains(edit), { "Wanted: $edit\nGot: ${result.additionalTextEdits}" })
-    }
-
-    protected fun checkHasNoAdditionalEdits(pos: Position, selectedItem: String) {
-        val result = runCommand(pos, selectedItem)
-
-        // There will be a dummy identifier ("IntellijIdeaRulezzz") inserted as part of the completion, so ensure
-        // it is the only element in the results
-        assert(result.additionalTextEdits.size == 1, { "Got: ${result.additionalTextEdits}" })
+        assertSameElements(edits, result.additionalTextEdits)
     }
 }

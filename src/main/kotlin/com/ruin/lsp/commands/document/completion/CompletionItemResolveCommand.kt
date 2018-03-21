@@ -1,5 +1,7 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.google.gson.JsonObject
+import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.completion.JavaCompletionUtil
 import com.intellij.codeInsight.daemon.impl.quickfix.ImportClassFix
 import com.intellij.lang.java.JavaImportOptimizer
@@ -26,8 +28,13 @@ import org.eclipse.lsp4j.CompletionItem
 class CompletionItemResolveCommand(val item: CompletionItem)  : DocumentCommand<CompletionItem> {
     override fun execute(ctx: ExecutionContext): CompletionItem {
         val completionCache = PreviousCompletionCacheService.getInstance()
-        val lookupElement = completionCache.resolveItem(item.data as CompletionResolveIndex) ?: return item
-        var newItem = item
+        val lookupElement =
+            if(item.data is CompletionResolveIndex) {
+                completionCache.resolveItem(item.data as CompletionResolveIndex)
+            } else {
+                completionCache.resolveItem(item.data as JsonObject)
+            } ?: return item
+        val newItem = item
 
         val elt = lookupElement.psiElement
         if (elt != null) {
@@ -35,16 +42,16 @@ class CompletionItemResolveCommand(val item: CompletionItem)  : DocumentCommand<
                 if (elt is PsiClass && copy is PsiJavaFile) {
                     //val ref = JavaPsiFacade.getInstance(ctx.project).parserFacade.createReferenceFromText(lookupElement.lookupString, elt)
                     //ImportClassFix(ref).doFix(editor, false, false)
-                    copy.importClass(elt)
                     val manager = PsiDocumentManager.getInstance(copy.project)
-                    manager.commitDocument(editor.document)
+                    manager.commitDocument(copy.viewProvider.document!!)
+                    copy.importClass(elt)
                     ApplicationManager.getApplication().runWriteAction {
                         val codeStyleManager = CodeStyleManager.getInstance(copy.project)
                         codeStyleManager.reformat(copy.importList as PsiImportListImpl)
                     }
                 }
             }
-            newItem.additionalTextEdits = importEdits
+            newItem.additionalTextEdits = importEdits ?: listOf()
         }
         return newItem
     }
