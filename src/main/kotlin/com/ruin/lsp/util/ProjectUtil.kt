@@ -242,7 +242,7 @@ fun getDocument(uri: String): Document? {
 }
 
 fun getDocument(file: PsiFile): Document? {
-    val virtual = file.virtualFile
+    val virtual = file.virtualFile ?: return file.viewProvider.document
     var doc = FileDocumentManager.getInstance()
         .getDocument(virtual)
     if (doc == null) {

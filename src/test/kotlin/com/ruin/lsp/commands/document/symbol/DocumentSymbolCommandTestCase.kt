@@ -7,7 +7,7 @@ class DocumentSymbolCommandTestCase : DocumentSymbolCommandTestBase() {
 
     fun `test file symbol`() {
         getSymbols(DUMMY_FILE_PATH)
-            .assertHasSymbol("Dummy.java", null, SymbolKind.File, range(0, 0, 54, 0))
+            .assertHasSymbol("Dummy.java", null, SymbolKind.File, range(0, 0, 61, 0))
     }
 
     fun `test module symbol`() {

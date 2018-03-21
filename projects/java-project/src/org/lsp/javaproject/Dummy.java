@@ -51,4 +51,11 @@ public class Dummy {
         return 42;
     }
 
+    static int autoImportTestMethod() {
+        Lin // java.util.LinkedHashMap
+    }
+
+    static int autoImportTestMethod2() {
+        Arr // java.util.ArrayList
+    }
 }

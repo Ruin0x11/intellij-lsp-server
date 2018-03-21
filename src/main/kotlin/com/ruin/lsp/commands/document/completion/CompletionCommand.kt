@@ -8,6 +8,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
+import com.ruin.lsp.model.CompletionResolveIndex
+import com.ruin.lsp.model.PreviousCompletionCacheService
 import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionList
@@ -17,22 +19,34 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.util.*
 
 class CompletionCommand(val position: Position,
-                        val snippetSupport: Boolean) : DocumentCommand<Either<MutableList<CompletionItem>, CompletionList>>, Disposable {
+                        val snippetSupport: Boolean) : DocumentCommand<Either<MutableList<CompletionItem>, CompletionList>> {
 
     override fun execute(ctx: ExecutionContext): Either<MutableList<CompletionItem>, CompletionList> {
         val result: MutableList<CompletionItem> = mutableListOf()
         val prefix: String? = null
+        val lookupElements: MutableList<LookupElement> = mutableListOf()
+
+        val completionCache = PreviousCompletionCacheService.getInstance()
+        val completionId = completionCache.incrementId()
 
         withEditor(this, ctx.file, position) { editor ->
             val params = makeCompletionParameters(editor, ctx.file, position)
+            var i = 0
             performCompletion(params!!, prefix, ctx.cancelToken, Consumer { completionResult ->
                 val el = completionResult.lookupElement
+                lookupElements.add(el)
                 val dec = CompletionDecorator.from(el, snippetSupport)
                 if (dec != null) {
-                    result.add(dec.completionItem)
+                    result.add(dec.completionItem.apply {
+                        data = CompletionResolveIndex(completionId, i)
+                    })
+                    i++
                 }
             })
         }
+
+        completionCache.cacheCompletion(ctx.file, lookupElements)
+
         return Either.forRight(CompletionList(false, result))
     }
 }

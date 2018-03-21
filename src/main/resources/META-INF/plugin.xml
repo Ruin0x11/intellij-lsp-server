@@ -18,12 +18,14 @@
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.properties</depends>
     <depends>org.jetbrains.idea.maven</depends>
+    <depends>JUnit</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.ruin.lsp.commands.document.hover.OneLineJavaDocInfoGeneratorFactory" />
         <applicationService serviceImplementation="com.ruin.lsp.model.WorkspaceManager" />
         <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerService"
                             serviceImplementation="com.ruin.lsp.model.LanguageServerServiceImpl" />
+        <applicationService serviceImplementation="com.ruin.lsp.model.PreviousCompletionCacheService" />
         <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
     </extensions>
 

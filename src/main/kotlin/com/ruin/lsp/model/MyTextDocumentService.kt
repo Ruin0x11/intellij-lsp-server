@@ -2,6 +2,7 @@ package com.ruin.lsp.model
 
 import com.intellij.openapi.components.ServiceManager
 import com.ruin.lsp.commands.document.completion.CompletionCommand
+import com.ruin.lsp.commands.document.completion.CompletionItemResolveCommand
 import com.ruin.lsp.commands.document.find.FindDefinitionCommand
 import com.ruin.lsp.commands.document.find.FindUsagesCommand
 import com.ruin.lsp.commands.document.highlight.DocumentHighlightCommand
@@ -16,7 +17,10 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
     val workspace: WorkspaceManager by lazy { ServiceManager.getService<WorkspaceManager>(WorkspaceManager::class.java)!! }
 
     override fun resolveCompletionItem(unresolved: CompletionItem): CompletableFuture<CompletionItem> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val cache = PreviousCompletionCacheService.getInstance()
+        val uri = cache.lastUri()
+        val command = CompletionItemResolveCommand(unresolved)
+        return asInvokeAndWaitFuture(uri, command, server.client, server)
     }
 
     override fun codeAction(params: CodeActionParams): CompletableFuture<MutableList<out Command>> {

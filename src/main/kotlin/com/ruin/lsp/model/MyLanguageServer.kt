@@ -181,7 +181,7 @@ fun defaultServerCapabilities() =
             save = SaveOptions(true)
         })
         hoverProvider = true
-        completionProvider = CompletionOptions(false, listOf(".", "@", "#"))
+        completionProvider = CompletionOptions(true, listOf(".", "@", "#"))
         signatureHelpProvider = null
         definitionProvider = true
         referencesProvider = true
