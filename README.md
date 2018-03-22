@@ -23,7 +23,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
 ![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
 
-### Feature list
+## Feature list
 | Name                        | Method                            |                    | Emacs function                                         |
 | ----                        | -----------------------------     | ------------------ | -----------------------------------                    |
 | Workspace Symbols           | `workspace/symbol`                | :heavy_check_mark: | `xref-find-apropos`                                    |
