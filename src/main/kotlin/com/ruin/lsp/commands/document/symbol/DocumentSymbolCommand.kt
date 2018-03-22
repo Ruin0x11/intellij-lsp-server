@@ -6,10 +6,10 @@ import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.commands.document.hover.generateType
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.offsetToPosition
 import com.ruin.lsp.util.symbolKind
+import com.ruin.lsp.util.toOffset
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolInformation
@@ -30,7 +30,7 @@ class DocumentSymbolCommand(
                 symbols.add(SymbolInformation(name, kind, element.toLocation(document, uri), element.containerName()))
             }
         }.visit()
-        symbols.sortBy { positionToOffset(document, it.location.range.start) }
+        symbols.sortBy { it.location.range.start.toOffset(document) }
         return symbols.toMutableList()
     }
 }

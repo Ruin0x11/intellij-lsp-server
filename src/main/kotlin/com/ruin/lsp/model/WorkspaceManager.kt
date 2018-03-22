@@ -100,7 +100,7 @@ class WorkspaceManager {
         LOG.debug("Version before: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
 
         runDocumentUpdate(textDocument) { doc ->
-            applyContentChangeEventChanges(doc, contentChanges)
+            applyContentChangeEventChanges(doc, sortContentChangeEventChanges(contentChanges))
         }
 
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
@@ -148,7 +148,7 @@ class WorkspaceManager {
         return ApplyWorkspaceEditResponse(applied)
     }
 
-    fun applyTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun applyTextDocumentEdit(edit: TextDocumentEdit): Boolean {
         if (!managedTextDocuments.containsKey(edit.textDocument.uri)) {
             val success = openFileFromTextDocumentEdit(edit)
             if (!success) {
@@ -165,7 +165,7 @@ class WorkspaceManager {
         LOG.debug("Version before: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
 
         val result = runDocumentUpdate(edit.textDocument) { doc ->
-            applyTextEditChanges(doc, edit.edits)
+            applyTextEditChanges(doc, sortTextEditChanges(edit.edits))
         }
 
         LOG.debug("Version after: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
@@ -176,7 +176,7 @@ class WorkspaceManager {
     /**
      * @return true if the open succeeds
      */
-    fun openFileFromTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun openFileFromTextDocumentEdit(edit: TextDocumentEdit): Boolean {
         LOG.debug("Opening document from a WorkspaceEdit for ${edit.textDocument.uri}")
 
         val text = invokeAndWaitIfNeeded(asWriteAction(Computable<String?> {
@@ -206,7 +206,7 @@ class WorkspaceManager {
     /**
      * @return true if the update succeeds
      */
-    fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, callback: (Document) -> Unit): Boolean {
+    private fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, callback: (Document) -> Unit): Boolean {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
         // Version number of our document should be (theirs - 1)
@@ -282,15 +282,20 @@ class WorkspaceManager {
 
 data class ManagedTextDocument(var identifier: VersionedTextDocumentIdentifier, var contents: String)
 
-fun normalizeText(text: String) = text.replace("\r\n", "\n")
+private fun normalizeText(text: String) = text.replace("\r\n", "\n")
 
-fun positionToOffset(doc: Document, pos: Position) = doc.getLineStartOffset(pos.line) + pos.character
 
-fun rangeToTextRange(doc: Document, range: Range) =
-    TextRange(
-        positionToOffset(doc, range.start),
-        positionToOffset(doc, range.end)
-    )
+/**
+ * Sorts text edits from furthest in the file to nearest to the top of the file.
+ *
+ * Prevents issues with the actual text edit range changing when applying multiple edits in sequence.
+ */
+fun sortTextEditChanges(edits: List<TextEdit>?): List<TextEdit>? =
+    edits?.sortedWith(compareBy({ it.range.start.line }, { it.range.start.character }))?.reversed()
+
+fun sortContentChangeEventChanges(edits: List<TextDocumentContentChangeEvent>?): List<TextDocumentContentChangeEvent>? =
+    edits?.sortedWith(compareBy({ it.range.start.line }, { it.range.start.character }))?.reversed()
+
 
 fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>?) =
     contentChanges?.forEach { applyChange(doc, it) }
@@ -298,18 +303,18 @@ fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>?) =
 fun applyContentChangeEventChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>?) =
     contentChanges?.forEach { applyChange(doc, it) }
 
-fun applyChange(doc: Document, change: TextEdit) {
+private fun applyChange(doc: Document, change: TextEdit) {
     LOG.debug("Applying change: $change")
-    val textRange = rangeToTextRange(doc, change.range)
+    val textRange = change.range.toTextRange(doc)
     doc.replaceString(textRange.startOffset, textRange.endOffset, change.newText)
 }
-fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
+private fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
     LOG.debug("Applying change: $change")
     if(change.range == null) {
         // Change is the full insertText of the document
         doc.setText(change.text)
     } else {
-        val textRange = rangeToTextRange(doc, change.range)
+        val textRange = change.range.toTextRange(doc)
         doc.replaceString(textRange.startOffset, textRange.endOffset, change.text)
     }
 }
