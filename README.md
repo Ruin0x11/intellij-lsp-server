@@ -47,7 +47,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 ### Nonstandard features
 | Name                               | Method                        |                             | Emacs function                         |
 | ---------------------------------- | ----------------------------- | --------------------------- | -----------------------------------    |
-| Goto Implementation                | `idea/implementations`        | :leftwards_arrow_with_hook: | `lsp-intellij-find-implementations`    |
+| Find Implementations               | `idea/implementations`        | :leftwards_arrow_with_hook: | `lsp-intellij-find-implementations`    |
 | Indexing Started                   | `idea/indexStarted`           | :arrow_left:                |                                        |
 | Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                |                                        |
 | Toggle IDEA window                 | `idea/toggleFrameVisibility`  | :leftwards_arrow_with_hook: | `lsp-intellij-toggle-frame-visibility` |
