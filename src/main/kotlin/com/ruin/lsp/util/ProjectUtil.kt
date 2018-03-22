@@ -190,7 +190,7 @@ fun getPsiFile(project: Project, filePath: String): PsiFile? {
 }
 
 fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
-    return invokeAndWaitIfNeeded(asWriteAction(
+    return invokeAndWaitIfNeeded(
         Computable<PsiFile> {
             val mgr = PsiManager.getInstance(project)
             val file = mgr.findFile(virtual)
@@ -202,7 +202,7 @@ fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
 
             PsiUtilCore.ensureValid(file)
             file
-        }))
+        })
 }
 
 fun getVirtualFile(project: Project, filePath: String): VirtualFile {
