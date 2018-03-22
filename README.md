@@ -33,7 +33,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Hover                       | `textDocument/hover`              | :heavy_check_mark: |                                                        |
 | Signature Help              | `textDocument/signatureHelp`      | :x:                |                                                        |
 | Goto Definition             | `textDocument/definition`         | :heavy_check_mark: | `xref-find-definitions`                                |
-| Goto Type Definition        | `textDocument/typeDefinition`     | :heavy_check_mark: |                                                        |
+| Goto Type Definition        | `textDocument/typeDefinition`     | :x:                |                                                        |
 | Find References             | `textDocument/references`         | :heavy_check_mark: | `xref-find-references`                                 |
 | Document Highlights         | `textDocument/documentHighlight`  | :heavy_check_mark: |                                                        |
 | Document Symbols            | `textDocument/documentSymbol`     | :heavy_check_mark: | `imenu` (with `lsp-imenu`)                             |
