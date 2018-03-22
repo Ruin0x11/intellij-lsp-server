@@ -23,17 +23,17 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
 ![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
 
-### Feature list
+## Feature list
 | Name                        | Method                            |                    | Emacs function                                         |
 | ----                        | -----------------------------     | ------------------ | -----------------------------------                    |
 | Workspace Symbols           | `workspace/symbol`                | :heavy_check_mark: | `xref-find-apropos`                                    |
 | Execute Command             | `workspace/executeCommand`        | :x:                |                                                        |
-| Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Uses [flycheck](https://github.com/flycheck/flycheck). |
+| Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Uses [Flycheck](https://github.com/flycheck/flycheck). |
 | Completion                  | `textDocument/completion`         | :heavy_check_mark: | `complete-symbol`                                      |
 | Hover                       | `textDocument/hover`              | :heavy_check_mark: |                                                        |
 | Signature Help              | `textDocument/signatureHelp`      | :x:                |                                                        |
 | Goto Definition             | `textDocument/definition`         | :heavy_check_mark: | `xref-find-definitions`                                |
-| Goto Type Definition        | `textDocument/typeDefinition`     | :heavy_check_mark: |                                                        |
+| Goto Type Definition        | `textDocument/typeDefinition`     | :x:                |                                                        |
 | Find References             | `textDocument/references`         | :heavy_check_mark: | `xref-find-references`                                 |
 | Document Highlights         | `textDocument/documentHighlight`  | :heavy_check_mark: |                                                        |
 | Document Symbols            | `textDocument/documentSymbol`     | :heavy_check_mark: | `imenu` (with `lsp-imenu`)                             |
@@ -47,7 +47,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 ### Nonstandard features
 | Name                               | Method                        |                             | Emacs function                         |
 | ---------------------------------- | ----------------------------- | --------------------------- | -----------------------------------    |
-| Goto Implementation                | `idea/implementations`        | :leftwards_arrow_with_hook: | `lsp-intellij-find-implementations`    |
+| Find Implementations               | `idea/implementations`        | :leftwards_arrow_with_hook: | `lsp-intellij-find-implementations`    |
 | Indexing Started                   | `idea/indexStarted`           | :arrow_left:                |                                        |
 | Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                |                                        |
 | Toggle IDEA window                 | `idea/toggleFrameVisibility`  | :leftwards_arrow_with_hook: | `lsp-intellij-toggle-frame-visibility` |
