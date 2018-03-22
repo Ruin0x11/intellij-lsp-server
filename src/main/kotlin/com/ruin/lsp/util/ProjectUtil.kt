@@ -61,7 +61,7 @@ fun resolveProjectFromUri(uri: String): Pair<Project, String>? {
         if (imlFile != null) {
             if(isRootProject(imlFile)) {
                 val proj = ensureProject(imlFile.absolutePath)
-                val projPathUri = fileToUri(File(proj.basePath))
+                val projPathUri = getURIForFile(File(proj.basePath))
                 val prefix = newUri.commonPrefixWith(projPathUri, true)
                 assert(prefix.isNotEmpty())
                 val filePathFromRoot = newUri.substring(prefix.length)
@@ -285,6 +285,9 @@ fun getURIForFile(file: VirtualFile) = normalizeUri(file.url)
 
 fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
 
+fun getURIForFile(file: File) = normalizeUri(file.toURI().toURL().toString())
+
+
 /**
  * Converts URIs to have forward slashes and ensures the protocol has three slashes.
  *
@@ -299,7 +302,6 @@ fun normalizeUri(uri: String): String {
     return decodedUri.replace("\\", "/")
 }
 
-fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
 fun uriToPath(uri: String): String {
     val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
 

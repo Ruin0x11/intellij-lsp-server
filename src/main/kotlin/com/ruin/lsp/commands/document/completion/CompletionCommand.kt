@@ -3,7 +3,6 @@ package com.ruin.lsp.commands.document.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.Disposable
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
 import com.ruin.lsp.commands.DocumentCommand

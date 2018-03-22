@@ -12,8 +12,8 @@ import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
-import com.ruin.lsp.commands.document.find.offsetToPosition
 import com.ruin.lsp.util.getURIForFile
+import com.ruin.lsp.util.offsetToPosition
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.PublishDiagnosticsParams

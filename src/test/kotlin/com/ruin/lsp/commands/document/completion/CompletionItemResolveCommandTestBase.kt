@@ -8,22 +8,14 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
-import com.intellij.openapi.roots.ModuleRootModificationUtil
-import com.intellij.testFramework.PlatformTestCase
-import com.intellij.testFramework.UsefulTestCase
-import com.intellij.testFramework.UsefulTestCase.assertSameElements
-import com.intellij.util.ui.UIUtil
-import com.ruin.lsp.*
+import com.ruin.lsp.DUMMY_FILE_PATH
+import com.ruin.lsp.JAVA_PROJECT
+import com.ruin.lsp.UsableSdkTestCase
 import com.ruin.lsp.model.invokeCommandAndWait
-import com.ruin.lsp.util.DUMMY
-import com.ruin.lsp.util.ensureProject
-import com.ruin.lsp.util.getVirtualFile
-import com.siyeh.ig.psiutils.TestUtils
+import com.ruin.lsp.pickRunSetting
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextEdit
-import org.intellivim.FileEditingTestCase
 import kotlin.test.assertNotNull
 
 abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {

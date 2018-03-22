@@ -1,6 +1,5 @@
 package com.ruin.lsp.commands.document.completion
 
-import com.intellij.openapi.project.DumbService
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
 import com.ruin.lsp.model.invokeCommandAndWait

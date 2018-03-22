@@ -4,8 +4,6 @@ import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.IndexNotReadyException
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Ref
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext

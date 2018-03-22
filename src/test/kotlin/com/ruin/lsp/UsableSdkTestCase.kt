@@ -1,19 +1,15 @@
 package com.ruin.lsp;
 
 import com.intellij.JavaTestUtil
-import com.intellij.compiler.CompilerTestUtil
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.junit.JUnitConfiguration
-import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.roots.ModuleRootModificationUtil
-import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.PlatformTestCase
 import com.intellij.util.ui.UIUtil
 import com.ruin.lsp.util.asWriteAction

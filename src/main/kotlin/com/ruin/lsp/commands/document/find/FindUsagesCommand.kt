@@ -10,6 +10,7 @@ import com.intellij.util.Processor
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.util.findTargetElement
+import com.ruin.lsp.util.location
 import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
@@ -36,7 +37,7 @@ fun extractLocationFromRaw(usage: Usage): Location? {
     if (usage is UsageInfo2UsageAdapter) {
         val element = usage.element
         if (element != null) {
-            return elementToLocation(element)
+            return element.location()
         }
     }
     return null

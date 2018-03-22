@@ -8,10 +8,7 @@ package com.ruin.lsp.model
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
-import org.apache.log4j.Level
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.eclipse.lsp4j.launch.LSPLauncher
-import java.io.StringWriter
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 

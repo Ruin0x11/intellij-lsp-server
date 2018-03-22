@@ -8,13 +8,10 @@ import com.intellij.lang.LangBundle
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.intellij.psi.search.EverythingGlobalScope
 import com.intellij.psi.util.PsiFormatUtil
 import com.intellij.psi.util.PsiFormatUtilBase
-import com.intellij.xml.util.XmlStringUtil
 import java.lang.StringBuilder
 import java.util.*
 
