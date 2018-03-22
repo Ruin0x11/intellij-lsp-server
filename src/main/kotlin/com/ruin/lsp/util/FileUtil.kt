@@ -4,14 +4,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.Trinity
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.PsiModificationTrackerImpl
 import com.intellij.reference.SoftReference
-import com.intellij.openapi.util.Conditions.cached
-
 
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.FileUtil")

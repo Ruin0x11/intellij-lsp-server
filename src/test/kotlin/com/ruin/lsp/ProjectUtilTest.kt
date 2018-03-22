@@ -22,7 +22,7 @@ class ProjectUtilTest : BaseTestCase() {
 
     fun `test resolves PsiFile from URI`() {
         val expectedTarget = getPsiFile(project, TESTABLE_FILE_PATH)
-        val uri = fileToUri(File(getProjectPath(), TESTABLE_FILE_PATH))
+        val uri = getURIForFile(File(getProjectPath(), TESTABLE_FILE_PATH))
         val pair = resolvePsiFromUri(uri)
         assertEquals(expectedTarget, pair!!.second)
     }

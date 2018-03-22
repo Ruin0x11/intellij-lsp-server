@@ -5,7 +5,6 @@ import org.eclipse.lsp4j.services.LanguageClient
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
-import kotlin.collections.forEach
 
 /**
  * Utility class for profiling method calls

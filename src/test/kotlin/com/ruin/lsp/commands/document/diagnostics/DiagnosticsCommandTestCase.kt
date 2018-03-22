@@ -1,6 +1,5 @@
 package com.ruin.lsp.commands.document.diagnostics
 
-import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.PROBLEMATIC_FILE_PATH
 import com.ruin.lsp.range
 import org.eclipse.lsp4j.Diagnostic

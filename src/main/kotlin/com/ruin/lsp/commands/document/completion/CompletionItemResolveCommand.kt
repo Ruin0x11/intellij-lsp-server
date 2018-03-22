@@ -1,28 +1,17 @@
 package com.ruin.lsp.commands.document.completion
 
 import com.google.gson.JsonObject
-import com.intellij.codeInsight.completion.CompletionUtilCore
-import com.intellij.codeInsight.completion.JavaCompletionUtil
-import com.intellij.codeInsight.daemon.impl.quickfix.ImportClassFix
-import com.intellij.lang.java.JavaImportOptimizer
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeAndWaitIfNeed
-import com.intellij.openapi.application.runUndoTransparentWriteAction
-import com.intellij.psi.*
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.codeStyle.CodeStyleSettingsManager
-import com.intellij.psi.codeStyle.JavaCodeStyleManager
-import com.intellij.psi.formatter.java.JavaFormatterUtil
-import com.intellij.psi.impl.PsiJavaParserFacadeImpl
 import com.intellij.psi.impl.source.PsiImportListImpl
-import com.intellij.psi.impl.source.codeStyle.ImportHelper
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.CompletionResolveIndex
 import com.ruin.lsp.model.PreviousCompletionCacheService
-import com.ruin.lsp.util.asWriteAction
 import com.ruin.lsp.util.differenceFromAction
-import com.ruin.lsp.util.reloadDocument
 import org.eclipse.lsp4j.CompletionItem
 
 class CompletionItemResolveCommand(val item: CompletionItem)  : DocumentCommand<CompletionItem> {

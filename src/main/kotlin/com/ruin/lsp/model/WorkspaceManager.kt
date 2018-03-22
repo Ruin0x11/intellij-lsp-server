@@ -5,7 +5,6 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref

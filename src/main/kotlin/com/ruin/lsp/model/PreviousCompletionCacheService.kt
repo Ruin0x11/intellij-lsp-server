@@ -1,7 +1,6 @@
 package com.ruin.lsp.model
 
 import com.google.gson.JsonObject
-import com.google.gson.annotations.SerializedName
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.PsiFile

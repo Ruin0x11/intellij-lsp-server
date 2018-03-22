@@ -61,6 +61,32 @@
          (items-by-file (mapcar #'lsp--get-xrefs-in-file locations-by-file)))
     (apply #'append items-by-file)))
 
+
+(defun lsp-intellij--xref-backend () 'xref-lsp-intellij)
+
+(cl-defmethod xref-backend-apropos ((_backend (eql xref-lsp-intellij)) pattern)
+  (let* ((symbols (lsp--send-request (lsp--make-request
+                                     "workspace/symbol"
+                                     `(:query ,pattern))))
+         ;; filter out paths inside JARs
+         (filtered-syms (seq-filter
+                         (lambda (sym)
+                           (string-prefix-p "file" (gethash "uri" (gethash "location" sym))))
+                         symbols)))
+    (mapcar 'lsp--symbol-information-to-xref filtered-syms)))
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-lsp-intellij)))
+  (xref-backend-identifier-at-point 'xref-lsp))
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-lsp-intellij)))
+  (xref-backend-identifier-completion-table 'xref-lsp))
+
+(cl-defmethod xref-backend-definitions ((_backend (eql xref-lsp-intellij)) identifier)
+  (xref-backend-definitions 'xref-lsp identifier))
+
+(cl-defmethod xref-backend-references ((_backend (eql xref-lsp-intellij)) identifier)
+  (xref-backend-references 'xref-lsp identifier))
+
 (defun lsp-intellij-find-implementations ()
   "List all implementations for the Java element at point."
   (interactive)
@@ -113,9 +139,11 @@ TCP, even if it isn't the one being communicated with.")
 (defconst lsp-intellij--handlers
   '(("idea/indexStarted" .
      (lambda (_w _p)
+       (message "Indexing started.")
        (setq lsp-status "(indexing)")))
     ("idea/indexFinished" .
      (lambda (_w _p)
+       (message "Indexing finished.")
        (setq lsp-status nil)))))
 
 (defun lsp-intellij--initialize-client (client)
@@ -128,6 +156,7 @@ TCP, even if it isn't the one being communicated with.")
   (setq-local coding-system-for-write 'binary)
   ;; Ensure the client uses the server's sync method
   (setq-local lsp-document-sync-method nil)
+  (add-hook 'lsp-after-open-hook (lambda () (setq-local xref-backend-functions (list #'lsp-intellij--xref-backend))))
   (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable

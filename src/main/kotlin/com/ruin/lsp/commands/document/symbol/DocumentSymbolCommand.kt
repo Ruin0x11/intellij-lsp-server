@@ -1,16 +1,19 @@
 package com.ruin.lsp.commands.document.symbol
 
-import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.*
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
-import com.ruin.lsp.commands.document.find.offsetToPosition
 import com.ruin.lsp.commands.document.hover.generateType
 import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
-import org.eclipse.lsp4j.*
+import com.ruin.lsp.util.offsetToPosition
+import com.ruin.lsp.util.symbolKind
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.SymbolInformation
+import org.eclipse.lsp4j.TextDocumentIdentifier
 
 class DocumentSymbolCommand(
     private val textDocumentIdentifier: TextDocumentIdentifier
@@ -48,40 +51,6 @@ private fun PsiElement.symbolName(): String? =
         else -> null
     }
 
-private fun PsiElement.symbolKind(): SymbolKind? =
-    when (this) {
-        is PsiFile -> SymbolKind.File
-        is PsiPackageStatement -> SymbolKind.Package
-        is PsiImportStatement -> SymbolKind.Module
-        is PsiClass -> when {
-            isAnnotationType || isInterface -> SymbolKind.Interface
-            isEnum -> SymbolKind.Enum
-            else -> SymbolKind.Class
-        }
-        is PsiClassInitializer -> SymbolKind.Constructor
-        is PsiMethod -> if (isConstructor) SymbolKind.Constructor else SymbolKind.Method
-        is PsiEnumConstant -> SymbolKind.Enum // TODO: Replace when lsp4j has EnumMember
-        is PsiField ->
-            if (hasModifier(JvmModifier.STATIC) && hasModifier(JvmModifier.FINAL)) {
-                SymbolKind.Constant
-            } else {
-                SymbolKind.Field
-            }
-        is PsiVariable -> SymbolKind.Variable
-        is PsiAnnotation -> SymbolKind.Property
-        is PsiLiteralExpression -> {
-            (type as? PsiClassType)?.let { if (it.name == "String") SymbolKind.String else null }
-                ?: when (this.type) {
-                    PsiType.BOOLEAN -> SymbolKind.Boolean
-                    PsiType.BYTE, PsiType.DOUBLE, PsiType.FLOAT, PsiType.INT, PsiType.LONG, PsiType.SHORT ->
-                        SymbolKind.Number
-                    PsiType.CHAR -> SymbolKind.String
-                // PsiType.NULL, PsiType.VOID -> SymbolKind.Null // TODO: Add when lsp4j has Null
-                    else -> SymbolKind.Constant
-                }
-        }
-        else -> null
-    }
 
 private fun PsiElement.containerName(): String? =
     generateSequence(parent, { it.parent })

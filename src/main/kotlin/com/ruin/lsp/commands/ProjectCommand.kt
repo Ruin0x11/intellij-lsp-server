@@ -1,6 +1,5 @@
 package com.ruin.lsp.commands
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 
 /**
