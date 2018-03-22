@@ -28,7 +28,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | ----                        | -----------------------------     | ------------------ | -----------------------------------                    |
 | Workspace Symbols           | `workspace/symbol`                | :heavy_check_mark: | `xref-find-apropos`                                    |
 | Execute Command             | `workspace/executeCommand`        | :x:                |                                                        |
-| Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Uses [Flycheck](https://github.com/flycheck/flycheck). |
+| Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Used by [lsp-ui](https://github.com/emacs-lsp/lsp-ui). |
 | Completion                  | `textDocument/completion`         | :heavy_check_mark: | `complete-symbol`                                      |
 | Hover                       | `textDocument/hover`              | :heavy_check_mark: |                                                        |
 | Signature Help              | `textDocument/signatureHelp`      | :x:                |                                                        |
