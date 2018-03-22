@@ -23,6 +23,36 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
 ![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
 
+### Feature list
+| Name                        | Method                            |                    | Emacs function                                         |
+| ----                        | -----------------------------     | ------------------ | -----------------------------------                    |
+| Workspace Symbols           | `workspace/symbol`                | :heavy_check_mark: | `xref-find-apropos`                                    |
+| Execute Command             | `workspace/executeCommand`        | :x:                |                                                        |
+| Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Uses [flycheck](https://github.com/flycheck/flycheck). |
+| Completion                  | `textDocument/completion`         | :heavy_check_mark: | `complete-symbol`                                      |
+| Hover                       | `textDocument/hover`              | :heavy_check_mark: |                                                        |
+| Signature Help              | `textDocument/signatureHelp`      | :x:                |                                                        |
+| Goto Definition             | `textDocument/definition`         | :heavy_check_mark: | `xref-find-definitions`                                |
+| Goto Type Definition        | `textDocument/typeDefinition`     | :heavy_check_mark: |                                                        |
+| Find References             | `textDocument/references`         | :heavy_check_mark: | `xref-find-references`                                 |
+| Document Highlights         | `textDocument/documentHighlight`  | :heavy_check_mark: |                                                        |
+| Document Symbols            | `textDocument/documentSymbol`     | :heavy_check_mark: | `imenu` (with `lsp-imenu`)                             |
+| Code Action                 | `textDocument/codeAction`         | :x:                |                                                        |
+| Code Lens                   | `textDocument/codeLens`           | :x:                |                                                        |
+| Document Formatting         | `textDocument/formatting`         | :heavy_check_mark: | `lsp-format-buffer`                                    |
+| Document Range Formatting   | `textDocument/rangeFormatting`    | :heavy_check_mark: | `indent-region`                                        |
+| Document on Type Formatting | `textDocument/onTypeFormatting`   | :x:                |                                                        |
+| Rename                      | `textDocument/rename`             | :x:                |                                                        |
+
+### Nonstandard features
+| Name                               | Method                        |                             | Emacs function                         |
+| ---------------------------------- | ----------------------------- | --------------------------- | -----------------------------------    |
+| Goto Implementation                | `idea/implementations`        | :leftwards_arrow_with_hook: | `lsp-intellij-find-implementations`    |
+| Indexing Started                   | `idea/indexStarted`           | :arrow_left:                |                                        |
+| Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                |                                        |
+| Toggle IDEA window                 | `idea/toggleFrameVisibility`  | :leftwards_arrow_with_hook: | `lsp-intellij-toggle-frame-visibility` |
+| Show IDEA Project Structure window | `idea/openProjectStructure`   | :leftwards_arrow_with_hook: | `lsp-intellij-open-project-structure`  |
+
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
 
@@ -59,7 +89,7 @@ For Spacemacs you can put the configuration into the private layer (recommended 
     lsp-mode
     (lsp-intellij :location local)
     ))
-    
+
 (defun intellij-lsp/init-lsp-mode ()
   (use-package lsp-mode))
 
@@ -70,11 +100,11 @@ For Spacemacs you can put the configuration into the private layer (recommended 
 
 ```
 
-After all you should have similar structure:
+Then you should have a similar structure to the following:
 
 
 ```
-➜  ~ git:(master) ✗ tree ~/.emacs.d/private/lsp-intellij 
+➜  ~ git:(master) ✗ tree ~/.emacs.d/private/lsp-intellij
 /home/user/.emacs.d/private/lsp-intellij
 ├── local
 │   └── lsp-intellij
