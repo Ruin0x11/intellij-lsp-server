@@ -17,6 +17,7 @@ import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
 import org.eclipse.lsp4j.SymbolInformation
 
+const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
     override fun execute(ctx: Project): MutableList<SymbolInformation> {
         val gotoSymbolModel = GotoSymbolModel2(ctx)
@@ -24,8 +25,8 @@ class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<Sym
 
         val ref: Ref<List<SearchResult>> = Ref(listOf())
         ApplicationManager.getApplication().invokeAndWait {
-            val symbols = getSymbols(ctx, query, 1000, true, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
-            val classes = getClasses(query, 1000, true, NonInteractiveChooseByName(ctx, gotoClassModel, null))
+            val symbols = getSymbols(ctx, query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
+            val classes = getClasses(query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoClassModel, null))
             ref.set(listOf(symbols, classes))
         }
 

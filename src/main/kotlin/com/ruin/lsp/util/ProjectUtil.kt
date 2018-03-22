@@ -54,7 +54,7 @@ fun resolveProjectFromUri(uri: String): Pair<Project, String>? {
     // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the document from them
     // otherwise it gets confusing to have to look up the line and column being tested in the test document
     val newUri = normalizeUri(uri)
-    val topFile = File(URI(newUri))
+    val topFile = File(uriToPath(newUri))
     var directory = topFile.parentFile
     while (directory != null) {
         val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
@@ -302,6 +302,12 @@ fun normalizeUri(uri: String): String {
     return decodedUri.replace("\\", "/")
 }
 
+/** Converts a URI to a path.
+ *
+ * Needed since trying to create a {@link java.net.URI} from an LSP-generated
+ * URI string can fail, because Java's URI class does not accept unencoded
+ * spaces.
+ */
 fun uriToPath(uri: String): String {
     val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
 
