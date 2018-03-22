@@ -153,6 +153,13 @@ fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand
                                   uri: DocumentUri,
                                   client: LanguageClient? = null): T {
     val (project, file) = ensurePsiFromUri(uri)
+    return invokeCommandAndWait(command, project, file, client)
+}
+
+fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
+                                  project: Project,
+                                  file: PsiFile,
+                                  client: LanguageClient? = null): T {
     val context = ExecutionContext(project, file, client)
 
     val result = invokeAndWaitIfNeeded(Computable {
@@ -190,8 +197,8 @@ fun defaultServerCapabilities() =
         workspaceSymbolProvider = true
         codeActionProvider = false
         codeLensProvider = null
-        documentFormattingProvider = false
-        documentRangeFormattingProvider = false
+        documentFormattingProvider = true
+        documentRangeFormattingProvider = true
         documentOnTypeFormattingProvider = null
         renameProvider = false
         documentLinkProvider = null

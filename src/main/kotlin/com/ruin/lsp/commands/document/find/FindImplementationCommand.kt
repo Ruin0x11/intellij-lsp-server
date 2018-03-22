@@ -9,11 +9,7 @@ import com.intellij.psi.PsiElement
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.positionToOffset
-import com.ruin.lsp.util.ensureTargetElement
-import com.ruin.lsp.util.getDocument
-import com.ruin.lsp.util.location
-import com.ruin.lsp.util.withEditor
+import com.ruin.lsp.util.*
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 
@@ -22,7 +18,7 @@ class FindImplementationCommand(val position: Position) : DocumentCommand<Mutabl
         val doc = getDocument(ctx.file)
             ?: throw LanguageServerException("No document found.")
 
-        val offset = positionToOffset(doc, position)
+        val offset = position.toOffset(doc)
         val ref: Ref<Array<PsiElement>?> = Ref()
         withEditor(this, ctx.file, position) { editor ->
             val element = ensureTargetElement(editor)

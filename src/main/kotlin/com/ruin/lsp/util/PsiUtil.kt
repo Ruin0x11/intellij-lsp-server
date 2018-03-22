@@ -9,6 +9,14 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 
+fun Position.toOffset(doc: Document) = doc.getLineStartOffset(this.line) + this.character
+
+fun Range.toTextRange(doc: Document) =
+    TextRange(
+        this.start.toOffset(doc),
+        this.end.toOffset(doc)
+    )
+
 fun offsetToPosition(doc: Document, offset: Int): Position {
     if (offset == -1) {
         return Position(0, 0)

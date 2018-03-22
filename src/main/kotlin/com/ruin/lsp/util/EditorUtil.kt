@@ -55,6 +55,13 @@ fun withEditor(context: Disposable, file: PsiFile, position: Position = Position
     }
 }
 
+/**
+ * Gathers a list of TextEdits by copying a PsiFile, running an operation on the copy and diffing the results.
+ *
+ * All operations on a PsiFile should be performed on the copy inside the callback, not the original.
+ * @param file file to run action on
+ * @param callback function run on the copied file and an editor for the copy
+ */
 fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): List<TextEdit>? {
     val copy = createFileCopy(file)
     withEditor(Disposer.newDisposable(), copy, Position(0, 0)) { editor ->
@@ -62,8 +69,8 @@ fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): Li
     }
     val oldDoc = getDocument(file) ?: return null
     val newDoc = getDocument(copy) ?: return null
-    LOG.debug("=== Old Doc:\n${oldDoc.text}")
-    LOG.debug("=== New Doc:\n${newDoc.text}")
+    LOG.debug("=== Old doc:\n${oldDoc.text}")
+    LOG.debug("=== New doc:\n${newDoc.text}")
     return textEditFromDocs(oldDoc, newDoc)
 }
 
@@ -77,8 +84,6 @@ fun DiffFragment.toTextEdit(oldDoc: Document, newDoc: Document): TextEdit {
 fun textEditFromDocs(oldDoc: Document, newDoc: Document): List<TextEdit> {
     val indicator = ProgressManager.getInstance().progressIndicator ?: DumbProgressIndicator.INSTANCE
     val changes = ComparisonManager.getInstance().compareChars(oldDoc.text, newDoc.text, ComparisonPolicy.DEFAULT, indicator)
-
-    return changes.map {
-        it.toTextEdit(oldDoc, newDoc)
-    }
+    LOG.debug("=== Diff:\n${changes.joinToString("\n") { it.toString() }}")
+    return changes.map { it.toTextEdit(oldDoc, newDoc) }
 }

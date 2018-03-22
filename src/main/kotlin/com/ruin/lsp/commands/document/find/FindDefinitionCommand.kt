@@ -5,9 +5,9 @@ import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.model.positionToOffset
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.location
+import com.ruin.lsp.util.toOffset
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 
@@ -16,7 +16,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         val doc = getDocument(ctx.file)
             ?: throw LanguageServerException("No document found.")
 
-        val offset = positionToOffset(doc, position)
+        val offset = position.toOffset(doc)
         val ref = ctx.file.findReferenceAt(offset)
 
         var lookup = ref?.resolve()

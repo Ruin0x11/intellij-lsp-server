@@ -5,6 +5,7 @@ import com.ruin.lsp.commands.document.completion.CompletionCommand
 import com.ruin.lsp.commands.document.completion.CompletionItemResolveCommand
 import com.ruin.lsp.commands.document.find.FindDefinitionCommand
 import com.ruin.lsp.commands.document.find.FindUsagesCommand
+import com.ruin.lsp.commands.document.formatting.DocumentFormattingCommand
 import com.ruin.lsp.commands.document.highlight.DocumentHighlightCommand
 import com.ruin.lsp.commands.document.hover.HoverCommand
 import com.ruin.lsp.commands.document.symbol.DocumentSymbolCommand
@@ -33,14 +34,16 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
     override fun documentHighlight(position: TextDocumentPositionParams): CompletableFuture<MutableList<out DocumentHighlight>> =
         asInvokeAndWaitFuture(position.textDocument.uri, DocumentHighlightCommand(position.position), server.client)
 
-    override fun onTypeFormatting(params: DocumentOnTypeFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun definition(position: TextDocumentPositionParams): CompletableFuture<MutableList<out Location>> =
         asInvokeAndWaitFuture(position.textDocument.uri, FindDefinitionCommand(position.position), server.client)
 
-    override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
+    override fun formatting(params: DocumentFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
+        asInvokeAndWaitFuture(params.textDocument.uri, DocumentFormattingCommand(params.options))
+
+    override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
+        asInvokeAndWaitFuture(params.textDocument.uri, DocumentFormattingCommand(params.options, params.range))
+
+    override fun onTypeFormatting(params: DocumentOnTypeFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -60,10 +63,6 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         asCancellableInvokeAndWaitFuture(params.textDocument.uri, DocumentSymbolCommand(params.textDocument), server.client)
 
     override fun signatureHelp(position: TextDocumentPositionParams): CompletableFuture<SignatureHelp> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun formatting(params: DocumentFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
