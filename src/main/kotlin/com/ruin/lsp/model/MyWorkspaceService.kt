@@ -1,6 +1,6 @@
 package com.ruin.lsp.model
 
-import com.ruin.lsp.commands.project.symbol.SymbolCommand
+import com.ruin.lsp.commands.project.symbol.WorkspaceSymbolCommand
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.sProjectCache
 import org.eclipse.lsp4j.DidChangeConfigurationParams
@@ -21,6 +21,6 @@ class MyWorkspaceService(val context: MyLanguageServer) : WorkspaceService {
     override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {
         val cachedProjectPath = sProjectCache.keys.firstOrNull()
             ?: return CompletableFuture.supplyAsync { mutableListOf<SymbolInformation>() }
-        return asInvokeAndWaitFuture(getURIForFile(File(cachedProjectPath)), SymbolCommand(params.query))
+        return asInvokeAndWaitFuture(getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
     }
 }

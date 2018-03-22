@@ -5,7 +5,7 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
 
-class SymbolCommandTestCase : SymbolCommandTestBase() {
+class WorkspaceSymbolCommandTestCase : WorkspaceSymbolCommandTestBase() {
     fun `test finds method`() = checkHasResult("answerQuestion", listOf(
         SymbolInformation("answerQuestion", SymbolKind.Method,
             Location(uriForPath(projectName, DUMMY_FILE_PATH), range(49, 15, 49, 15)),

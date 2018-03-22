@@ -17,7 +17,7 @@ import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
 import org.eclipse.lsp4j.SymbolInformation
 
-class SymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
+class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
     override fun execute(ctx: Project): MutableList<SymbolInformation> {
         val gotoSymbolModel = GotoSymbolModel2(ctx)
         val gotoClassModel = GotoClassModel2(ctx)
