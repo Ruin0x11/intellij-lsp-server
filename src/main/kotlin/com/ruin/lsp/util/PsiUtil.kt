@@ -94,14 +94,9 @@ fun KtElement.ktSymbolKind(): SymbolKind? =
             else -> SymbolKind.Class
         }
         is KtClassInitializer -> SymbolKind.Constructor
-        is KtLightMethod -> if (isConstructor) SymbolKind.Constructor else SymbolKind.Method
+//        is KtLightMethod -> if (isConstructor) SymbolKind.Constructor else SymbolKind.Method
         is KtFunction -> SymbolKind.Function
-        is KtLightField ->
-            if (hasModifier(JvmModifier.STATIC) && hasModifier(JvmModifier.FINAL)) {
-                SymbolKind.Constant
-            } else {
-                SymbolKind.Field
-            }
+        is KtProperty -> if (isMember) SymbolKind.Field else SymbolKind.Variable
         is KtVariableDeclaration -> SymbolKind.Variable
         is KtAnnotation -> SymbolKind.Property
         else -> null

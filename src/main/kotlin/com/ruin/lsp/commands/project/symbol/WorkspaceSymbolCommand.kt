@@ -17,8 +17,6 @@ import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
 import org.eclipse.lsp4j.SymbolInformation
-import org.jetbrains.kotlin.asJava.elements.KtLightDeclaration
-import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 
 const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {

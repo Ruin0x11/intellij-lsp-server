@@ -6,6 +6,10 @@ import com.intellij.psi.*
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
+import org.eclipse.lsp4j.SymbolKind
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.calls.callUtil.getType
 
 
 abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
@@ -53,6 +57,10 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
                 is PsiField -> FieldCompletionDecorator(lookup, psi)
                 is PsiVariable -> VariableCompletionDecorator(lookup, psi)
                 is PsiPackage -> PackageCompletionDecorator(lookup, psi)
+
+                is KtProperty -> KtPropertyCompletionDecorator(lookup, psi)
+                is KtClass -> KtClassCompletionDecorator(lookup, psi)
+                is KtNamedFunction -> KtFunctionCompletionDecorator(lookup, psi)
                 else -> null
             }
             decorator?.clientSupportsSnippets = snippetSupport
@@ -60,6 +68,8 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
         }
     }
 }
+
+// Java
 
 class MethodCompletionDecorator(lookup: LookupElement, val method: PsiMethod)
     : CompletionDecorator<PsiMethod>(lookup, method) {
@@ -106,6 +116,36 @@ class PackageCompletionDecorator(lookup: LookupElement, val pack: PsiPackage)
     override fun formatLabel() = pack.qualifiedName
 
     override fun formatDoc() = pack.qualifiedName
+}
+
+// Kotlin
+
+class KtClassCompletionDecorator(lookup: LookupElement, val klass: KtClass)
+    : CompletionDecorator<KtClass>(lookup, klass) {
+    override val kind = CompletionItemKind.Class
+
+    override fun formatLabel() =
+        klass.nameAsName?.identifier ?: klass.toString()
+}
+
+class KtPropertyCompletionDecorator(lookup: LookupElement, val property: KtProperty)
+    : CompletionDecorator<KtProperty>(lookup, property) {
+    override val kind = if(property.isMember) CompletionItemKind.Field else CompletionItemKind.Variable
+
+    private val type = property.typeReference?.typeElement?.text ?: "dood"
+
+    override fun formatLabel() = "${property.name} : $type"
+
+    override fun formatDoc(): String = "$type ${property.name};"
+}
+
+class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction)
+    : CompletionDecorator<KtNamedFunction>(lookup, function) {
+    override val kind = CompletionItemKind.Function
+
+    override fun formatInsertText() = function.typeReference?.typeElement?.text ?: "dood"
+
+    override fun formatLabel() = function.text
 }
 
 fun buildDocComment(method: PsiDocCommentOwner): String {

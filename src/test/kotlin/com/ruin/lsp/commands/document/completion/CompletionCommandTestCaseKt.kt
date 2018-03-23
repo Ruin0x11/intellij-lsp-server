@@ -13,7 +13,7 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         get() = forKotlin(DUMMY_FILE_PATH)
 
     fun `test function completion`() =
-        checkContainsCompletion(Position(13, 25), false, "boring() : void")
+        checkContainsCompletion(Position(52, 15), false, "boring() : void")
 
     fun `test function completion with parameter`() =
         checkContainsCompletion(Position(42, 32), false, "answerQuestion(String question) : int")
