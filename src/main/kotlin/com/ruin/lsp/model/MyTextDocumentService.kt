@@ -1,6 +1,7 @@
 package com.ruin.lsp.model
 
 import com.intellij.openapi.components.ServiceManager
+import com.ruin.lsp.commands.document.action.CodeActionCommand
 import com.ruin.lsp.commands.document.completion.CompletionCommand
 import com.ruin.lsp.commands.document.completion.CompletionItemResolveCommand
 import com.ruin.lsp.commands.document.find.FindDefinitionCommand
@@ -24,9 +25,8 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         return asInvokeAndWaitFuture(uri, command, server.client, server)
     }
 
-    override fun codeAction(params: CodeActionParams): CompletableFuture<MutableList<out Command>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun codeAction(params: CodeActionParams): CompletableFuture<MutableList<out Command>> =
+        asInvokeAndWaitFuture(params.textDocument.uri, CodeActionCommand(params.range, params.context))
 
     override fun hover(position: TextDocumentPositionParams): CompletableFuture<Hover> =
         asInvokeAndWaitFuture(position.textDocument.uri, HoverCommand(position.position), server.client)
