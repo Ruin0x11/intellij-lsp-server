@@ -6,9 +6,6 @@ import com.ruin.lsp.model.invokeCommandAndWait
 import org.eclipse.lsp4j.SymbolInformation
 
 abstract class WorkspaceSymbolCommandTestBase : BaseTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
     protected fun checkHasResult(query: String, expected: List<SymbolInformation>) {
         val command = WorkspaceSymbolCommand(query)
         val result = invokeCommandAndWait(command, project)

@@ -12,10 +12,13 @@ import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.impl.light.LightElement
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
 import org.eclipse.lsp4j.SymbolInformation
+import org.jetbrains.kotlin.asJava.elements.KtLightDeclaration
+import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 
 const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
@@ -42,6 +45,11 @@ class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<Sym
 
 fun PsiElement.toSymbolInformation(): SymbolInformation? {
     if (this !is PsiNameIdentifierOwner) {
+        return null
+    }
+
+    // filter elements that are kotlin-as-java
+    if (this is LightElement) {
         return null
     }
 

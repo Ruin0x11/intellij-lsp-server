@@ -8,6 +8,11 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
+import org.jetbrains.kotlin.asJava.elements.KtLightField
+import org.jetbrains.kotlin.asJava.elements.KtLightMethod
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.stubs.elements.KtClassElementType
+import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementType
 
 fun Position.toOffset(doc: Document) = doc.getLineStartOffset(this.line) + this.character
 
@@ -74,5 +79,30 @@ fun PsiElement.symbolKind(): SymbolKind? =
                     else -> SymbolKind.Constant
                 }
         }
+        is KtElement -> this.ktSymbolKind()
+        else -> null
+    }
+
+fun KtElement.ktSymbolKind(): SymbolKind? =
+    when (this) {
+        is KtFile -> SymbolKind.File
+        is KtPackageDirective -> SymbolKind.Package
+        is KtImportDirective -> SymbolKind.Module
+        is KtClass -> when {
+            isInterface() -> SymbolKind.Interface
+            isEnum() -> SymbolKind.Enum
+            else -> SymbolKind.Class
+        }
+        is KtClassInitializer -> SymbolKind.Constructor
+        is KtLightMethod -> if (isConstructor) SymbolKind.Constructor else SymbolKind.Method
+        is KtFunction -> SymbolKind.Function
+        is KtLightField ->
+            if (hasModifier(JvmModifier.STATIC) && hasModifier(JvmModifier.FINAL)) {
+                SymbolKind.Constant
+            } else {
+                SymbolKind.Field
+            }
+        is KtVariableDeclaration -> SymbolKind.Variable
+        is KtAnnotation -> SymbolKind.Property
         else -> null
     }

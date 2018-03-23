@@ -8,12 +8,6 @@ import org.eclipse.lsp4j.Position
 import org.intellivim.FileEditingTestCase
 
 abstract class CompletionCommandTestBase : FileEditingTestCase() {
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
-
-    override val projectName: String
-        get() = JAVA_PROJECT
-
     protected fun checkContainsCompletion(pos: Position, snippet: Boolean, expected: String) {
         val command = CompletionCommand(pos, snippet)
         val result = invokeCommandAndWait(command, file.url)

@@ -1,8 +1,16 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.ruin.lsp.DUMMY_FILE_PATH
+import com.ruin.lsp.JAVA_PROJECT
 import org.eclipse.lsp4j.Position
 
 class CompletionCommandTestCase : CompletionCommandTestBase() {
+    override val projectName: String
+        get() = JAVA_PROJECT
+
+    override val filePath: String
+        get() = DUMMY_FILE_PATH
+
     fun `test function completion`() =
         checkContainsCompletion(Position(13, 29), false, "boring() : void")
 

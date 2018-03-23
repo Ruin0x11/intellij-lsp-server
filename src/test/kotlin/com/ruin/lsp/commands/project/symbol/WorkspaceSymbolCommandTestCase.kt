@@ -6,6 +6,9 @@ import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
 
 class WorkspaceSymbolCommandTestCase : WorkspaceSymbolCommandTestBase() {
+    override val projectName: String
+        get() = JAVA_PROJECT
+
     fun `test finds method`() = checkHasResult("answerQuestion", listOf(
         SymbolInformation("answerQuestion", SymbolKind.Method,
             Location(uriForPath(projectName, DUMMY_FILE_PATH), range(49, 15, 49, 15)),

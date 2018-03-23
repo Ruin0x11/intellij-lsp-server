@@ -6,9 +6,11 @@ import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCa
 import com.ruin.lsp.util.ensureProject
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.values.DocumentUri
+import org.jetbrains.kotlin.utils.fileUtils.withReplacedExtensionOrNull
 import java.io.File
 
 val JAVA_PROJECT = "java-project"
+val KOTLIN_PROJECT = "kotlin-project"
 val LOOPING_PROJECT = "looping-project"
 val RUNNABLE_PROJECT = "runnable-project"
 val TESTABLE_PROJECT = "testable-project"
@@ -66,3 +68,7 @@ fun uriForPath(projectName: String, filePath: String): DocumentUri {
     val file = File(projectPath, filePath)
     return getURIForFile(file)
 }
+
+fun forKotlin(path: String) =
+    File(path.replace("javaproject", "kotlinproject"))
+    .withReplacedExtensionOrNull("java", "kt")!!.path
