@@ -16,7 +16,7 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(52, 15), false, "boring() : void")
 
     fun `test function completion with parameter`() =
-        checkContainsCompletion(Position(42, 32), false, "answerQuestion(String question) : int")
+        checkContainsCompletion(Position(42, 32), false, "answerQuestion(question: String) : Int")
 
     fun `test function snippet`() =
         checkContainsCompletion(Position(13, 25), true, "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
@@ -25,5 +25,5 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(15, 12), false,"list : ArrayList<String>")
 
     fun `test class completion`() =
-        checkContainsCompletion(Position(13, 13), false,"org.lsp.javaproject.Dummy")
+        checkContainsCompletion(Position(13, 13), false,"org.lsp.kotlinproject.Dummy")
 }

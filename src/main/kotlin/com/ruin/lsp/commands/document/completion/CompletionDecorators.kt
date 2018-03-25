@@ -3,13 +3,24 @@ package com.ruin.lsp.commands.document.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
+import com.sun.javaws.jnl.PropertyDesc
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
 import org.eclipse.lsp4j.SymbolKind
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
+import org.jetbrains.kotlin.descriptors.impl.LocalVariableDescriptor
+import org.jetbrains.kotlin.idea.completion.DeclarationLookupObjectImpl
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getType
+import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.SimpleType
 
 
 abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
@@ -43,7 +54,7 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
     }
 
     protected open fun formatDoc(): String {
-        return buildDocComment(elt as PsiDocCommentOwner)
+        return buildDocComment(elt)
     }
 
     protected abstract fun formatLabel(): String
@@ -58,13 +69,48 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
                 is PsiVariable -> VariableCompletionDecorator(lookup, psi)
                 is PsiPackage -> PackageCompletionDecorator(lookup, psi)
 
-                is KtProperty -> KtPropertyCompletionDecorator(lookup, psi)
-                is KtClass -> KtClassCompletionDecorator(lookup, psi)
-                is KtNamedFunction -> KtFunctionCompletionDecorator(lookup, psi)
+                is KtElement -> fromKotlin(lookup)
                 else -> null
             }
             decorator?.clientSupportsSnippets = snippetSupport
             return decorator
+        }
+
+        fun fromKotlin(lookup: LookupElement): CompletionDecorator<PsiElement>? {
+            val descriptor = (lookup.`object` as? DeclarationLookupObjectImpl)?.descriptor ?: return null
+            val psi = lookup.psiElement
+            return when (descriptor) {
+                is org.jetbrains.kotlin.descriptors.VariableDescriptor -> {
+                    val kType = descriptor.type
+                    KtVariableCompletionDecorator(lookup, psi as KtProperty, kType)
+                }
+                is org.jetbrains.kotlin.descriptors.PropertyDescriptor -> {
+                    val kType = descriptor.returnType ?: descriptor.type
+                    KtPropertyCompletionDecorator(lookup, psi as KtProperty, kType)
+                }
+                is org.jetbrains.kotlin.descriptors.FunctionDescriptor -> {
+                    if (psi is KtNamedFunction) {
+                        val kType = descriptor.returnType
+                        val args = descriptor.valueParameters
+                        KtFunctionCompletionDecorator(lookup, psi, kType, args)
+                    } else {
+                        null
+                    }
+                }
+                is org.jetbrains.kotlin.descriptors.ClassDescriptor -> {
+                    val kType = descriptor.classValueType ?: descriptor.defaultType
+                    KtClassCompletionDecorator(lookup, psi as KtClass)
+                }
+                is org.jetbrains.kotlin.descriptors.TypeAliasDescriptor -> {
+                    val kType = descriptor.expandedType
+                    KtTypeAliasCompletionDecorator(lookup, psi as KtTypeAlias, kType)
+                }
+                //is ModuleDescriptor -> {
+                //    val fqName = descriptor.fqNameSafe
+                //    KtModuleCompletionDecorator(lookup, psi, fqName)
+                //}
+                else -> null
+            }
         }
     }
 }
@@ -118,38 +164,58 @@ class PackageCompletionDecorator(lookup: LookupElement, val pack: PsiPackage)
     override fun formatDoc() = pack.qualifiedName
 }
 
+
 // Kotlin
 
 class KtClassCompletionDecorator(lookup: LookupElement, val klass: KtClass)
     : CompletionDecorator<KtClass>(lookup, klass) {
     override val kind = CompletionItemKind.Class
 
-    override fun formatLabel() =
-        klass.nameAsName?.identifier ?: klass.toString()
+    override fun formatLabel() = klass.fqName?.asString() ?: klass.toString()
 }
 
-class KtPropertyCompletionDecorator(lookup: LookupElement, val property: KtProperty)
+class KtPropertyCompletionDecorator(lookup: LookupElement, val property: KtProperty, val type: KotlinType)
     : CompletionDecorator<KtProperty>(lookup, property) {
     override val kind = if(property.isMember) CompletionItemKind.Field else CompletionItemKind.Variable
-
-    private val type = property.typeReference?.typeElement?.text ?: "dood"
 
     override fun formatLabel() = "${property.name} : $type"
 
     override fun formatDoc(): String = "$type ${property.name};"
 }
 
-class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction)
+class KtVariableCompletionDecorator(lookup: LookupElement, val property: KtProperty, val type: KotlinType)
+    : CompletionDecorator<KtProperty>(lookup, property) {
+    override val kind = if(property.isMember) CompletionItemKind.Field else CompletionItemKind.Variable
+
+    override fun formatLabel() = "${property.name} : $type"
+
+    override fun formatDoc(): String = "${property.name}: $type"
+}
+
+class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction, val type: KotlinType?, val args: List<ValueParameterDescriptor>)
     : CompletionDecorator<KtNamedFunction>(lookup, function) {
     override val kind = CompletionItemKind.Function
 
-    override fun formatInsertText() = function.typeReference?.typeElement?.text ?: "dood"
+    val argsString = args.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
 
-    override fun formatLabel() = function.text
+    override fun formatLabel() = "${function.name}($argsString) : $type"
+
+    override fun formatDoc() = formatLabel()
+
+    override fun formatInsertText() =
+        super.formatInsertText() + "("
 }
 
-fun buildDocComment(method: PsiDocCommentOwner): String {
-    val docComment = method.docComment ?: return ""
+class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTypeAlias, val type: SimpleType)
+    : CompletionDecorator<KtTypeAlias>(lookup, typeAlias) {
+    override val kind = CompletionItemKind.Class
+
+    override fun formatLabel() = "${typeAlias.name} : $type"
+}
+
+
+fun buildDocComment(method: PsiElement): String {
+    val docComment = (method as? PsiDocCommentOwner)?.docComment ?: return ""
 
     return docComment.text
 }
