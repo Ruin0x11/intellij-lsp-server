@@ -56,6 +56,9 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
+        flatDir {
+            dirs("libs")
+        }
     }
 
     idea {
@@ -101,7 +104,11 @@ project(":") {
 
     dependencies {
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
-        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0.M6")
+        compile(files("deps/org.eclipse.lsp4j.debug-0.4.0-SNAPSHOT.jar"))
+        compile(files("deps/org.eclipse.lsp4j-0.4.0-SNAPSHOT.jar"))
+        compile(files("deps/org.eclipse.lsp4j.jsonrpc.debug-0.4.0-SNAPSHOT.jar"))
+        compile(files("deps/org.eclipse.lsp4j.jsonrpc-0.4.0-SNAPSHOT.jar"))
+        compile(files("deps/org.eclipse.lsp4j.generator-0.4.0-SNAPSHOT.jar"))
         testCompile("org.jetbrains.kotlin:kotlin-test:1.2.21")
     }
 

@@ -26,13 +26,19 @@
         <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerService"
                             serviceImplementation="com.ruin.lsp.model.LanguageServerServiceImpl" />
         <applicationService serviceImplementation="com.ruin.lsp.model.PreviousCompletionCacheService" />
-        <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
+        <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerPreloadActivity"/>
+        <applicationService serviceInterface="com.ruin.lsp.model.DebugServerService"
+                            serviceImplementation="com.ruin.lsp.model.DebugServerServiceImpl" />
     </extensions>
 
     <application-components>
         <component>
             <interface-class>com.ruin.lsp.model.LanguageServerService</interface-class>
             <implementation-class>com.ruin.lsp.model.LanguageServerServiceImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.ruin.lsp.model.DebugServerService</interface-class>
+            <implementation-class>com.ruin.lsp.model.DebugServerServiceImpl</implementation-class>
         </component>
     </application-components>
 
