@@ -59,14 +59,12 @@ fun resolveProjectFromUri(uri: String): Pair<Project, String>? {
     while (directory != null) {
         val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
         if (imlFile != null) {
-            if(isRootProject(imlFile)) {
-                val proj = ensureProject(imlFile.absolutePath)
-                val projPathUri = getURIForFile(File(proj.basePath))
-                val prefix = newUri.commonPrefixWith(projPathUri, true)
-                assert(prefix.isNotEmpty())
-                val filePathFromRoot = newUri.substring(prefix.length)
-                return Pair(proj, filePathFromRoot)
-            }
+            val proj = ensureProject(imlFile.absolutePath)
+            val projPathUri = getURIForFile(File(proj.basePath))
+            val prefix = newUri.commonPrefixWith(projPathUri, true)
+            assert(prefix.isNotEmpty())
+            val filePathFromRoot = newUri.substring(prefix.length)
+            return Pair(proj, filePathFromRoot)
         }
         directory = directory.parentFile
     }
