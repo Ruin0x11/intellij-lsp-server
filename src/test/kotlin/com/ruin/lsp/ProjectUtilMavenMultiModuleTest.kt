@@ -25,12 +25,5 @@ class ProjectUtilMavenMultiModuleTest : BaseTestCase() {
         val pair = resolvePsiFromUri(uri)
         assertEquals(expectedTarget, pair!!.second)
     }
-
-    fun `test resolves root project from URI under child project`() {
-        val expectedTarget = MAVEN_MULTI_MODULE_PROJECT
-        val uri = getURIForFile(File(getProjectPath(), MAVEN_MULTI_MODULE_APP_PATH))
-        val pair = resolveProjectFromUri(uri)
-        assertEquals(expectedTarget, pair!!.first.name)
-    }
 }
 

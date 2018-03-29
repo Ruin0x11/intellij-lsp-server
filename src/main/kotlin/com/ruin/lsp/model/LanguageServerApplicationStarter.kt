@@ -18,9 +18,7 @@ class LspApplicationStarter : ApplicationStarterEx() {
     }
 
     override fun main(a: Array<out String>) {
-        val server = LanguageServerServiceImpl.getInstance()
-
-        val future = server.connect(SocketConnectionFactory(defaultPort).open())
-        future?.get()
+        val runner = LanguageServerRunnerImpl.getInstance()
+        runner.run(defaultPort)
     }
 }

@@ -28,13 +28,14 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
+    @Synchronized
     fun onTextDocumentOpened(params: DidOpenTextDocumentParams,
                              client: MyLanguageClient? = null,
                              server: MyLanguageServer? = null) {
         val textDocument = params.textDocument
 
         if(managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("URI ${textDocument.uri} was opened again without being closed, resetting")
+            LOG.warn("URI was opened again without being closed, resetting: ${textDocument.uri}")
             managedTextDocuments.remove(textDocument.uri)
         }
 
@@ -72,11 +73,12 @@ class WorkspaceManager {
             )
     }
 
+    @Synchronized
     fun onTextDocumentClosed(params: DidCloseTextDocumentParams) {
         val textDocument = params.textDocument
 
         if(!managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("Attempted to close insertText document at ${textDocument.uri} without opening it")
+            LOG.warn("Attempted to close document without opening it at: ${textDocument.uri}")
             return
         }
 
@@ -85,6 +87,7 @@ class WorkspaceManager {
         managedTextDocuments.remove(textDocument.uri)
     }
 
+    @Synchronized
     fun onTextDocumentChanged(params: DidChangeTextDocumentParams) {
         val textDocument = params.textDocument
         val contentChanges = params.contentChanges
@@ -106,6 +109,7 @@ class WorkspaceManager {
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
     }
 
+    @Synchronized
     fun onTextDocumentSaved(params: DidSaveTextDocumentParams) {
         val textDocument = params.textDocument
         val text = params.text
@@ -135,6 +139,7 @@ class WorkspaceManager {
         }
     }
 
+    @Synchronized
     fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit): ApplyWorkspaceEditResponse {
         LOG.debug("Handling workspace/applyEdit")
         LOG.debug("edit: $edit")
@@ -275,6 +280,7 @@ class WorkspaceManager {
         return ref.get()
     }
 
+    @Synchronized
     fun onShutdown() {
         managedTextDocuments.values.forEach { onTextDocumentClosed(DidCloseTextDocumentParams(it.identifier)) }
     }
