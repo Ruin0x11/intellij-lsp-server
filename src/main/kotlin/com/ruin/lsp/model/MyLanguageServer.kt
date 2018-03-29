@@ -14,6 +14,8 @@ import com.ruin.lsp.commands.document.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.document.find.FindImplementationCommand
 import com.ruin.lsp.commands.project.dialog.OpenProjectStructureCommand
 import com.ruin.lsp.commands.project.dialog.ToggleFrameVisibilityCommand
+import com.ruin.lsp.commands.project.runconfigurations.RunConfigurationsCommand
+import com.ruin.lsp.commands.project.runconfigurations.RunProjectCommand
 import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
@@ -92,6 +94,12 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
         asInvokeAndWaitFuture(params.textDocument.uri, FindImplementationCommand(params.position), client)
+
+    override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
+        asInvokeAndWaitFuture(params.textDocument.uri, RunConfigurationsCommand())
+
+    override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
+        asInvokeAndWaitFuture(params.textDocument.uri, RunProjectCommand(params.id))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
         asInvokeAndWaitFuture(params.textDocument.uri, OpenProjectStructureCommand())

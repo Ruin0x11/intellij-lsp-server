@@ -70,7 +70,7 @@ of matched directories.  Nil otherwise."
                                         (when (directory-name-p parent)
                                           (directory-files parent nil ".*.iml"))))))
     (when (not file)
-      (error "No root found."))
+      (error "No root found. Ensure an IDEA .iml file was created for the project beforehand."))
     (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
           (has-pom (> (length pom) 0))
           (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
@@ -118,6 +118,43 @@ of matched directories.  Nil otherwise."
 
 (cl-defmethod xref-backend-references ((_backend (eql xref-lsp-intellij)) identifier)
   (xref-backend-references 'xref-lsp identifier))
+
+(defun lsp-intellij--project-run-configurations ()
+  "Gets the list of project run configurations."
+  (lsp--send-request (lsp--make-request
+                                    "idea/runConfigurations"
+                                    (lsp--text-document-position-params))))
+
+(defun lsp-intellij--run-config-to-name (config)
+  (format "[%s] %s" (gethash "configType" config) (gethash "name" config)))
+
+(defun lsp-intellij-run-project ()
+  "Runs a project using an IntelliJ run configuration."
+  (interactive)
+  (let ((configs (lsp-intellij--project-run-configurations)))
+
+    (if (not configs)
+        (message "No run configurations were found.")
+      (let* ((display-names (mapcar #'lsp-intellij--run-config-to-name configs))
+             (completions (mapcar* #'cons display-names configs))
+             (chosen (cdr (assoc
+                            (completing-read "Run configuration: " completions)
+                            completions))))
+        (lsp-intellij--execute-run-project chosen)))))
+
+(defun lsp-intellij--execute-run-project (config)
+  (let ((command (lsp--send-request (lsp--make-request
+                                     "idea/runProject"
+                                     (list :textDocument (lsp-text-document-identifier)
+                                           :id (gethash "id" config))))))
+
+    (if (not (gethash "command" command))
+        (error "Run configuration unsupported: %s" (gethash "name" config))
+      (let ((default-directory (gethash "workingDirectory" command))
+            (command-str (replace-regexp-in-string "\n" " "
+                          (gethash "command" command))))
+        (setenv "CLASSPATH" (gethash "classpath" command))
+        (compile command-str)))))
 
 (defun lsp-intellij-find-implementations ()
   "List all implementations for the Java element at point."
