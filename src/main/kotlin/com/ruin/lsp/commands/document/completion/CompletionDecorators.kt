@@ -105,10 +105,6 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
                     val kType = descriptor.expandedType
                     KtTypeAliasCompletionDecorator(lookup, psi as KtTypeAlias, kType)
                 }
-                //is ModuleDescriptor -> {
-                //    val fqName = descriptor.fqNameSafe
-                //    KtModuleCompletionDecorator(lookup, psi, fqName)
-                //}
                 else -> null
             }
         }
@@ -192,18 +188,18 @@ class KtVariableCompletionDecorator(lookup: LookupElement, val property: KtPrope
     override fun formatDoc(): String = "${property.name}: $type"
 }
 
-class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction, val type: KotlinType?, val args: List<ValueParameterDescriptor>)
+class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction, val type: KotlinType?, val params: List<ValueParameterDescriptor>)
     : CompletionDecorator<KtNamedFunction>(lookup, function) {
     override val kind = CompletionItemKind.Function
 
-    val argsString = args.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
+    val argsString = params.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
 
     override fun formatLabel() = "${function.name}($argsString) : $type"
 
     override fun formatDoc() = formatLabel()
 
     override fun formatInsertText() =
-        super.formatInsertText() + "("
+        super.formatInsertText() + buildMethodParams(params, clientSupportsSnippets)
 }
 
 class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTypeAlias, val type: SimpleType)
@@ -247,15 +243,28 @@ fun buildMethodParams(method: PsiMethod, snippetSupport: Boolean) = if (snippetS
 else
     buildParens(method)
 
+fun buildMethodParams(params: List<ValueParameterDescriptor>, snippetSupport: Boolean) = if (snippetSupport)
+    buildSnippetTabStops(params)
+else
+    buildParens(params)
+
 fun buildParens(method: PsiMethod) = if (method.parameters.isEmpty()) "()" else "("
+fun buildParens(params: List<ValueParameterDescriptor>) = if (params.isEmpty()) "()" else "("
 
 fun buildSnippetTabStops(method: PsiMethod): CharSequence {
     val tabStops = method.parameterList.parameters.mapIndexed(::methodParamToSnippet).joinToString(", ")
 
     return "($tabStops)$0"
 }
+fun buildSnippetTabStops(parameters: List<ValueParameterDescriptor>): CharSequence {
+    val tabStops = parameters.mapIndexed(::methodParamToSnippet).joinToString(", ")
+
+    return "($tabStops)$0"
+}
 
 fun methodParamToSnippet(index: Int, param: PsiParameter) =
+    "${'$'}${'{'}${index+1}:${param.name}${'}'}"
+fun methodParamToSnippet(index: Int, param: ValueParameterDescriptor) =
     "${'$'}${'{'}${index+1}:${param.name}${'}'}"
 
 fun getTypeName(type: PsiType?) =

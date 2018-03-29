@@ -1,6 +1,6 @@
 package org.lsp.kotlinproject
 
-import java.util.ArrayList
+
 
 /**
  * Some dummy class for testing purposes
@@ -10,9 +10,9 @@ open class Dummy {
     private var thingy = 42
     fun boring() {
         println("Hi")
-        ArrayList<String>()
+        List<String>()
         Dummy().fluid().boring()
-        val list = ArrayList<String>()
+        val list = List<String>()
         list.add("hi")
         notBoring(42)
         thingy = 12

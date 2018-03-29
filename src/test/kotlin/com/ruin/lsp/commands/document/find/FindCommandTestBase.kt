@@ -19,7 +19,7 @@ abstract class FindCommandTestBase : BaseTestCase() {
                                    expectedFile: String,
                                    expectedPos: Position) {
         val result = invokeCommandAndWait(command, uri)
-        assertTrue("Expected ($expectedFile, $expectedPos to be included in results but got: " +
+        assertTrue("Expected ($expectedFile, $expectedPos) to be included in results but got: " +
             "\n$result",
             result.any {
                 extractFileName(it.uri) == expectedFile &&
