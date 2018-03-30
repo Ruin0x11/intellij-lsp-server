@@ -1,6 +1,7 @@
 package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -41,7 +42,10 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
         return CompletableFuture.supplyAsync {
             context.clientCapabilities = params.capabilities
-            context.rootProject = resolveProjectFromRootUri(params.rootUri)
+
+            ApplicationManager.getApplication().invokeAndWait {
+                context.rootProject = resolveProjectFromRootUri(params.rootUri)
+            }
 
             LOG.info("LSP was initialized. Project: ${context.rootProject}")
 
