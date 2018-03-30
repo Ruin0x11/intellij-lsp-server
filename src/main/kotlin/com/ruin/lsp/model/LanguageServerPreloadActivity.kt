@@ -11,9 +11,7 @@ class LanguageServerStartupActivity : PreloadingActivity() {
     override fun preload(indicator: ProgressIndicator) {
         LOG.info("Preloading intellij-lsp-server")
         GeneralSettings.getInstance().isShowTipsOnStartup = false
-        val server = LanguageServerServiceImpl.getInstance()
-
-        val future = server.connect(SocketConnectionFactory(8080).open())
-        future?.get()
+        val server = LanguageServerRunnerImpl.getInstance()
+        server.run(8080)
     }
 }
