@@ -5,10 +5,10 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
@@ -30,6 +30,7 @@ class WorkspaceManager {
 
     @Synchronized
     fun onTextDocumentOpened(params: DidOpenTextDocumentParams,
+                             project: Project,
                              client: MyLanguageClient? = null,
                              server: MyLanguageServer? = null) {
         val textDocument = params.textDocument
@@ -42,8 +43,7 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
-            val doc = getDocument(textDocument.uri) ?: return@Computable false
-            val project = resolveProjectFromUri(textDocument.uri)?.first ?: return@Computable false
+            val doc = getDocument(project, textDocument.uri) ?: return@Computable false
             reloadDocument(doc, project)
             if (client != null) {
                 if (server != null) {
@@ -88,7 +88,8 @@ class WorkspaceManager {
     }
 
     @Synchronized
-    fun onTextDocumentChanged(params: DidChangeTextDocumentParams) {
+
+    fun onTextDocumentChanged(params: DidChangeTextDocumentParams, project: Project) {
         val textDocument = params.textDocument
         val contentChanges = params.contentChanges
 
@@ -102,7 +103,7 @@ class WorkspaceManager {
         LOG.debug("contentChanges: $contentChanges")
         LOG.debug("Version before: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
 
-        runDocumentUpdate(textDocument) { doc ->
+        runDocumentUpdate(textDocument, project) { doc ->
             applyContentChangeEventChanges(doc, sortContentChangeEventChanges(contentChanges))
         }
 
@@ -110,7 +111,8 @@ class WorkspaceManager {
     }
 
     @Synchronized
-    fun onTextDocumentSaved(params: DidSaveTextDocumentParams) {
+    fun onTextDocumentSaved(params: DidSaveTextDocumentParams,
+                            project: Project) {
         val textDocument = params.textDocument
         val text = params.text
 
@@ -124,7 +126,7 @@ class WorkspaceManager {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
         ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
-            val (project, file) = resolvePsiFromUri(textDocument.uri) ?: return@Runnable
+            val file = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
             val document = getDocument(file) ?: return@Runnable
             reloadDocument(document, project)
             LOG.debug("Reloaded document at ${textDocument.uri}")
@@ -139,23 +141,25 @@ class WorkspaceManager {
         }
     }
 
-    @Synchronized
-    fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit): ApplyWorkspaceEditResponse {
+        @Synchronized
+
+        fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
         LOG.debug("Handling workspace/applyEdit")
+        LOG.debug("label: $label")
         LOG.debug("edit: $edit")
 
         var applied = false
         edit.documentChanges?.forEach { textDocumentEdit ->
-            val result = applyTextDocumentEdit(textDocumentEdit)
+            val result = applyTextDocumentEdit(textDocumentEdit, project)
             applied = applied || result
         }
 
         return ApplyWorkspaceEditResponse(applied)
     }
 
-    private fun applyTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun applyTextDocumentEdit(edit: TextDocumentEdit, project: Project): Boolean {
         if (!managedTextDocuments.containsKey(edit.textDocument.uri)) {
-            val success = openFileFromTextDocumentEdit(edit)
+            val success = openFileFromTextDocumentEdit(edit, project)
             if (!success) {
                 LOG.warn("Tried applying TextDocumentEdit for ${edit.textDocument.uri}, but it couldn't be opened")
                 return false
@@ -169,7 +173,7 @@ class WorkspaceManager {
         LOG.debug("edits: ${edit.edits}")
         LOG.debug("Version before: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
 
-        val result = runDocumentUpdate(edit.textDocument) { doc ->
+        val result = runDocumentUpdate(edit.textDocument, project) { doc ->
             applyTextEditChanges(doc, sortTextEditChanges(edit.edits))
         }
 
@@ -181,12 +185,11 @@ class WorkspaceManager {
     /**
      * @return true if the open succeeds
      */
-    private fun openFileFromTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun openFileFromTextDocumentEdit(edit: TextDocumentEdit, project: Project): Boolean {
         LOG.debug("Opening document from a WorkspaceEdit for ${edit.textDocument.uri}")
 
-        val text = invokeAndWaitIfNeeded(asWriteAction(Computable<String?> {
-            val doc = getDocument(edit.textDocument.uri) ?: return@Computable null
-            val project = resolveProjectFromUri(edit.textDocument.uri)?.first ?: return@Computable null
+        val text = invokeAndWaitIfNeeded(asWriteAction(Computable {
+            val doc = getDocument(project, edit.textDocument.uri) ?: return@Computable null
             reloadDocument(doc, project)
             doc.text
         }))
@@ -211,7 +214,7 @@ class WorkspaceManager {
     /**
      * @return true if the update succeeds
      */
-    private fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, callback: (Document) -> Unit): Boolean {
+    private fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, project: Project, callback: (Document) -> Unit): Boolean {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
         // Version number of our document should be (theirs - 1)
@@ -221,18 +224,17 @@ class WorkspaceManager {
             return false
         }
 
-        val pair = resolvePsiFromUri(textDocument.uri)
+        val file = resolvePsiFromUri(project, textDocument.uri)
 
-        if(pair == null) {
+        if(file == null) {
             LOG.warn("Couldn't resolve Psi file at ${textDocument.uri}")
             return false
         }
 
-        val (project, _) = pair
         val ref: Ref<Boolean> = Ref(false)
         ApplicationManager.getApplication().invokeAndWait {
             CommandProcessor.getInstance().executeCommand(project, asWriteAction( Runnable {
-                val doc = getDocument(textDocument.uri)
+                val doc = getDocument(file)
 
                 if (doc != null) {
                     if(managedTextDoc.contents != doc.text) {

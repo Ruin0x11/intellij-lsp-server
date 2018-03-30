@@ -14,12 +14,12 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test increments version number on write`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)), project)
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
         manager.onTextDocumentChanged(
-            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes), project
         )
 
         assertEquals(1, manager.managedTextDocuments[file.url]!!.identifier.version)
@@ -28,12 +28,12 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test full text update`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)), project)
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
         manager.onTextDocumentChanged(
-            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes), project
         )
 
         assertEquals("dood", manager.managedTextDocuments[file.url]!!.contents)
@@ -43,13 +43,13 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test partial text update`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)), project)
 
         val range = range(11, 28, 11, 30)
         val changes =
             listOf(TextDocumentContentChangeEvent(range, 2, "dood"))
         manager.onTextDocumentChanged(
-            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes), project
         )
 
         assert(manager.managedTextDocuments[file.url]!!.contents.contains("System.out.println(\"dood\");"))
@@ -60,7 +60,7 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         val manager = WorkspaceManager()
 
         manager.onTextDocumentOpened(
-            DidOpenTextDocumentParams(makeTextDocumentItem(0))
+            DidOpenTextDocumentParams(makeTextDocumentItem(0)), project
         )
 
         // not currently opened
@@ -77,7 +77,7 @@ class WorkspaceManagerTest : FileEditingTestCase() {
 
         val workspaceEdit = WorkspaceEdit(changes)
 
-        val result = manager.onWorkspaceApplyEdit(null, workspaceEdit)
+        val result = manager.onWorkspaceApplyEdit(null, workspaceEdit, project)
         assert(result.applied, { "Workspace edit wasn't successful" })
 
         // now the file should have opened
@@ -90,18 +90,18 @@ class WorkspaceManagerTest : FileEditingTestCase() {
     fun `test shutdown`() {
         val manager = WorkspaceManager()
 
-        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)))
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0)), project)
 
         val changes =
             listOf(TextDocumentContentChangeEvent(null, null, "dood"))
         manager.onTextDocumentChanged(
-            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes)
+            DidChangeTextDocumentParams(makeVersionedTextDocumentIdentifier(1), changes), project
         )
 
         manager.onShutdown()
 
         manager.onTextDocumentOpened(
-            DidOpenTextDocumentParams(makeTextDocumentItem(0))
+            DidOpenTextDocumentParams(makeTextDocumentItem(0)), project
         )
         assert("dood" != manager.managedTextDocuments[file.url]!!.contents)
     }

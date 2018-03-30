@@ -16,7 +16,7 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
 
     protected fun checkContainsCompletion(pos: Position, snippet: Boolean, expected: String) {
         val command = CompletionCommand(pos, snippet)
-        val result = invokeCommandAndWait(command, file.url)
+        val result = invokeCommandAndWait(command, project, psiFile)
         assertTrue(result.right.items.all {
             it.insertTextFormat == InsertTextFormat.PlainText ||
                 it.insertTextFormat == InsertTextFormat.Snippet

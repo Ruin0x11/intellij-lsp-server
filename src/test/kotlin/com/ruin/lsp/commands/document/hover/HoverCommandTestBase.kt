@@ -17,7 +17,7 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
     protected fun checkHoverEquals(line: Int, char: Int, expected: String?) {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))
-            val result = invokeCommandAndWait(command, file.url)
+            val result = invokeCommandAndWait(command, project, psiFile)
             val value = result.contents.first().right.value
             assertEquals("Expected \"$expected\" but got: \n$value",
                 expected, value)
@@ -27,7 +27,7 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
     protected fun checkHoverIsEmpty(line: Int, char: Int) {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))
-            val result = invokeCommandAndWait(command, file.url)
+            val result = invokeCommandAndWait(command, project, psiFile)
             assertEmpty(result.contents)
         }
     }
