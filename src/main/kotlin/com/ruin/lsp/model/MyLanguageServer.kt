@@ -101,10 +101,10 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), client)
 
     override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
-        asInvokeAndWaitFuture(params.textDocument.uri, RunConfigurationsCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, RunConfigurationsCommand())
 
     override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
-        asInvokeAndWaitFuture(params.textDocument.uri, RunProjectCommand(params.id))
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, RunProjectCommand(params.id))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
@@ -204,7 +204,7 @@ fun defaultServerCapabilities() =
         documentSymbolProvider = true
         workspaceSymbolProvider = true
         codeActionProvider = false
-        codeLensProvider = null
+        codeLensProvider = CodeLensOptions(false)
         documentFormattingProvider = true
         documentRangeFormattingProvider = true
         documentOnTypeFormattingProvider = null
