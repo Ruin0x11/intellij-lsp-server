@@ -4,6 +4,7 @@ import com.ruin.lsp.BaseTestCase
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.model.invokeCommandAndWait
 import com.ruin.lsp.util.getVirtualFile
+import com.ruin.lsp.util.resolvePsiFromUri
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 
@@ -18,7 +19,7 @@ abstract class FindCommandTestBase : BaseTestCase() {
                                    uri: String,
                                    expectedFile: String,
                                    expectedPos: Position) {
-        val result = invokeCommandAndWait(command, uri)
+        val result = invokeCommandAndWait(command, project, resolvePsiFromUri(project, uri)!!)
         assertTrue("Expected ($expectedFile, $expectedPos to be included in results but got: " +
             "\n$result",
             result.any {
@@ -34,7 +35,7 @@ abstract class FindCommandTestBase : BaseTestCase() {
 
     private fun checkFindsNothing(command: DocumentCommand<MutableList<Location>>,
                                   uri: String) {
-        val result = invokeCommandAndWait(command, uri)
+        val result = invokeCommandAndWait(command, project, resolvePsiFromUri(project, uri)!!)
         assertTrue("Expected nothing to be found but got: \n$result", result.isEmpty())
     }
 

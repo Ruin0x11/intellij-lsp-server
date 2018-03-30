@@ -1,6 +1,7 @@
 package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -44,7 +45,11 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         return CompletableFuture.supplyAsync {
             context.clientCapabilities = params.capabilities
 
-            LOG.info("LSP was initialized.")
+            ApplicationManager.getApplication().invokeAndWait {
+                context.rootProject = resolveProjectFromRootUri(params.rootUri)
+            }
+
+            LOG.info("LSP was initialized. Project: ${context.rootProject}")
 
             InitializeResult(defaultServerCapabilities())
         }
@@ -74,7 +79,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         }
 
         val (doc, file) = invokeAndWaitIfNeeded( Computable<Pair<Document, PsiFile>?> {
-            val (_, file) = resolvePsiFromUri(uri) ?: return@Computable null
+            val file = resolvePsiFromUri(context.rootProject!!, uri) ?: return@Computable null
             val doc = getDocument(file) ?: return@Computable null
             Pair(doc, file)
         }) ?: return
@@ -93,7 +98,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     // LSP protocol extensions for IDEA-specific features
 
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
-        asInvokeAndWaitFuture(params.textDocument.uri, FindImplementationCommand(params.position), client)
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), client)
 
     override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
         asInvokeAndWaitFuture(params.textDocument.uri, RunConfigurationsCommand())
@@ -102,51 +107,54 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         asInvokeAndWaitFuture(params.textDocument.uri, RunProjectCommand(params.id))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(params.textDocument.uri, OpenProjectStructureCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
 
     override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(params.textDocument.uri, ToggleFrameVisibilityCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, ToggleFrameVisibilityCommand())
 }
 
 
 fun <T: Any> asInvokeAndWaitFuture(
+    project: Project,
     uri: DocumentUri,
     command: ProjectCommand<T>): CompletableFuture<T> =
     CompletableFuture.supplyAsync {
         invokeAndWaitIfNeeded(Computable<T> {
-            val project = ensureProjectFromUri(uri).first
             command.execute(project)
         })
     }
 
 fun <T: Any> asInvokeAndWaitFuture(
+    project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
     client: LanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
      CompletableFuture.supplyAsync {
-        executeAndGetResult(uri, command, client, server)
+        executeAndGetResult(project, uri, command, client, server)
     }
 
 fun <T: Any> asCancellableInvokeAndWaitFuture(
+    project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
     client: LanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
     CompletableFutures.computeAsync { cancelToken ->
-        executeAndGetResult(uri, command, client, server, cancelToken)
+        executeAndGetResult(project, uri, command, client, server, cancelToken)
     }
 
 private val LOG = Logger.getInstance(MyLanguageServer::class.java)
 
 private fun <T : Any> executeAndGetResult(
+    project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
     client: LanguageClient? = null,
     server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
     return invokeAndWaitIfNeeded(Computable<T> {
-        val (project, file) = ensurePsiFromUri(uri)
+        val file = ensurePsiFromUri(project, uri)
         val profiler = if (client != null) startProfiler(client) else DUMMY
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
         profiler.finish("Done")
@@ -154,14 +162,6 @@ private fun <T : Any> executeAndGetResult(
         command.dispose()
         result
     })
-}
-
-
-fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
-                                  uri: DocumentUri,
-                                  client: LanguageClient? = null): T {
-    val (project, file) = ensurePsiFromUri(uri)
-    return invokeCommandAndWait(command, project, file, client)
 }
 
 fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,

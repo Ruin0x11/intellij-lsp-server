@@ -27,49 +27,56 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
 import com.ruin.lsp.model.MyLanguageClient
 import com.ruin.lsp.model.MyLanguageServer
+import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
-import java.net.URI
 import java.net.URLDecoder
 import java.nio.file.Paths
 import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
-fun ensurePsiFromUri(uri: String) = resolvePsiFromUri(uri)
+fun ensurePsiFromUri(project: Project, uri: DocumentUri) = resolvePsiFromUri(project, uri)
     ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
-fun resolvePsiFromUri(uri: String): Pair<Project, PsiFile>? {
-    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
-    val file = getPsiFile(project, filePath) ?: return null
-    return Pair(project, file)
+fun resolvePsiFromUri(project: Project, uri: DocumentUri): PsiFile? {
+    val filePath = projectRelativeFilePath(project, uri) ?: return null
+    return getPsiFile(project, filePath) ?: return null
 }
 
-fun ensureProjectFromUri(uri: String) = resolveProjectFromUri(uri)
+fun ensureProjectFromRootUri(uri: String) = resolveProjectFromRootUri(uri)
     ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
-fun resolveProjectFromUri(uri: String): Pair<Project, String>? {
+/**
+ * Given a project and a file URI, returns the path of the file relative to the project base path.
+ */
+fun projectRelativeFilePath(project: Project, uri: DocumentUri): String? {
+    val newUri = normalizeUri(uri)
+    val projPathUri = getURIForFile(File(project.basePath))
+    val prefix = newUri.commonPrefixWith(projPathUri, true)
+    if(prefix.isEmpty()) {
+        return null
+    }
+    return newUri.substring(prefix.length)
+}
+
+fun resolveProjectFromRootUri(uri: DocumentUri): Project? {
     // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the document from them
     // otherwise it gets confusing to have to look up the line and column being tested in the test document
     val newUri = normalizeUri(uri)
-    val topFile = File(uriToPath(newUri))
-    var directory = topFile.parentFile
-    while (directory != null) {
-        val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
-        if (imlFile != null) {
-            val proj = ensureProject(imlFile.absolutePath)
-            val projPathUri = getURIForFile(File(proj.basePath))
-            val prefix = newUri.commonPrefixWith(projPathUri, true)
-            assert(prefix.isNotEmpty())
-            val filePathFromRoot = newUri.substring(prefix.length)
-            return Pair(proj, filePathFromRoot)
-        }
-        directory = directory.parentFile
+    val directory = File(uriToPath(newUri))
+    if (!directory.isDirectory) {
+        LOG.warn("root URI at $uri isn't a directory.")
+        return null
+    }
+    val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
+    if (imlFile != null) {
+        return ensureProject(imlFile.absolutePath)
     }
 
-    LOG.warn("Unable to resolve document from URI $newUri")
+    LOG.warn("Unable to resolve project from URI $newUri")
     return null
 }
 
@@ -220,9 +227,9 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     return virtual
 }
 
-fun getDocument(uri: String): Document? {
+fun getDocument(project: Project, uri: String): Document? {
     val normalizedUri = normalizeUri(uri)
-    val (project, filePath) = resolveProjectFromUri(normalizedUri) ?: return null
+    val  filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
     val virtual = getVirtualFile(project, filePath)
     return invokeAndWaitIfNeeded(asWriteAction(
         Computable<Document> {

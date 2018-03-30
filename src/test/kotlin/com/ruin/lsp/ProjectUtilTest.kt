@@ -23,8 +23,8 @@ class ProjectUtilTest : BaseTestCase() {
     fun `test resolves PsiFile from URI`() {
         val expectedTarget = getPsiFile(project, TESTABLE_FILE_PATH)
         val uri = getURIForFile(File(getProjectPath(), TESTABLE_FILE_PATH))
-        val pair = resolvePsiFromUri(uri)
-        assertEquals(expectedTarget, pair!!.second)
+        val file = resolvePsiFromUri(project, uri)
+        assertEquals(expectedTarget, file)
     }
 
     fun `test normalizes URIs`() {

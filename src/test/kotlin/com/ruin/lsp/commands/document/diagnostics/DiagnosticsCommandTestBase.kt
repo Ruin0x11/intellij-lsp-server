@@ -15,8 +15,8 @@ abstract class DiagnosticsCommandTestBase : BaseTestCase() {
 
     protected fun checkDiagnosticsFound(filePath: String, expected: List<Diagnostic>) {
         val file = getVirtualFile(project, filePath)
-        val (_, psiFile) = ensurePsiFromUri(file.url)
-        val doc = getDocument(file.url)!!
+        val psiFile = ensurePsiFromUri(project, file.url)
+        val doc = getDocument(project, file.url)!!
 
         val thread = DiagnosticsThread(psiFile, doc, null)
         ApplicationManager.getApplication().executeOnPooledThread(thread).get()
