@@ -11,7 +11,7 @@ import org.eclipse.lsp4j.services.WorkspaceService
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
-class MyWorkspaceService(val context: MyLanguageServer) : WorkspaceService {
+class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
     override fun didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
     }
 
@@ -21,6 +21,6 @@ class MyWorkspaceService(val context: MyLanguageServer) : WorkspaceService {
     override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {
         val cachedProjectPath = sProjectCache.keys.firstOrNull()
             ?: return CompletableFuture.supplyAsync { mutableListOf<SymbolInformation>() }
-        return asInvokeAndWaitFuture(getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
+        return asInvokeAndWaitFuture(server.context.rootProject!!, getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
     }
 }

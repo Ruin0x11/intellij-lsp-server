@@ -20,8 +20,8 @@ class ProjectUtilMultiModuleTest : BaseTestCase() {
     fun `test resolves PsiFile from URI`() {
         val expectedTarget = getPsiFile(project, MULTI_MODULE_APP_PATH)
         val uri = getURIForFile(File(getProjectPath(), MULTI_MODULE_APP_PATH))
-        val pair = resolvePsiFromUri(uri)
-        assertEquals(expectedTarget, pair!!.second)
+        val file = resolvePsiFromUri(project, uri)
+        assertEquals(expectedTarget, file)
     }
 }
 
