@@ -1,6 +1,6 @@
 package com.ruin.lsp
 
-import com.ruin.lsp.util.fileToUri
+import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.getPsiFile
 import com.ruin.lsp.util.resolvePsiFromUri
 import java.io.File
@@ -19,9 +19,9 @@ class ProjectUtilMultiModuleTest : BaseTestCase() {
 
     fun `test resolves PsiFile from URI`() {
         val expectedTarget = getPsiFile(project, MULTI_MODULE_APP_PATH)
-        val uri = fileToUri(File(getProjectPath(), MULTI_MODULE_APP_PATH))
-        val pair = resolvePsiFromUri(uri)
-        assertEquals(pair!!.second, expectedTarget)
+        val uri = getURIForFile(File(getProjectPath(), MULTI_MODULE_APP_PATH))
+        val file = resolvePsiFromUri(project, uri)
+        assertEquals(expectedTarget, file)
     }
 }
 

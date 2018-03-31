@@ -1,9 +1,9 @@
 package com.ruin.lsp
 
 import com.ruin.lsp.util.getDocument
-import com.ruin.lsp.model.rangeToTextRange
-import com.ruin.lsp.values.Position
-import com.ruin.lsp.values.Range
+import com.ruin.lsp.util.toTextRange
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.intellivim.FileEditingTestCase
 
 class RangeTest : FileEditingTestCase() {
@@ -17,20 +17,17 @@ class RangeTest : FileEditingTestCase() {
         val doc = getDocument(psiFile)!!
 
         val range = Range(
-            start = Position(startLine, startChar),
-            end = Position(endLine, endChar)
+            Position(startLine, startChar),
+            Position(endLine, endChar)
         )
 
-        val textRange = rangeToTextRange(doc, range)
+        val textRange = range.toTextRange(doc)
 
         assertEquals(expected, doc.getText(textRange))
     }
 
     fun `test range empty`() = checkRangeEquals(46, 10, 46, 10, "")
-    fun `test range same line`() = checkRangeEquals(8, 0, 8, 6,
-        "public")
-    fun `test range line break`() = checkRangeEquals(17, 4, 18, 5,
-        "    thingy = 12;\n    }")
-    fun `test range multiple lines`() = checkRangeEquals(32,0,35,0,
-        "\n    Dummy() {\n    }\n")
+    fun `test range same line`() = checkRangeEquals(8, 0, 8, 6, "public")
+    fun `test range line break`() = checkRangeEquals(17, 4, 18, 5, "    thingy = 12;\n    }")
+    fun `test range multiple lines`() = checkRangeEquals(32,0,35,0, "\n    Dummy() {\n    }\n")
 }

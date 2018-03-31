@@ -1,9 +1,6 @@
 package com.ruin.lsp
 
-import com.ruin.lsp.util.fileToUri
-import com.ruin.lsp.util.getPsiFile
-import com.ruin.lsp.util.normalizeUri
-import com.ruin.lsp.util.resolvePsiFromUri
+import com.ruin.lsp.util.*
 import java.io.File
 
 
@@ -25,26 +22,59 @@ class ProjectUtilTest : BaseTestCase() {
 
     fun `test resolves PsiFile from URI`() {
         val expectedTarget = getPsiFile(project, TESTABLE_FILE_PATH)
-        val uri = fileToUri(File(getProjectPath(), TESTABLE_FILE_PATH))
-        val pair = resolvePsiFromUri(uri)
-        assertEquals(pair!!.second, expectedTarget)
+        val uri = getURIForFile(File(getProjectPath(), TESTABLE_FILE_PATH))
+        val file = resolvePsiFromUri(project, uri)
+        assertEquals(expectedTarget, file)
     }
 
     fun `test normalizes URIs`() {
-        val expected = "file:///e:/build/intellij-lsp-server/build.gradle.kts"
+        val expected = "file:///e:/Program Files/test.txt"
         val cases = listOf(
-            "file:/e:/build/intellij-lsp-server/build.gradle.kts",
-            "file://e:/build/intellij-lsp-server/build.gradle.kts",
-            "file://E:\\build\\intellij-lsp-server\\build.gradle.kts",
-            "file:///E:/build/intellij-lsp-server/build.gradle.kts"
-        )
+            "file:/e:/Program Files/test.txt",
+            "file://e:/Program Files/test.txt",
+            "file://E:\\Program Files\\test.txt",
+            "file:///E:/Program Files/test.txt",
+            "file:///E:/Program%20Files/test.txt",
+            "file:///E:/Program%20Files/test.txt/"
+        ).map(::normalizeUri)
 
         cases.forEach {
-            val uri = normalizeUri(it)
-            assert(expected.equals(uri, true), {
+            assert(expected.equals(it, true), {
             "Expected: $expected\n" +
-                "Got: $uri"
+                "Got: $it"
         }) }
+    }
+
+    fun `test converts URI to path`() {
+        val expected = "e:/Program Files/test.txt"
+        val cases = listOf(
+            "file:/e:/Program Files/test.txt",
+            "file://e:/Program Files/test.txt",
+            "file://E:\\Program Files\\test.txt",
+            "file:///E:/Program Files/test.txt",
+            "file:///E:/Program%20Files/test.txt"
+        ).map(::uriToPath)
+
+        cases.forEach {
+            assert(expected.equals(it, true), {
+                "Expected: $expected\n" +
+                    "Got: $it"
+            }) }
+    }
+
+    fun `test converts unix URI to path`() {
+        val expected = "/home/ruin/My Folder/test.txt"
+        val cases = listOf(
+            "file://home/ruin/My Folder/test.txt",
+            "file:///home/ruin/My Folder/test.txt",
+            "file:///home/ruin/My%20Folder/test.txt"
+        ).map(::uriToPath)
+
+        cases.forEach {
+            assert(expected.equals(it, true), {
+                "Expected: $expected\n" +
+                    "Got: $it"
+            }) }
     }
 }
 

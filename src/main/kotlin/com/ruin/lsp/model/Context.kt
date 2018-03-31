@@ -1,8 +1,9 @@
 package com.ruin.lsp.model;
 
-import com.ruin.lsp.values.ClientCapabilities
+import com.intellij.openapi.project.Project
+import org.eclipse.lsp4j.ClientCapabilities
 
 class Context {
-    var wasInitialized: Boolean = false
     var clientCapabilities: ClientCapabilities? = null
+    var rootProject: Project? = null
 }

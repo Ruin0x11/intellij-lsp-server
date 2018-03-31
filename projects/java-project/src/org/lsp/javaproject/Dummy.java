@@ -51,13 +51,11 @@ public class Dummy {
         return 42;
     }
 
-    void assignThingy(int thingy, int otherThingy) {
-        this.thingy = thingy;
-        this.thingy = otherThingy;
-        thingy = this.thingy;
+    static int autoImportTestMethod() {
+        Lin // java.util.LinkedHashMap
     }
 
-    void assignThingyWithoutThis(int otherThingy) {
-        thingy = otherThingy;
+    static int autoImportTestMethod2() {
+        Arr // java.util.ArrayList
     }
 }

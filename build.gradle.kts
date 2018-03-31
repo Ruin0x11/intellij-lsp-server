@@ -11,10 +11,17 @@ import java.net.URL
 import java.nio.file.Path
 import kotlin.concurrent.thread
 
+val kotlin_version: String by extra
+
 buildscript {
+    var kotlin_version: String by extra
+    kotlin_version = "1.2.30"
     repositories {
         mavenCentral()
         jcenter()
+    }
+    dependencies {
+        classpath(kotlinModule("gradle-plugin", kotlin_version))
     }
 }
 
@@ -27,6 +34,9 @@ plugins {
     idea
     kotlin("jvm") version "1.2.21"
     id("org.jetbrains.intellij") version "0.2.18"
+}
+apply {
+    plugin("kotlin")
 }
 
 idea {
@@ -60,6 +70,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
+        setPlugins("properties", "maven", "junit")
     }
 
     tasks.withType<KotlinCompile> {
@@ -89,18 +100,9 @@ project(":") {
     }
 
     dependencies {
-        compile("com.github.briandilley.jsonrpc4j:jsonrpc4j:1.5.3") {
-            exclude(module = "slf4j-api")
-        }
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
-        compile("com.fasterxml.jackson.core:jackson-core:2.9.4")
-        compile("com.fasterxml.jackson.core:jackson-databind:2.9.4")
-        compile("com.fasterxml.jackson.core:jackson-annotations:2.9.4")
-        compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4")
-        compile("com.github.kittinunf.result:result:1.3.0")
-
-        testCompile("org.mockito:mockito-core:2.15.0")
-        testCompile("com.nhaarman:mockito-kotlin:1.5.0")
+        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0.M6")
+        testCompile("org.jetbrains.kotlin:kotlin-test:1.2.21")
     }
 
     tasks.withType<Test> {
@@ -121,7 +123,6 @@ project(":") {
         }
     }
 }
-
 fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties")
@@ -161,4 +162,18 @@ fun List<String>.execute(wd: String? = null, ignoreExitCode: Boolean = false): S
     errReader.join()
     if (process.exitValue() != 0 && !ignoreExitCode) error("Non-zero exit status for `$this`")
     return result
+}
+dependencies {
+    compile(kotlinModule("stdlib-jdk8", kotlin_version))
+}
+repositories {
+    mavenCentral()
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }

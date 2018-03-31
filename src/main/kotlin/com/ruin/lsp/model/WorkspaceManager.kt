@@ -2,20 +2,21 @@ package com.ruin.lsp.model
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.util.Computable
+import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
-import com.ruin.lsp.values.*
-import groovy.util.GroovyTestCase.assertEquals
-import com.intellij.openapi.command.UndoConfirmationPolicy
-import com.intellij.openapi.util.Computable
-import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.TextRange
+import com.ruin.lsp.values.DocumentUri
+import org.eclipse.lsp4j.*
 
 
-val LOG = Logger.getInstance(WorkspaceManager::class.java)
+private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 
 /**
  * Manages files opened by LSP clients.
@@ -27,20 +28,33 @@ val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
-    fun getCurrentDocumentVersion(uri: DocumentUri): Int? = managedTextDocuments[uri]?.identifier?.version
+    @Synchronized
+    fun onTextDocumentOpened(params: DidOpenTextDocumentParams,
+                             project: Project,
+                             client: MyLanguageClient? = null,
+                             server: MyLanguageServer? = null) {
+        val textDocument = params.textDocument
 
-    fun onTextDocumentOpened(textDocument: TextDocumentItem) {
         if(managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("URI ${textDocument.uri} was opened again without being closed")
-            return
+            LOG.warn("URI was opened again without being closed, resetting: ${textDocument.uri}")
+            managedTextDocuments.remove(textDocument.uri)
         }
 
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
-            val doc = getDocument(textDocument.uri) ?: return@Computable false
-            val project = resolveProjectFromUri(textDocument.uri)?.first ?: return@Computable false
+            val doc = getDocument(project, textDocument.uri) ?: return@Computable false
             reloadDocument(doc, project)
+            if (client != null) {
+                if (server != null) {
+                    registerIndexNotifier(project, client, server)
+                }
+                val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+                if (projectSdk == null) {
+                    client.showMessage(MessageParams(MessageType.Warning,
+                        "Project SDK is not defined. Use idea/openProjectStructure to set it up."))
+                }
+            }
             true
         }))
 
@@ -51,31 +65,34 @@ class WorkspaceManager {
 
         managedTextDocuments[textDocument.uri] =
             ManagedTextDocument(
-                VersionedTextDocumentIdentifier(textDocument.uri, textDocument.version),
+                VersionedTextDocumentIdentifier().apply {
+                    uri = textDocument.uri
+                    version = textDocument.version
+                },
                 textDocument.text.replace("\r\n", "\n")
             )
     }
 
-    fun onTextDocumentClosed(textDocument: VersionedTextDocumentIdentifier) {
+    @Synchronized
+    fun onTextDocumentClosed(params: DidCloseTextDocumentParams) {
+        val textDocument = params.textDocument
+
         if(!managedTextDocuments.containsKey(textDocument.uri)) {
-            LOG.warn("Attempted to close insertText document at ${textDocument.uri} without opening it")
+            LOG.warn("Attempted to close document without opening it at: ${textDocument.uri}")
             return
         }
 
         LOG.debug("Handling textDocument/didClose for ${textDocument.uri}")
 
-        val managedTextDoc = managedTextDocuments[textDocument.uri]!!
-
-        if(managedTextDoc.identifier.version != textDocument.version) {
-            LOG.warn("Document version differed on close - " +
-                "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
-        }
-
         managedTextDocuments.remove(textDocument.uri)
     }
 
-    fun onTextDocumentChanged(textDocument: VersionedTextDocumentIdentifier,
-                              contentChanges: List<TextDocumentContentChangeEvent>) {
+    @Synchronized
+
+    fun onTextDocumentChanged(params: DidChangeTextDocumentParams, project: Project) {
+        val textDocument = params.textDocument
+        val contentChanges = params.contentChanges
+
         if(!managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("Tried handling didChange for ${textDocument.uri}, but it wasn't open")
             return
@@ -86,16 +103,19 @@ class WorkspaceManager {
         LOG.debug("contentChanges: $contentChanges")
         LOG.debug("Version before: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
 
-
-        runDocumentUpdate(textDocument) { doc ->
-            applyContentChangeEventChanges(doc, contentChanges)
+        runDocumentUpdate(textDocument, project) { doc ->
+            applyContentChangeEventChanges(doc, sortContentChangeEventChanges(contentChanges))
         }
-
 
         LOG.debug("Version after: ${managedTextDocuments[textDocument.uri]!!.identifier.version}")
     }
 
-    fun onTextDocumentSaved(textDocument: VersionedTextDocumentIdentifier, text: String?) {
+    @Synchronized
+    fun onTextDocumentSaved(params: DidSaveTextDocumentParams,
+                            project: Project) {
+        val textDocument = params.textDocument
+        val text = params.text
+
         if (!managedTextDocuments.containsKey(textDocument.uri)) {
             LOG.warn("Tried handling didSave for ${textDocument.uri}, but it wasn't open")
             return
@@ -105,9 +125,12 @@ class WorkspaceManager {
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
-        assertEquals("Document version differed on save - " +
-            "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}",
-            textDocument.version, managedTextDoc.identifier.version)
+        ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
+            val file = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
+            val document = getDocument(file) ?: return@Runnable
+            reloadDocument(document, project)
+            LOG.debug("Reloaded document at ${textDocument.uri}")
+        }))
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {
@@ -118,22 +141,25 @@ class WorkspaceManager {
         }
     }
 
-    fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit): ApplyWorkspaceEditResponse {
+        @Synchronized
+
+        fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
         LOG.debug("Handling workspace/applyEdit")
+        LOG.debug("label: $label")
         LOG.debug("edit: $edit")
 
         var applied = false
         edit.documentChanges?.forEach { textDocumentEdit ->
-            val result = applyTextDocumentEdit(textDocumentEdit)
+            val result = applyTextDocumentEdit(textDocumentEdit, project)
             applied = applied || result
         }
 
         return ApplyWorkspaceEditResponse(applied)
     }
 
-    fun applyTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun applyTextDocumentEdit(edit: TextDocumentEdit, project: Project): Boolean {
         if (!managedTextDocuments.containsKey(edit.textDocument.uri)) {
-            val success = openFileFromTextDocumentEdit(edit)
+            val success = openFileFromTextDocumentEdit(edit, project)
             if (!success) {
                 LOG.warn("Tried applying TextDocumentEdit for ${edit.textDocument.uri}, but it couldn't be opened")
                 return false
@@ -147,20 +173,23 @@ class WorkspaceManager {
         LOG.debug("edits: ${edit.edits}")
         LOG.debug("Version before: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
 
-        return runDocumentUpdate(edit.textDocument) { doc ->
-            applyTextEditChanges(doc, edit.edits)
+        val result = runDocumentUpdate(edit.textDocument, project) { doc ->
+            applyTextEditChanges(doc, sortTextEditChanges(edit.edits))
         }
+
+        LOG.debug("Version after: ${managedTextDocuments[edit.textDocument.uri]!!.identifier.version}")
+
+        return result
     }
 
     /**
      * @return true if the open succeeds
      */
-    fun openFileFromTextDocumentEdit(edit: TextDocumentEdit): Boolean {
+    private fun openFileFromTextDocumentEdit(edit: TextDocumentEdit, project: Project): Boolean {
         LOG.debug("Opening document from a WorkspaceEdit for ${edit.textDocument.uri}")
 
-        val text = invokeAndWaitIfNeeded(asWriteAction(Computable<String?> {
-            val doc = getDocument(edit.textDocument.uri) ?: return@Computable null
-            val project = resolveProjectFromUri(edit.textDocument.uri)?.first ?: return@Computable null
+        val text = invokeAndWaitIfNeeded(asWriteAction(Computable {
+            val doc = getDocument(project, edit.textDocument.uri) ?: return@Computable null
             reloadDocument(doc, project)
             doc.text
         }))
@@ -172,7 +201,10 @@ class WorkspaceManager {
 
         managedTextDocuments[edit.textDocument.uri] =
             ManagedTextDocument(
-                VersionedTextDocumentIdentifier(edit.textDocument.uri, null),
+                VersionedTextDocumentIdentifier().apply {
+                    uri = edit.textDocument.uri
+                    version = 0 // TODO: should this be null?
+                },
                 normalizeText(text)
             )
 
@@ -182,31 +214,27 @@ class WorkspaceManager {
     /**
      * @return true if the update succeeds
      */
-    fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, callback: (Document) -> Unit): Boolean {
+    private fun runDocumentUpdate(textDocument: VersionedTextDocumentIdentifier, project: Project, callback: (Document) -> Unit): Boolean {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
-        val fileOpenedByServer = managedTextDoc.identifier.version == null
-        if (!fileOpenedByServer) {
-            // Version number of our document should be (theirs - 1)
-            if(managedTextDoc.identifier.version != (textDocument.version!! - 1)) {
-                LOG.warn("Version mismatch on document change - " +
-                    "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
-                return false
-            }
+        // Version number of our document should be (theirs - 1)
+        if (managedTextDoc.identifier.version != (textDocument.version - 1)) {
+            LOG.warn("Version mismatch on document change - " +
+                "ours: ${managedTextDoc.identifier.version}, theirs: ${textDocument.version}")
+            return false
         }
 
-        val pair = resolvePsiFromUri(textDocument.uri)
+        val file = resolvePsiFromUri(project, textDocument.uri)
 
-        if(pair == null) {
+        if(file == null) {
             LOG.warn("Couldn't resolve Psi file at ${textDocument.uri}")
             return false
         }
 
-        val (project, _) = pair
         val ref: Ref<Boolean> = Ref(false)
         ApplicationManager.getApplication().invokeAndWait {
             CommandProcessor.getInstance().executeCommand(project, asWriteAction( Runnable {
-                val doc = getDocument(textDocument.uri)
+                val doc = getDocument(file)
 
                 if (doc != null) {
                     if(managedTextDoc.contents != doc.text) {
@@ -221,7 +249,12 @@ class WorkspaceManager {
                         LOG.warn("Document at ${textDocument.uri} wasn't writable!")
                         return@Runnable
                     }
-                    callback(doc)
+
+                    try {
+                        callback(doc)
+                    } catch (e: Exception) {
+                        LOG.error("Error on documentChange: " + e.stackTrace)
+                    }
 
                     LOG.debug("Doc after:\n\n${doc.text}\n\n")
 
@@ -229,10 +262,13 @@ class WorkspaceManager {
                     PsiDocumentManager.getInstance(project).commitDocument(doc)
 
                     // Update the ground truth
-                    val newVersion = if (fileOpenedByServer) 0 else textDocument.version
+                    val newVersion = textDocument.version
                     val newDoc =
                         ManagedTextDocument(
-                            VersionedTextDocumentIdentifier(textDocument.uri, newVersion),
+                            VersionedTextDocumentIdentifier().apply {
+                                uri = textDocument.uri
+                                version = newVersion
+                            },
                             normalizeText(doc.text)
                         )
 
@@ -246,41 +282,47 @@ class WorkspaceManager {
         return ref.get()
     }
 
+    @Synchronized
     fun onShutdown() {
-        managedTextDocuments.values.forEach { onTextDocumentClosed(it.identifier) }
+        managedTextDocuments.values.forEach { onTextDocumentClosed(DidCloseTextDocumentParams(it.identifier)) }
     }
 }
 
 data class ManagedTextDocument(var identifier: VersionedTextDocumentIdentifier, var contents: String)
 
-fun normalizeText(text: String) = text.replace("\r\n", "\n")
+private fun normalizeText(text: String) = text.replace("\r\n", "\n")
 
-fun positionToOffset(doc: Document, pos: Position) = doc.getLineStartOffset(pos.line) + pos.character
 
-fun rangeToTextRange(doc: Document, range: Range) =
-    TextRange(
-        positionToOffset(doc, range.start),
-        positionToOffset(doc, range.end)
-    )
+/**
+ * Sorts text edits from furthest in the file to nearest to the top of the file.
+ *
+ * Prevents issues with the actual text edit range changing when applying multiple edits in sequence.
+ */
+fun sortTextEditChanges(edits: List<TextEdit>?): List<TextEdit>? =
+    edits?.sortedWith(compareBy({ it.range.start.line }, { it.range.start.character }))?.reversed()
 
-fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>) =
-    contentChanges.forEach { applyChange(doc, it) }
+fun sortContentChangeEventChanges(edits: List<TextDocumentContentChangeEvent>?): List<TextDocumentContentChangeEvent>? =
+    edits?.sortedWith(compareBy({ it.range.start.line }, { it.range.start.character }))?.reversed()
 
-fun applyContentChangeEventChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>) =
-    contentChanges.forEach { applyChange(doc, it) }
 
-fun applyChange(doc: Document, change: TextEdit) {
+fun applyTextEditChanges(doc: Document, contentChanges: List<TextEdit>?) =
+    contentChanges?.forEach { applyChange(doc, it) }
+
+fun applyContentChangeEventChanges(doc: Document, contentChanges: List<TextDocumentContentChangeEvent>?) =
+    contentChanges?.forEach { applyChange(doc, it) }
+
+private fun applyChange(doc: Document, change: TextEdit) {
     LOG.debug("Applying change: $change")
-    val textRange = rangeToTextRange(doc, change.range)
+    val textRange = change.range.toTextRange(doc)
     doc.replaceString(textRange.startOffset, textRange.endOffset, change.newText)
 }
-fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
+private fun applyChange(doc: Document, change: TextDocumentContentChangeEvent) {
     LOG.debug("Applying change: $change")
     if(change.range == null) {
         // Change is the full insertText of the document
         doc.setText(change.text)
     } else {
-        val textRange = rangeToTextRange(doc, change.range)
+        val textRange = change.range.toTextRange(doc)
         doc.replaceString(textRange.startOffset, textRange.endOffset, change.text)
     }
 }

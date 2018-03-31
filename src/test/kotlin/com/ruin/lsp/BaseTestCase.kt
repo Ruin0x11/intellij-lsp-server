@@ -4,6 +4,8 @@ import com.intellij.ide.impl.ProjectUtil
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
 import com.ruin.lsp.util.ensureProject
+import com.ruin.lsp.util.getURIForFile
+import com.ruin.lsp.values.DocumentUri
 import java.io.File
 
 val JAVA_PROJECT = "java-project"
@@ -30,25 +32,9 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     /** Which example project does this test reference?  */
     protected abstract val projectName: String
 
-    protected fun getProjectIml(projectName: String): String {
-        val root = File(".")
-        val pathToIml = "projects/$projectName/$projectName.iml"
-        return File(root, pathToIml).canonicalFile.absolutePath
-    }
-
-    protected fun getProjectPath(projectName: String): String {
-        val root = File(".")
-        val pathToProject = "projects/$projectName/"
-        return File(root, pathToProject).canonicalFile.absolutePath
-    }
 
     protected fun getProjectPath() = getProjectPath(projectName)
     protected fun getProjectIml() = getProjectIml(projectName)
-
-    override fun tearDown() {
-        ProjectUtil.closeAndDispose(project)
-        super.tearDown()
-    }
 
     override fun getProject(): Project {
         val path = getProjectIml(projectName)
@@ -56,4 +42,27 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     }
 
     protected fun fixtureProject() = myFixture.project
+
+    override fun tearDown() {
+        ProjectUtil.closeAndDispose(project)
+        super.tearDown()
+    }
+}
+
+fun getProjectIml(projectName: String): String {
+    val root = File(".")
+    val pathToIml = "projects/$projectName/$projectName.iml"
+    return File(root, pathToIml).canonicalFile.absolutePath
+}
+
+fun getProjectPath(projectName: String): String {
+    val root = File(".")
+    val pathToProject = "projects/$projectName/"
+    return File(root, pathToProject).canonicalFile.absolutePath
+}
+
+fun uriForPath(projectName: String, filePath: String): DocumentUri {
+    val projectPath = getProjectPath(projectName)
+    val file = File(projectPath, filePath)
+    return getURIForFile(file)
 }

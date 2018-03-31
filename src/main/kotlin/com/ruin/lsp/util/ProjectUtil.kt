@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.util.Computable
@@ -24,51 +25,101 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
-import com.ruin.lsp.values.Position
+import com.ruin.lsp.model.MyLanguageClient
+import com.ruin.lsp.model.MyLanguageServer
+import com.ruin.lsp.values.DocumentUri
+import org.eclipse.lsp4j.Position
 import org.jdom.JDOMException
-import org.jetbrains.annotations.NotNull
 import java.io.File
 import java.io.IOException
-import java.net.URI
+import java.net.URLDecoder
+import java.nio.file.Paths
 import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
-fun resolvePsiFromUri(uri: String) : Pair<Project, PsiFile>? {
-    val (project, filePath) = resolveProjectFromUri(uri) ?: return null
-    val file = getPsiFile(project, filePath) ?: return null
-    return Pair(project, file)
+fun ensurePsiFromUri(project: Project, uri: DocumentUri) = resolvePsiFromUri(project, uri)
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
+
+fun resolvePsiFromUri(project: Project, uri: DocumentUri): PsiFile? {
+    val filePath = projectRelativeFilePath(project, uri) ?: return null
+    return getPsiFile(project, filePath) ?: return null
 }
 
-fun resolveProjectFromUri(uri: String) : Pair<Project, String>? {
-    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the project from them
-    // otherwise it gets confusing to have to look up the line and column being tested in the test project
+fun ensureProjectFromRootUri(uri: String) = resolveProjectFromRootUri(uri)
+    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
+
+/**
+ * Given a project and a file URI, returns the path of the file relative to the project base path.
+ */
+fun projectRelativeFilePath(project: Project, uri: DocumentUri): String? {
     val newUri = normalizeUri(uri)
-    val uri_b = URI(newUri)
-    val topFile = File(uri_b)
-    var directory = topFile.parentFile
-    while (directory != null) {
-        val project = directory.listFiles().firstOrNull { it.extension == "iml" }
-        if (project != null) {
-            val proj = ensureProject(project.absolutePath)
-            val projPathUri = fileToUri(File(proj.basePath))
-            val prefix = newUri.commonPrefixWith(projPathUri, true)
-            assert(prefix.isNotEmpty())
-            val filePathFromRoot = newUri.substring(prefix.length)
-            return Pair(proj, filePathFromRoot)
-        }
-        directory = directory.parentFile
+    val projPathUri = getURIForFile(File(project.basePath))
+    val prefix = newUri.commonPrefixWith(projPathUri, true)
+    if(prefix.isEmpty()) {
+        return null
+    }
+    return newUri.substring(prefix.length)
+}
+
+fun resolveProjectFromRootUri(uri: DocumentUri): Project? {
+    // TODO: in-memory virtual files for testing have temp:/// prefix, figure out how to resolve the document from them
+    // otherwise it gets confusing to have to look up the line and column being tested in the test document
+    val newUri = normalizeUri(uri)
+    val directory = File(uriToPath(newUri))
+    if (!directory.isDirectory) {
+        LOG.warn("root URI at $uri isn't a directory.")
+        return null
+    }
+    val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
+    if (imlFile != null) {
+        return ensureProject(imlFile.absolutePath)
     }
 
     LOG.warn("Unable to resolve project from URI $newUri")
     return null
 }
 
-val sProjectCache = HashMap<String, Project>()
+data class CachedProject(val project: Project, var disposable: Disposable? = null)
+
+val sProjectCache = HashMap<String, CachedProject>()
+
+internal class DumbModeNotifier(private val client: MyLanguageClient?,
+                                private val server: MyLanguageServer?) : DumbService.DumbModeListener {
+    override fun enteredDumbMode() {
+        client?.notifyIndexStarted()
+    }
+
+    override fun exitDumbMode() {
+        client?.notifyIndexFinished()
+        server?.computeAllDiagnostics()
+    }
+}
+
+fun registerIndexNotifier(project: Project, client: MyLanguageClient, server: MyLanguageServer) {
+    val cached = sProjectCache.values.find { it.project == project } ?: return
+    if (cached.disposable != null) {
+        return
+    }
+    cached.disposable = Disposer.newDisposable()
+    project.messageBus.connect(cached.disposable!!).subscribe(DumbService.DUMB_MODE, DumbModeNotifier(client, server))
+
+    if (DumbService.isDumb(project)) {
+        client.notifyIndexStarted()
+    }
+}
+
+fun cacheProject(absolutePath: String, project: Project) {
+    LOG.info("Caching project that was found at $absolutePath.")
+    if (sProjectCache.containsKey(absolutePath)) {
+        sProjectCache[absolutePath]!!.disposable?.dispose()
+    }
+    sProjectCache[absolutePath] = CachedProject(project)
+}
 
 fun ensureProject(projectPath: String): Project {
     val project = getProject(projectPath)
-        ?: throw IllegalArgumentException("Couldn't find project at " + projectPath)
+        ?: throw IllegalArgumentException("Couldn't find document at " + projectPath)
     if (project.isDisposed)
         throw IllegalArgumentException("Project $project was already disposed!")
 
@@ -80,10 +131,10 @@ fun getProject(projectPath: String): Project? {
 
     val cached = sProjectCache[projectPath]
     if (cached != null) {
-        if (!cached.isDisposed) {
-            return cached
+        if (!cached.project.isDisposed) {
+            return cached.project
         } else {
-            LOG.info("Cached project at $projectPath was disposed, reopening.")
+            LOG.info("Cached document at $projectPath was disposed, reopening.")
         }
     }
 
@@ -96,8 +147,8 @@ fun getProject(projectPath: String): Project? {
         val projectRef = Ref<Project>()
         ApplicationManager.getApplication().runWriteAction {
             try {
-                val alreadyOpenProject = mgr.openProjects.find {proj ->
-                    if(proj.projectFilePath?.contains(".idea") == true) {
+                val alreadyOpenProject = mgr.openProjects.find { proj ->
+                    if (proj.projectFilePath?.contains(".idea") == true) {
                         val prefix = proj.projectFilePath!!
                             .substringBefore(".idea")
                             .replace("\\", "/")
@@ -112,8 +163,7 @@ fun getProject(projectPath: String): Project? {
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
                 projectRef.set(project)
 
-                hideProjectWindow(project)
-                //mockMessageView(project)
+                hideProjectFrame(project)
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: JDOMException) {
@@ -123,16 +173,20 @@ fun getProject(projectPath: String): Project? {
             }
         }
 
-        val project = projectRef.get() ?: throw IOException("Failed to obtain project " + projectPath)
+        val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
 
-        LOG.info("Caching project that was found at $projectPath.")
-        sProjectCache[projectPath] = project
+        // Wait until the project is initialized to prevent invokeAndWait hangs
+        while (!project.isInitialized) {
+            Thread.sleep(1000)
+        }
+
+        cacheProject(projectPath, project)
         return project
     } catch (e: IOException) {
         e.printStackTrace()
     }
 
-    LOG.warn("Exception occurred trying to find project for path $projectPath")
+    LOG.warn("Exception occurred trying to find document for path $projectPath")
     return null
 }
 
@@ -141,22 +195,19 @@ fun getPsiFile(project: Project, filePath: String): PsiFile? {
 }
 
 fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
-    return invokeAndWaitIfNeeded(asWriteAction(
-            Computable<PsiFile> {
-                val mgr = PsiManager.getInstance(project)
-                val file = mgr.findFile(virtual)
+    return invokeAndWaitIfNeeded(
+        Computable<PsiFile> {
+            val mgr = PsiManager.getInstance(project)
+            val file = mgr.findFile(virtual)
 
-                if (file == null) {
-                    LOG.warn("Unable to find PSI file for virtual file ${virtual.name}")
-                    return@Computable null
-                }
+            if (file == null) {
+                LOG.warn("Unable to find PSI file for virtual file ${virtual.name}")
+                return@Computable null
+            }
 
-                // TODO: reload doc here?
-                // val doc = getDocument(file) ?: return@Computable null
-
-                PsiUtilCore.ensureValid(file)
-                file
-            }))
+            PsiUtilCore.ensureValid(file)
+            file
+        })
 }
 
 fun getVirtualFile(project: Project, filePath: String): VirtualFile {
@@ -167,7 +218,7 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
 
     // load the VirtualFile and ensure it's up to date
     val virtual = LocalFileSystem.getInstance()
-            .refreshAndFindFileByIoFile(file)
+        .refreshAndFindFileByIoFile(file)
     if (virtual == null || !virtual.exists()) {
         throw IllegalArgumentException("Couldn't locate virtual file @" + file)
     }
@@ -176,9 +227,9 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     return virtual
 }
 
-fun getDocument(uri: String): Document? {
+fun getDocument(project: Project, uri: String): Document? {
     val normalizedUri = normalizeUri(uri)
-    val (project, filePath) = resolveProjectFromUri(normalizedUri) ?: return null
+    val  filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
     val virtual = getVirtualFile(project, filePath)
     return invokeAndWaitIfNeeded(asWriteAction(
         Computable<Document> {
@@ -196,7 +247,7 @@ fun getDocument(uri: String): Document? {
 }
 
 fun getDocument(file: PsiFile): Document? {
-    val virtual = file.virtualFile
+    val virtual = file.virtualFile ?: return file.viewProvider.document
     var doc = FileDocumentManager.getInstance()
         .getDocument(virtual)
     if (doc == null) {
@@ -220,7 +271,7 @@ fun reloadDocument(doc: Document, project: Project) {
     PsiDocumentManager.getInstance(project).commitDocument(doc)
 }
 
-fun createEditor(context: Disposable, file: PsiFile, position: Position) : EditorEx {
+fun createEditor(context: Disposable, file: PsiFile, position: Position = Position(0, 0)): EditorEx {
     val doc = getDocument(file)!!
     val editorFactory = EditorFactory.getInstance()
     val created = editorFactory.createEditor(doc, file.project) as EditorEx
@@ -236,7 +287,11 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position) : Edito
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
  */
 fun getURIForFile(file: VirtualFile) = normalizeUri(file.url)
+
 fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
+
+fun getURIForFile(file: File) = normalizeUri(file.toURI().toURL().toString())
+
 
 /**
  * Converts URIs to have forward slashes and ensures the protocol has three slashes.
@@ -245,28 +300,55 @@ fun getURIForFile(file: PsiFile) = getURIForFile(file.virtualFile)
  */
 fun normalizeUri(uri: String): String {
     val protocolRegex = "^file:/+".toRegex()
-
-    return protocolRegex.replace(uri, "file:///")
-        .replace("\\", "/")
+    val trailingSlashRegex = "/$".toRegex()
+    var decodedUri = URLDecoder.decode(uri, "UTF-8")
+    decodedUri = trailingSlashRegex.replace(decodedUri, "")
+    decodedUri = protocolRegex.replace(decodedUri, "file:///")
+    return decodedUri.replace("\\", "/")
 }
 
-fun fileToUri(file: File) = normalizeUri(file.toURI().toURL().toString())
+/** Converts a URI to a path.
+ *
+ * Needed since trying to create a {@link java.net.URI} from an LSP-generated
+ * URI string can fail, because Java's URI class does not accept unencoded
+ * spaces.
+ */
+fun uriToPath(uri: String): String {
+    val newUri = normalizeUri(URLDecoder.decode(uri, "UTF-8"))
 
-private fun hideProjectWindow(project: Project?) {
-        val mgr = WindowManager.getInstance();
-        val existing = mgr.getFrame(project);
-        if (null != existing) {
-            // hide any existing frames. We may want this
-            //  to be a preference... Not sure
-            existing.isVisible = false
-            return // already done
-        }
+    val isWindowsPath = """^file:/+\w:""".toRegex().containsMatchIn(newUri)
 
-        if (mgr !is WindowManagerImpl) {
-            // unit test?
-            return
-        }
-
-        val impl = mgr.allocateFrame(project!!)
-        impl.isVisible = false
+    return if (isWindowsPath)
+        Paths.get("^file:/+".toRegex().replace(newUri, ""))
+            .toString().replace("\\", "/")
+    else {
+        "^file:/+".toRegex().replace(newUri, "/")
     }
+}
+
+private fun hideProjectFrame(project: Project?) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        // hide any existing frames. We may want this
+        //  to be a preference... Not sure
+        existing.isVisible = false
+        return // already done
+    }
+
+    if (mgr !is WindowManagerImpl) {
+        // unit test?
+        return
+    }
+
+    val impl = mgr.allocateFrame(project!!)
+    impl.isVisible = false
+}
+
+fun toggleProjectFrame(project: Project) {
+    val mgr = WindowManager.getInstance()
+    val existing = mgr.getFrame(project)
+    if (null != existing) {
+        existing.isVisible = !existing.isVisible
+    }
+}

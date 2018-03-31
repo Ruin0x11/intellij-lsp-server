@@ -1,8 +1,8 @@
 package com.ruin.lsp.values
-
+typealias DocumentUri = String
+/*
 import com.intellij.codeInsight.lookup.LookupElement
 
-typealias DocumentUri = String
 
 data class ClientCapabilities(val workspace: WorkspaceClientCapabilities?,
                               val textDocument: TextDocumentClientCapabilities?)
@@ -251,3 +251,4 @@ object SymbolKind {
     const val OPERATOR = 25
     const val TYPE_PARAMETER = 26
 }
+*/

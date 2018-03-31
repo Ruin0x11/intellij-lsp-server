@@ -50,6 +50,24 @@ Try executing `./gradlew :test` first, to download all necessary dependencies
 and launch all code generation tasks. Unfortunately during import IDEA may delete 
 `.idea/runConfigurations`, just revert changes in the directory if this happens.
 
+## Logging
+Log output for the test IDEA instance is contained in `build/idea-sandbox/system/log/idea.log`. To enable `DEBUG` logging for a specific class, go to `Help -> Debug Log Settings...`, then write a `#` followed by the fully qualified class name on a separate line for each class to debug, like:
+
+```
+#com.ruin.lsp.model.WorkspaceManager
+```
+
+Another example can be found [here](https://intellij-support.jetbrains.com/hc/en-us/articles/207241115-How-to-Collecting-PhpStorm-WebStorm-debug-Logs).
+
+## Debugging
+
+[`runIde`](https://github.com/JetBrains/gradle-intellij-plugin#running-dsl) task is an extension for [JavaExec](https://github.com/JetBrains/gradle-intellij-plugin#running-dsl) so to start `intellij-lsp-server` with exposed debug port you have to add `--debug-jvm` switch:
+
+```
+./gradlew :runIde --debug-jvm
+```
+
+After that you can connect to it with your favorite remote debugger.
 
 ## Troubleshooting
 

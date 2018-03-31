@@ -16,32 +16,27 @@
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.properties</depends>
+    <depends>org.jetbrains.idea.maven</depends>
+    <depends>JUnit</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.ruin.lsp.model.LanguageServerService" />
-        <applicationService serviceImplementation="com.ruin.lsp.commands.hover.OneLineJavaDocInfoGeneratorFactory" />
+        <applicationService serviceImplementation="com.ruin.lsp.commands.document.hover.OneLineJavaDocInfoGeneratorFactory" />
         <applicationService serviceImplementation="com.ruin.lsp.model.WorkspaceManager" />
-        <preloadingActivity
-            implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
+        <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerRunner"
+                            serviceImplementation="com.ruin.lsp.model.LanguageServerRunnerImpl" />
+        <applicationService serviceImplementation="com.ruin.lsp.model.PreviousCompletionCacheService" />
+        <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
     </extensions>
 
     <application-components>
+        <component>
+            <interface-class>com.ruin.lsp.model.LanguageServerService</interface-class>
+            <implementation-class>com.ruin.lsp.model.LanguageServerService</implementation-class>
+        </component>
     </application-components>
 
     <actions>
-        <action id="LSP.StartServer"
-                class="com.ruin.lsp.actions.StartServerAction"
-                text="Start LSP Server"
-                description="Start the internal LSP server">
-            <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>
-        </action>
-
-        <action id="LSP.StopServer"
-                class="com.ruin.lsp.actions.StopServerAction"
-                text="Stop LSP Server"
-                description="Stop the internal LSP server">
-            <add-to-group group-id="ToolsMenu" anchor="before" relative-to-action="GenerateJavadoc"/>
-        </action>
     </actions>
 
 </idea-plugin>
