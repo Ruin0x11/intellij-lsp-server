@@ -1,4 +1,4 @@
-package com.ruin.lsp.commands.rename
+package com.ruin.lsp.commands.document.rename
 
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.INTERFACE_FILE_PATH

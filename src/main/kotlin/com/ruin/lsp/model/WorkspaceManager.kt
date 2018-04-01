@@ -28,6 +28,8 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
 
+    fun getCurrentDocumentVersion(uri: DocumentUri) = managedTextDocuments[uri]?.identifier?.version
+
     @Synchronized
     fun onTextDocumentOpened(params: DidOpenTextDocumentParams,
                              project: Project,

@@ -1,4 +1,4 @@
-package com.ruin.lsp.commands.rename
+package com.ruin.lsp.commands.document.rename
 
 import com.ruin.lsp.BaseTestCase
 import com.ruin.lsp.JAVA_PROJECT
@@ -7,7 +7,6 @@ import com.ruin.lsp.model.workspace
 import com.ruin.lsp.util.getPsiFile
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.normalizeUri
-import com.ruin.lsp.values.*
 import java.io.FileNotFoundException
 
 abstract class RenameCommandTestBase : BaseTestCase() {

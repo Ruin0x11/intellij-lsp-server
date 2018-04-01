@@ -1,6 +1,5 @@
-package com.ruin.lsp.commands.rename
+package com.ruin.lsp.commands.document.rename
 
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
@@ -10,14 +9,10 @@ import com.intellij.psi.impl.source.tree.CompositeElement
 import com.intellij.psi.meta.PsiMetaOwner
 import com.intellij.psi.meta.PsiWritableMetaData
 import com.intellij.refactoring.rename.BindablePsiReference
-import com.intellij.refactoring.rename.PsiElementRenameHandler
 import com.intellij.refactoring.rename.RenameProcessor
-import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.refactoring.rename.naming.AutomaticOverloadsRenamerFactory
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.IncorrectOperationException
-import com.ruin.lsp.commands.find.toRange
-import com.ruin.lsp.util.getDocument
 
 class RangeGatheringRenameProcessor(proj: Project, val element: PsiElement, val name: String)
     : RenameProcessor(proj, element, name, false, false) {
