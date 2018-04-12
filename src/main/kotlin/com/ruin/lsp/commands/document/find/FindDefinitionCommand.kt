@@ -2,7 +2,9 @@ package com.ruin.lsp.commands.document.find
 
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.editor.Document
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope.getProjectScope
 import com.intellij.psi.search.ProjectScopeImpl
@@ -17,10 +19,12 @@ import com.ruin.lsp.util.location
 import com.ruin.lsp.util.toOffset
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
+import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.backend.common.push
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.references.KtReference
 import org.jetbrains.kotlin.idea.search.ideaExtensions.KotlinDefinitionsSearcher
+import org.jetbrains.kotlin.j2k.SuperMethodsSearcher
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
 
 class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
@@ -60,10 +64,18 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         val results = mutableListOf<Location>()
         try {
             val el = ctx.file.findElementAt(offset)
-            val ref = ctx.file.findReferenceAt(offset) as? KtReference
+            var ref = ctx.file.findReferenceAt(offset)
+            if (ref is PsiMultiReference) {
+                ref = ref.references.first()
+            }
             val elt = ref?.resolve() ?: return mutableListOf()
             KotlinDefinitionsSearcher().execute(DefinitionsScopedSearch.SearchParameters(elt, getProjectScope(ctx.project), true)) {
-                results.push(it.location())
+                val resolved = when(it) {
+                    is PsiClass -> it.nameIdentifier ?: it
+                    else -> it
+                }
+
+                results.push(resolved.location())
             }
         } catch (e: NoDescriptorForDeclarationException) {
             return mutableListOf()

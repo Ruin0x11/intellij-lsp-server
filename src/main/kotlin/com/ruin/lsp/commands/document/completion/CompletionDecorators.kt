@@ -3,7 +3,6 @@ package com.ruin.lsp.commands.document.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.sun.javaws.jnl.PropertyDesc
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat

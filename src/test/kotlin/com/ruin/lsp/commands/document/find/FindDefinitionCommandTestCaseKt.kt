@@ -9,11 +9,11 @@ class FindDefinitionCommandTestCaseKt : FindDefinitionCommandTestBase() {
 
     fun `test finds superclass from subclass`() =
         checkFindsLocation(forKotlin(SUBCLASS_FILE_PATH),
-            Position(6, 25), "SuperClass.kt", Position(5, 22))
+            Position(6, 25), "SuperClass.kt", Position(6, 6))
 
     fun `test finds declaration from usage`() =
         checkFindsLocation(forKotlin(DUMMY_FILE_PATH),
-            Position(43, 23), "Dummy.kt", Position(49, 15))
+            Position(42, 25), "Dummy.kt", Position(49, 15))
 
     fun `test finds declaration of class outside file`() =
         checkFindsLocation(forKotlin(DUMMY_FILE_PATH),
@@ -21,5 +21,5 @@ class FindDefinitionCommandTestCaseKt : FindDefinitionCommandTestBase() {
 
     fun `test finds super method`() =
         checkFindsLocation(forKotlin(SUBCLASS_FILE_PATH),
-            Position(10, 25), "SuperClass.kt", Position(9, 25))
+            Position(12, 22), "SuperClass.kt", Position(6, 25))
 }

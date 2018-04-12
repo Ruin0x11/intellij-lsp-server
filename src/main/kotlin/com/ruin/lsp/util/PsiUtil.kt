@@ -43,8 +43,14 @@ fun PsiElement.location(): Location {
     // TODO: support lookup of files inside JARs?
     val uri = getURIForFile(this.containingFile)
     val doc = getDocument(this.containingFile)!!
-    val position = offsetToPosition(doc, this.textOffset)
-    return Location(uri, Range(position, position))
+    val range = if (this.textOffset == -1) {
+        this.textRange.toRange(doc)
+    } else {
+        val position =offsetToPosition(doc, this.textOffset)
+        Range(position, position)
+    }
+
+    return Location(uri, range)
 }
 
 fun PsiElement.symbolKind(): SymbolKind? =
