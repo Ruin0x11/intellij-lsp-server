@@ -26,7 +26,7 @@ class FindImplementationCommand(val position: Position) : DocumentCommand<Mutabl
         }
         val implementations = ref.get()
 
-        return implementations?.map{ it.location() }?.toMutableList() ?: mutableListOf()
+        return implementations?.map{ it.nameIdentifierLocation() }?.toMutableList() ?: mutableListOf()
     }
 }
 
@@ -44,4 +44,4 @@ fun searchImplementations(editor: Editor, element: PsiElement?, offset: Int): Ar
     return ImplementationSearcher().searchImplementations(element, editor, includeSelf, onRef)
 }
 
-fun getFlags() = TargetElementUtil.getInstance().definitionSearchFlags;
+fun getFlags() = TargetElementUtil.getInstance().definitionSearchFlags

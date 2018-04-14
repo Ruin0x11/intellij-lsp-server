@@ -3,6 +3,7 @@ package com.ruin.lsp.commands.document.find
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
 import com.intellij.psi.search.GlobalSearchScope
@@ -11,21 +12,33 @@ import com.intellij.psi.search.ProjectScopeImpl
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
 import com.intellij.psi.search.searches.SuperMethodsSearch
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.Function
+import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.location
+import com.ruin.lsp.util.nameIdentifierLocation
 import com.ruin.lsp.util.toOffset
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
-import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.backend.common.push
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.KotlinFileType
-import org.jetbrains.kotlin.idea.references.KtReference
+import org.jetbrains.kotlin.idea.caches.resolve.unsafeResolveToDescriptor
+import org.jetbrains.kotlin.idea.core.getDirectlyOverriddenDeclarations
+import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.search.ideaExtensions.KotlinDefinitionsSearcher
-import org.jetbrains.kotlin.j2k.SuperMethodsSearcher
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
+import org.jetbrains.kotlin.types.KotlinType
 
 class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
     override fun execute(ctx: ExecutionContext): MutableList<Location> {
@@ -61,25 +74,96 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
     }
 
     private fun executeForKotlin(ctx: ExecutionContext, doc: Document, offset: Int): MutableList<Location> {
-        val results = mutableListOf<Location>()
         try {
-            val el = ctx.file.findElementAt(offset)
-            var ref = ctx.file.findReferenceAt(offset)
-            if (ref is PsiMultiReference) {
-                ref = ref.references.first()
+            var list = findKotlinDefinitionByReference(ctx, offset)
+            if(list != null) {
+                return list
             }
-            val elt = ref?.resolve() ?: return mutableListOf()
+
+            list = findKotlinDefinitionBySearcher(ctx, offset)
+            if(list != null) {
+                return list
+            }
+
+            list = findKotlinSuperMethod(ctx, offset)
+            if(list != null) {
+                return list
+            }
+
+            return mutableListOf()
+        } catch (e: NoDescriptorForDeclarationException) {
+            return mutableListOf()
+        }
+    }
+
+    private fun findKotlinDefinitionByReference(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
+        var ref = ctx.file.findReferenceAt(offset)
+        if (ref is PsiMultiReference) {
+            ref = ref.references.find { it is KtSimpleNameReference }
+        }
+
+        val elt = ref?.resolve()
+        if(elt != null) {
+            return mutableListOf(elt.nameIdentifierLocation())
+        }
+        return null
+    }
+
+    private fun findKotlinDefinitionBySearcher(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
+        val elt = ctx.file.findElementAt(offset)
+        if(elt != null) {
+            val results: MutableList<Location> = mutableListOf()
             KotlinDefinitionsSearcher().execute(DefinitionsScopedSearch.SearchParameters(elt, getProjectScope(ctx.project), true)) {
-                val resolved = when(it) {
+                val resolved = when (it) {
                     is PsiClass -> it.nameIdentifier ?: it
                     else -> it
                 }
 
                 results.push(resolved.location())
             }
-        } catch (e: NoDescriptorForDeclarationException) {
-            return mutableListOf()
+            if (results.isNotEmpty()) {
+                return results
+            }
         }
-        return results
+        return null
+    }
+
+    private fun findKotlinSuperMethod(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
+        val elt = ctx.file.findElementAt(offset) ?: return mutableListOf()
+        val declaration = PsiTreeUtil.getParentOfType<PsiElement>(elt,
+            KtNamedFunction::class.java,
+            KtClass::class.java,
+            KtProperty::class.java,
+            KtObjectDeclaration::class.java) as KtDeclaration? ?: return mutableListOf()
+        val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
+        val superDeclarations = findSuperDeclarations(descriptor) ?: return mutableListOf()
+        return superDeclarations.mapNotNull { it.nameIdentifierLocation() }.toMutableList()
+    }
+
+    // copied from GotoSuperActionHandler
+    private fun findSuperDeclarations(descriptor: DeclarationDescriptor): List<PsiElement>? {
+        val superDescriptors: Collection<Any?>
+        superDescriptors = if (descriptor is ClassDescriptor) {
+            val supertypes = descriptor.typeConstructor.supertypes
+            val superclasses = ContainerUtil.mapNotNull(supertypes) { type ->
+                val descriptor = type.constructor.declarationDescriptor
+                descriptor as? ClassDescriptor
+            }
+            ContainerUtil.removeDuplicates(superclasses)
+            superclasses
+        } else {
+            if (descriptor !is CallableMemberDescriptor) {
+                return null
+            }
+
+            descriptor.getDirectlyOverriddenDeclarations()
+        }
+
+        return superDescriptors.mapNotNull { desc ->
+            if (desc is ClassDescriptor && KotlinBuiltIns.isAny(desc))
+                null
+            else
+                DescriptorToSourceUtils.descriptorToDeclaration(desc as DeclarationDescriptor)
+        }
     }
 }

@@ -8,12 +8,6 @@ import org.eclipse.lsp4j.Position
 import org.intellivim.FileEditingTestCase
 
 abstract class HoverCommandTestBase : FileEditingTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
-
     protected fun checkHoverEquals(line: Int, char: Int, expected: String?) {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))

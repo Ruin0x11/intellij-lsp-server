@@ -1,12 +1,16 @@
 package com.ruin.lsp.commands.document.highlight
 
 import com.ruin.lsp.DUMMY_FILE_PATH
+import com.ruin.lsp.JAVA_PROJECT
 import org.eclipse.lsp4j.DocumentHighlight
 import org.eclipse.lsp4j.DocumentHighlightKind
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 
 class DocumentHighlightCommandTestCase : DocumentHighlightCommandTestBase() {
+    override val projectName: String
+        get() = JAVA_PROJECT
+
     fun `test highlights variable`() = checkHighlightsFound(DUMMY_FILE_PATH,
         Position(14, 27), listOf(
         // Declaration

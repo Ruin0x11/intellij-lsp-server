@@ -53,6 +53,22 @@ fun PsiElement.location(): Location {
     return Location(uri, range)
 }
 
+/**
+ * Resolves a name identifier location for use with calculating the position of Kotlin PSI elements.
+ *
+ * Some classes like KtLightClassImpl have a null TextRange, but their named identifier (if any) will have a valid one,
+ * so this resolves that. Also, trying to get the location of a KtClass or similar results in the position being at the
+ * top of the file, so method this fixes that also.
+ */
+fun PsiElement.nameIdentifierLocation(): Location {
+    val resolved = when (this) {
+        is PsiClass -> this.nameIdentifier ?: this
+        else -> this
+    }
+
+    return resolved.location()
+}
+
 fun PsiElement.symbolKind(): SymbolKind? =
     when (this) {
         is PsiFile -> SymbolKind.File

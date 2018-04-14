@@ -8,9 +8,6 @@ import org.eclipse.lsp4j.DocumentHighlight
 import org.eclipse.lsp4j.Position
 
 abstract class DocumentHighlightCommandTestBase : BaseTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
     protected fun checkHighlightsFound(filePath: String, at: Position, expected: List<DocumentHighlight>) {
         val file = getVirtualFile(project, filePath)
         val command = DocumentHighlightCommand(at)

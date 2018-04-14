@@ -14,3 +14,5 @@ interface MyLanguageServerExtensions {
 
     @JsonRequest fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean>
 }
+
+data class ClassHierarchy(val name: String, val children: List<ClassHierarchy>)

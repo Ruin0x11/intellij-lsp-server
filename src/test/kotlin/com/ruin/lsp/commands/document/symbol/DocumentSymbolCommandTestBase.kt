@@ -10,8 +10,6 @@ import org.eclipse.lsp4j.SymbolKind
 import org.eclipse.lsp4j.TextDocumentIdentifier
 
 abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
-    override val projectName = JAVA_PROJECT
-
     protected fun getSymbols(filePath: String): List<SymbolInformation> {
         val file = getVirtualFile(project, filePath)
         val command = DocumentSymbolCommand(TextDocumentIdentifier(file.url))

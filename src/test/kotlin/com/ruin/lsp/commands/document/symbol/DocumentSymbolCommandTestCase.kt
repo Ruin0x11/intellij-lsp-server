@@ -4,6 +4,7 @@ import com.ruin.lsp.*
 import org.eclipse.lsp4j.SymbolKind
 
 class DocumentSymbolCommandTestCase : DocumentSymbolCommandTestBase() {
+    override val projectName = JAVA_PROJECT
 
     fun `test file symbol`() {
         getSymbols(DUMMY_FILE_PATH)

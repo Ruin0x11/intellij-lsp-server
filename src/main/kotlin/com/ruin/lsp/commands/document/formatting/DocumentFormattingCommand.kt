@@ -18,6 +18,7 @@ class DocumentFormattingCommand(val options: FormattingOptions, val range: Range
     override fun execute(ctx: ExecutionContext): MutableList<TextEdit> {
         val manager = CodeStyleSettingsManager.getInstance()
         val styleSettings = CodeStyleSettingsManager.getSettings(ctx.project).clone()
+
         val newSettings = configureSettings(styleSettings, options, ctx.file)
 
         manager.setTemporarySettings(newSettings)
@@ -36,7 +37,7 @@ class DocumentFormattingCommand(val options: FormattingOptions, val range: Range
 }
 
 fun configureSettings(settings: CodeStyleSettings, options: FormattingOptions, file: PsiFile): CodeStyleSettings {
-    settings.getCommonSettings(JavaLanguage.INSTANCE).ALIGN_GROUP_FIELD_DECLARATIONS
+    settings.getCommonSettings(file.language).ALIGN_GROUP_FIELD_DECLARATIONS
     val indentOptions = settings.getIndentOptionsByFile(file)
     indentOptions.TAB_SIZE = options.tabSize
     indentOptions.USE_TAB_CHARACTER = !options.isInsertSpaces

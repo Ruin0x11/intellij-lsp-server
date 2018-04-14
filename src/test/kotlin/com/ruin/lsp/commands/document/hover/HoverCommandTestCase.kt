@@ -1,6 +1,15 @@
 package com.ruin.lsp.commands.document.hover
 
+import com.ruin.lsp.DUMMY_FILE_PATH
+import com.ruin.lsp.JAVA_PROJECT
+
 class HoverCommandTestCase : HoverCommandTestBase() {
+    override val projectName: String
+        get() = JAVA_PROJECT
+
+    override val filePath: String
+        get() = DUMMY_FILE_PATH
+
     fun `test hover finds class info`() = checkHoverEquals(8, 16,
         "package org.lsp.javaproject; public class Dummy extends java.lang.Object ")
 
