@@ -6,6 +6,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.apache.commons.lang.StringEscapeUtils
 import org.jetbrains.kotlin.idea.KotlinQuickDocumentationProvider
 import java.awt.Image
 
@@ -43,8 +44,9 @@ class HoverDocumentationProviderKt : AbstractDocumentationProvider() {
 
 
     private fun unescape(s: String): String {
-        return s.replace("""<p>.*</p>""".toRegex(),  "")
+        return s.replace("""<p>.*</p>""".toRegex(),  "") // remove docstring
             .let { StringUtil.stripHtml(it, true) }
             .let(StringUtil::unescapeXml)
+            .let(StringEscapeUtils::unescapeHtml) // converts HTML character entities
     }
 }

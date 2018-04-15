@@ -57,4 +57,8 @@ open class Dummy {
             Arr // java.util.ArrayList
         }
     }
+
+    internal fun withClosure(closure: (Int) -> Unit) {
+        closure(42)
+    }
 }

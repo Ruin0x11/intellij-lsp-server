@@ -103,7 +103,6 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
         val elt = ref?.resolve()
         if(elt != null) {
-            val doc = getDocument(elt.containingFile) ?: return null
             return mutableListOf(elt.location())
         }
         return null
@@ -113,7 +112,6 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         val elt = ctx.file.findElementAt(offset)
         if(elt != null) {
             val results: MutableList<Location> = mutableListOf()
-            val doc = getDocument(ctx.file) ?: return null
             KotlinDefinitionsSearcher().execute(DefinitionsScopedSearch.SearchParameters(elt, getProjectScope(ctx.project), true)) {
                 val resolved = when (it) {
                     is PsiClass -> it.nameIdentifier ?: it
@@ -147,8 +145,8 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         superDescriptors = if (descriptor is ClassDescriptor) {
             val supertypes = descriptor.typeConstructor.supertypes
             val superclasses = ContainerUtil.mapNotNull(supertypes) { type ->
-                val descriptor = type.constructor.declarationDescriptor
-                descriptor as? ClassDescriptor
+                val declarationDescriptor = type.constructor.declarationDescriptor
+                declarationDescriptor as? ClassDescriptor
             }
             ContainerUtil.removeDuplicates(superclasses)
             superclasses
