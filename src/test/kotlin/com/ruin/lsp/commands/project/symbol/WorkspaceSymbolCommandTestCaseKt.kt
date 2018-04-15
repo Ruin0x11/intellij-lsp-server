@@ -10,14 +10,15 @@ class WorkspaceSymbolCommandTestCaseKt : WorkspaceSymbolCommandTestBase() {
         get() = KOTLIN_PROJECT
 
     fun `test finds function in companion object`() = checkHasResult("answerQuestion", listOf(
-        SymbolInformation("answerQuestion", SymbolKind.Function,
+        SymbolInformation("answerQuestion(String)", SymbolKind.Function,
             Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(47, 21, 47, 35))
         )
     ))
 
-    fun `test finds method`() = checkHasResult("notBoring", listOf(
-        SymbolInformation("notBoring", SymbolKind.Method,
-            Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(25, 17, 25, 26))
+    fun `test finds method`() = checkHasResult("fluid", listOf(
+        SymbolInformation("fluid()", SymbolKind.Method,
+            Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(27, 8, 27, 13)),
+            "Dummy"
         )
     ))
 
@@ -44,6 +45,13 @@ class WorkspaceSymbolCommandTestCaseKt : WorkspaceSymbolCommandTestBase() {
         SymbolInformation("STRING", SymbolKind.Constant,
             Location(uriForPath(projectName, forKotlin(CONSTANTS_FILE_PATH)), range(10, 26, 10, 32)),
             "Constants"
+        )
+    ))
+
+    fun `test finds function outside package`()  = checkHasResult("outsidePackage", listOf(
+        SymbolInformation("outsidePackage(int)", SymbolKind.Function,
+            Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(65, 4, 65, 18)),
+            "DummyKt"
         )
     ))
 }

@@ -10,7 +10,7 @@ class WorkspaceSymbolCommandTestCase : WorkspaceSymbolCommandTestBase() {
         get() = JAVA_PROJECT
 
     fun `test finds method`() = checkHasResult("answerQuestion", listOf(
-        SymbolInformation("answerQuestion", SymbolKind.Method,
+        SymbolInformation("answerQuestion(String)", SymbolKind.Method,
             Location(uriForPath(projectName, DUMMY_FILE_PATH), range(49, 15, 49, 29)),
             "Dummy"
         )

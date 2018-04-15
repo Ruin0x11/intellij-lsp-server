@@ -120,11 +120,12 @@
 
 (defun lsp-intellij--render-string (str)
   (condition-case nil
+    (let ((mode-to-render major-mode))
       (with-temp-buffer
-	(delay-mode-hooks (java-mode))
-	(insert str)
-	(font-lock-ensure)
-	(buffer-string))
+        (delay-mode-hooks (funcall mode-to-render))
+        (insert str)
+        (font-lock-ensure)
+        (buffer-string)))
     (error str)))
 
 (defconst lsp-intellij-dummy-executable

@@ -12,6 +12,9 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import org.jetbrains.kotlin.KtNodeType
 import org.jetbrains.kotlin.KtNodeTypes
+import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
+import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.asJava.namedUnwrappedElement
 import org.jetbrains.kotlin.idea.intentions.loopToCallChain.isConstant
 import org.jetbrains.kotlin.idea.refactoring.isCompanionMemberOf
@@ -56,6 +59,11 @@ fun PsiElement.location(uri: DocumentUri, doc: Document) =
 fun PsiElement.symbolKind(): SymbolKind? =
     when (this) {
         is KtElement -> this.ktSymbolKind()
+
+        is KtLightMethod -> if (this.containingClass is KtLightClassForFacade)
+            SymbolKind.Function
+        else
+            SymbolKind.Method
 
         is PsiFile -> SymbolKind.File
         is PsiPackageStatement -> SymbolKind.Package
@@ -109,7 +117,7 @@ fun PsiElement.symbolName(): String? =
         else -> null
     }
 
-fun KtElement.ktSymbolKind(): SymbolKind? =
+fun PsiElement.ktSymbolKind(): SymbolKind? =
     when (this) {
         is KtFile -> SymbolKind.File
         is KtPackageDirective -> SymbolKind.Package
@@ -123,6 +131,10 @@ fun KtElement.ktSymbolKind(): SymbolKind? =
         is KtFunction -> when {
             isInsideCompanion() -> SymbolKind.Function
             containingClass() != null -> SymbolKind.Method
+            else -> SymbolKind.Function
+        }
+        is KtLightMethod -> when {
+            this.containingClass !is KtLightClassForFacade -> SymbolKind.Method
             else -> SymbolKind.Function
         }
         is KtProperty -> when {
@@ -146,7 +158,7 @@ fun KtElement.ktSymbolKind(): SymbolKind? =
     }
 
 
-fun KtElement.ktSymbolName(): String? =
+fun PsiElement.ktSymbolName(): String? =
     when (this) {
         is KtFile -> name
         is KtPackageDirective -> qualifiedName
@@ -160,6 +172,8 @@ fun KtElement.ktSymbolName(): String? =
         is KtAnnotationEntry -> annotationLabel(this)
         is KtConstantExpression -> text
         is KtStringTemplateExpression -> text
+
+        is KtLightMethod -> methodLabel(this)
 
         else -> null
     }

@@ -12,17 +12,17 @@ class CompletionCommandTestCase : CompletionCommandTestBase() {
         get() = DUMMY_FILE_PATH
 
     fun `test function completion`() =
-        checkContainsCompletion(Position(13, 29), false, "boring() : void")
+        checkContainsCompletion(Position(13, 29), false, "boring() : void", "boring()")
 
     fun `test function completion with parameter`() =
-        checkContainsCompletion(Position(46, 32), false, "answerQuestion(String question) : int")
+        checkContainsCompletion(Position(46, 32), false, "answerQuestion(String question) : int", "answerQuestion(")
 
     fun `test function snippet`() =
-        checkContainsCompletion(Position(13, 29), true, "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
+        checkContainsCompletion(Position(13, 29), true, "notBoring(int number) : void", "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
 
     fun `test variable completion`() =
-        checkContainsCompletion(Position(15, 12), false,"list : ArrayList<String>")
+        checkContainsCompletion(Position(15, 12), false,"list : ArrayList<String>", "list")
 
     fun `test class completion`() =
-        checkContainsCompletion(Position(13, 17), false,"org.lsp.javaproject.Dummy")
+        checkContainsCompletion(Position(13, 17), false,"org.lsp.javaproject.Dummy", "Dummy")
 }

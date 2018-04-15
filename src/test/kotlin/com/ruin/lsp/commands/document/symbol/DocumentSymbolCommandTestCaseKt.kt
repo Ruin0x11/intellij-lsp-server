@@ -8,7 +8,7 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
 
     fun `test file symbol`() {
         getSymbols(forKotlin(DUMMY_FILE_PATH))
-            .assertHasSymbol("Dummy.kt", null, SymbolKind.File, range(0, 0, 60, 0))
+            .assertHasSymbol("Dummy.kt", null, SymbolKind.File, range(0, 0, 68, 0))
     }
 
     fun `test module symbol`() {
@@ -34,6 +34,7 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
             .assertHasSymbol("fluid()", "Dummy", SymbolKind.Method, range(27, 8, 27, 13))
             .assertHasSymbol("moreBoring()", "Dummy", SymbolKind.Method, range(40, 17, 40, 27))
             .assertHasSymbol("answerQuestion(String)", "Dummy", SymbolKind.Function, range(47, 21, 47, 35))
+            .assertHasSymbol("outsidePackage(Int)", "Dummy.kt", SymbolKind.Function, range(65, 4, 65, 18))
     }
 
     fun `test property symbol`() {

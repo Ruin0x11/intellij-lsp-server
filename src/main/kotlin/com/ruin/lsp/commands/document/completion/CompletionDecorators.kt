@@ -79,6 +79,9 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
             val descriptor = (lookup.`object` as? DeclarationLookupObjectImpl)?.descriptor ?: return null
             val psi = lookup.psiElement
             return when (descriptor) {
+                is org.jetbrains.kotlin.descriptors.ValueParameterDescriptor -> {
+                    KtValueParameterCompletionDecorator(lookup, psi as KtParameter)
+                }
                 is org.jetbrains.kotlin.descriptors.VariableDescriptor -> {
                     val kType = descriptor.type
                     KtVariableCompletionDecorator(lookup, psi as KtProperty, kType)
@@ -208,6 +211,15 @@ class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTyp
     override fun formatLabel() = "${typeAlias.name} : $type"
 }
 
+class KtValueParameterCompletionDecorator(lookup: LookupElement, val valueParameter: KtParameter)
+    : CompletionDecorator<KtParameter>(lookup, valueParameter) {
+    override val kind = CompletionItemKind.Field
+    private val type = valueParameter.typeReference?.typeElement?.text!!
+
+    override fun formatLabel() = "${valueParameter.name} : $type"
+
+    override fun formatDoc(): String = "${valueParameter.name}: $type"
+}
 
 fun buildDocComment(method: PsiElement): String {
     val docComment = (method as? PsiDocCommentOwner)?.docComment ?: return ""

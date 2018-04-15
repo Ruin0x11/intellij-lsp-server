@@ -15,14 +15,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.impl.light.LightElement
 import com.ruin.lsp.commands.ProjectCommand
-import com.ruin.lsp.util.getDocument
-import com.ruin.lsp.util.getURIForFile
-import com.ruin.lsp.util.location
-import com.ruin.lsp.util.symbolKind
+import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.SymbolInformation
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtFunction
 
 const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
@@ -32,15 +31,15 @@ class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<Sym
 
         val ref: Ref<List<SearchResult>> = Ref(listOf())
         ApplicationManager.getApplication().invokeAndWait {
-            val symbols = getSymbols(ctx, query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
-            val classes = getClasses(query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoClassModel, null))
+            var symbols = getSymbols(ctx, query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
+            var classes = getClasses(query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoClassModel, null))
             ref.set(listOf(symbols, classes))
         }
 
         val results = ref.get().flatMap { result ->
             result.mapNotNull {
                 (it as PsiElement).toSymbolInformation()
-            }
+            }.distinct()
         }
 
         return results.toMutableList()
@@ -52,13 +51,13 @@ fun PsiElement.toSymbolInformation(): SymbolInformation? {
         return null
     }
 
-    // filter certain kotlin light elements, since they end up as duplicate results
-    if (isKotlinElementToFilter()) {
+    // these show up as duplicates alongside KtClass results
+    if (this is KtLightClass) {
         return null
     }
 
-    val name = this.name!!
-    val kind = this.symbolKind()!!
+    val name = this.symbolName() ?: return null
+    val kind = this.symbolKind() ?: return null
     val location = this.location()
     val containerName =
         if (this.parent is PsiNameIdentifierOwner)
@@ -68,14 +67,11 @@ fun PsiElement.toSymbolInformation(): SymbolInformation? {
     return SymbolInformation(name, kind, location, containerName)
 }
 
-private fun PsiElement.isKotlinElementToFilter() =
-    this is KtLightClass || this is KtLightMethod
-
 class SearchResult : ArrayList<Any>() {
     var needMore: Boolean = false
 }
 
-/** from SearchEverywhereAction */
+/** copied from SearchEverywhereAction */
 private fun getClasses(pattern: String, max: Int, includeLibs: Boolean, chooseByNamePopup: ChooseByNameBase?): SearchResult {
     val classes = SearchResult()
     if (chooseByNamePopup == null || shouldSkipPattern(pattern)) {
@@ -98,7 +94,7 @@ private fun getClasses(pattern: String, max: Int, includeLibs: Boolean, chooseBy
     } else classes
 }
 
-/** from SearchEverywhereAction */
+/** copied from SearchEverywhereAction */
 private fun getSymbols(project: Project, pattern: String, max: Int, includeLibs: Boolean, chooseByNamePopup: ChooseByNameBase): SearchResult {
     val symbols = SearchResult()
     if (!Registry.`is`("search.everywhere.symbols") || shouldSkipPattern(pattern)) {

@@ -62,3 +62,7 @@ open class Dummy {
         closure(42)
     }
 }
+
+fun outsidePackage(i: Int) {
+    println(i)
+}
