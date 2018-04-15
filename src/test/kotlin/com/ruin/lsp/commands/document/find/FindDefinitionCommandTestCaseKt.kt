@@ -26,4 +26,8 @@ class FindDefinitionCommandTestCaseKt : FindDefinitionCommandTestBase() {
     fun `test finds super method`() =
         checkFindsLocation(forKotlin(SUBCLASS_FILE_PATH),
             Position(10, 22), "SuperClass.kt", Position(9, 17))
+
+    fun `test finds java class`() =
+        checkFindsLocation(forKotlin(DUMMY_FILE_PATH),
+            Position(70, 21), "GetSet.java", Position(2, 13))
 }

@@ -1,10 +1,10 @@
 package com.ruin.lsp.commands.document.find
 
+import com.intellij.codeInsight.TargetElementUtil
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope.getProjectScope
@@ -21,6 +21,7 @@ import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.location
 import com.ruin.lsp.util.toOffset
+import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.jetbrains.kotlin.backend.common.push
@@ -31,13 +32,12 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.caches.resolve.unsafeResolveToDescriptor
 import org.jetbrains.kotlin.idea.core.getDirectlyOverriddenDeclarations
-import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.search.ideaExtensions.KotlinDefinitionsSearcher
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
-import org.jetbrains.kotlin.types.KotlinType
+import java.util.ArrayList
 
 class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
     override fun execute(ctx: ExecutionContext): MutableList<Location> {
@@ -46,6 +46,11 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
         val offset = position.toOffset(doc)
 
+        val list = findDefinitionByReference(ctx, offset)
+        if(list != null) {
+            return list
+        }
+
         return when {
             ctx.file.fileType is KotlinFileType -> executeForKotlin(ctx, offset)
             ctx.file.fileType is JavaFileType -> executeForJava(ctx, offset)
@@ -53,19 +58,33 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         }
     }
 
-    private fun executeForJava(ctx: ExecutionContext, offset: Int): MutableList<Location> {
-        val ref = ctx.file.findReferenceAt(offset)
+    private fun findDefinitionByReference(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
+        var loc: MutableList<Location>? = null
+        withEditor(this, ctx.file, offset) { editor ->
+            val ref = TargetElementUtil.findReference(editor, offset)
+            val resolvedElements = if (ref == null) emptyList<PsiElement>() else resolve(ref)
+            val resolvedElement = if (resolvedElements.size == 1) resolvedElements[0] else null
 
-        var lookup = ref?.resolve()
-
-        if (lookup == null) {
-            val element = ctx.file.findElementAt(offset)
-            val parent = element?.parent
-            if (parent != null && parent is PsiMethod) {
-                val superSignature =
-                    SuperMethodsSearch.search(parent, null, true, false).findFirst()
-                lookup = superSignature?.method
+            val targetElements = GotoDeclarationAction.findTargetElementsNoVS(ctx.project, editor, offset, false)
+            val elementAtPointer = ctx.file.findElementAt(TargetElementUtil.adjustOffset(ctx.file, editor.document, offset))
+            val results = targetElements?.mapNotNull { it.location() }
+            loc = if (results?.isNotEmpty() == true) {
+                results.toMutableList()
+            } else {
+                null
             }
+        }
+        return loc
+    }
+
+    private fun executeForJava(ctx: ExecutionContext, offset: Int): MutableList<Location> {
+        var lookup: PsiElement? = null
+        val element = ctx.file.findElementAt(offset)
+        val parent = element?.parent
+        if (parent != null && parent is PsiMethod) {
+            val superSignature =
+                SuperMethodsSearch.search(parent, null, true, false).findFirst()
+            lookup = superSignature?.method
         }
 
         return lookup?.location()?.let { mutableListOf(it) }
@@ -74,12 +93,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
     private fun executeForKotlin(ctx: ExecutionContext, offset: Int): MutableList<Location> {
         try {
-            var list = findKotlinDefinitionByReference(ctx, offset)
-            if(list != null) {
-                return list
-            }
-
-            list = findKotlinDefinitionBySearcher(ctx, offset)
+            var list = findKotlinDefinitionBySearcher(ctx, offset)
             if(list != null) {
                 return list
             }
@@ -95,17 +109,21 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         }
     }
 
-    private fun findKotlinDefinitionByReference(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
-        var ref = ctx.file.findReferenceAt(offset)
-        if (ref is PsiMultiReference) {
-            ref = ref.references.find { it is KtSimpleNameReference }
-        }
+    private fun resolve(ref: PsiReference): List<PsiElement> {
+        // IDEA-56727 try resolve first as in GotoDeclarationAction
+        val resolvedElement = ref.resolve()
 
-        val elt = ref?.resolve()
-        if(elt != null) {
-            return mutableListOf(elt.location())
+        if (resolvedElement == null && ref is PsiPolyVariantReference) {
+            val result = ArrayList<PsiElement>()
+            val psiElements = ref.multiResolve(false)
+            for (resolveResult in psiElements) {
+                if (resolveResult.element != null) {
+                    result.add(resolveResult.element!!)
+                }
+            }
+            return result
         }
-        return null
+        return if (resolvedElement == null) emptyList() else listOf(resolvedElement)
     }
 
     private fun findKotlinDefinitionBySearcher(ctx: ExecutionContext, offset: Int): MutableList<Location>? {

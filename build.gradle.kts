@@ -15,7 +15,7 @@ val kotlin_version: String by extra
 
 buildscript {
     var kotlin_version: String by extra
-    kotlin_version = "1.2.30"
+    kotlin_version = "1.2.31"
     repositories {
         mavenCentral()
         jcenter()
@@ -32,7 +32,7 @@ val channel = prop("publishChannel")
 
 plugins {
     idea
-    kotlin("jvm") version "1.2.21"
+    kotlin("jvm") version "1.2.31"
     id("org.jetbrains.intellij") version "0.2.18"
 }
 apply {

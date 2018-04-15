@@ -66,3 +66,9 @@ open class Dummy {
 fun outsidePackage(i: Int) {
     println(i)
 }
+
+fun javaPropertyTestMethod() {
+    val getSet = GetSet()
+    getSet.value
+    getSet.objec
+}

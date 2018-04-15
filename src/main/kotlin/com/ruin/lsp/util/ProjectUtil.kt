@@ -277,6 +277,17 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position = Positi
     return created
 }
 
+fun createEditor(context: Disposable, file: PsiFile, offset: Int): EditorEx {
+    val doc = getDocument(file)!!
+    val editorFactory = EditorFactory.getInstance()
+    val created = editorFactory.createEditor(doc, file.project) as EditorEx
+    created.caretModel.moveToOffset(offset)
+
+    Disposer.register(context, Disposable { editorFactory.releaseEditor(created) })
+
+    return created
+}
+
 /**
  * Gets a Windows-compatible URI from a VirtualFile.
  * The getPath() method of VirtualFile is missing an extra slash in the "file:///" protocol.
