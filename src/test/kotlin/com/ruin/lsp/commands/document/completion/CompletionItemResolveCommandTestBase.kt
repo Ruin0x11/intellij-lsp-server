@@ -46,12 +46,12 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
     private fun runCommand(pos: Position, selectedItem: String): CompletionItem {
         val completionCommand = CompletionCommand(pos, false)
         val project = prepareProject(JAVA_PROJECT)
-        val file = com.ruin.lsp.util.getVirtualFile(project, filePath)
-        val completionResult = invokeCommandAndWait(completionCommand, file.url)
+        val file = com.ruin.lsp.util.getPsiFile(project, filePath)
+        val completionResult = invokeCommandAndWait(completionCommand, project, file!!)
         val itemToImport: CompletionItem? = completionResult.right.items.find { it.label == selectedItem }
         assertNotNull(itemToImport, "Item $selectedItem not in completion results: ${completionResult.right.items}")
         val command = CompletionItemResolveCommand(itemToImport!!)
-        val res = invokeCommandAndWait(command, file.url)
+        val res = invokeCommandAndWait(command, project, file)
         ProjectUtil.closeAndDispose(project)
         return res
     }

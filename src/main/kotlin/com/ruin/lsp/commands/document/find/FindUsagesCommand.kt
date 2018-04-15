@@ -1,6 +1,7 @@
 package com.ruin.lsp.commands.document.find
 
 import com.intellij.find.findUsages.FindUsagesManager
+import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Factory
@@ -18,7 +19,7 @@ import java.util.*
 
 class FindUsagesCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
     override fun execute(ctx: ExecutionContext): MutableList<Location> {
-        val ref: Ref<List<Usage>> = Ref()
+        val ref: Ref<List<Usage>> = Ref(listOf())
         withEditor(this, ctx.file, position) { editor ->
             ref.set(findUsages(editor, ctx.cancelToken))
         }
@@ -33,13 +34,11 @@ class FindUsagesCommand(val position: Position) : DocumentCommand<MutableList<Lo
 }
 
 fun extractLocationFromRaw(usage: Usage): Location? {
-    if (usage is UsageInfo2UsageAdapter) {
-        val element = usage.element
-        if (element != null) {
-            return element.location()
-        }
+    return if (usage is UsageInfo2UsageAdapter) {
+         usage.element?.location()
+    } else {
+        null
     }
-    return null
 }
 
 fun findUsages(editor: Editor, cancelToken: CancelChecker?): List<Usage> {
@@ -50,7 +49,9 @@ fun findUsages(editor: Editor, cancelToken: CancelChecker?): List<Usage> {
     val rawResults = ArrayList<Usage>()
     val manager = FindUsagesManager(project,
         UsageCollectingViewManager(project, rawResults, cancelToken))
-    manager.findUsages(element, null, null, false, null)
+    TransactionGuard.getInstance().submitTransactionAndWait {
+        manager.findUsages(element, null, null, false, null)
+    }
     return rawResults
 }
 

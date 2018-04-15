@@ -74,7 +74,7 @@ abstract class UsableSdkTestCase : PlatformTestCase() {
 
         UIUtil.invokeAndWaitIfNeeded(Runnable {
             ModuleRootModificationUtil.setModuleSdk(
-                module!!, JavaTestUtil.getTestJdk())
+                module, JavaTestUtil.getTestJdk())
         })
 
         return project

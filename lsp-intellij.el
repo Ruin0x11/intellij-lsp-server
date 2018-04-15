@@ -37,6 +37,33 @@
 (require 'lsp-mode)
 (require 'cl)
 
+(defvar lsp-intellij-use-topmost-maven-root t
+  "If non-nil, `lsp-intellij' will attempt to locate the topmost
+Maven project in a nested hierarchy if a Maven subproject is opened
+and set the LSP project root to it. Otherwise, `lsp-intellij' will set
+the project root to be the root of the Maven subproject.")
+
+;; copied from projectile to avoid a dependency
+(defun lsp-intellij--parent (path)
+  "Return the parent directory of PATH.
+PATH may be a file or directory and directory paths may end with a slash."
+  (directory-file-name (file-name-directory (directory-file-name (expand-file-name path)))))
+
+;; copied from projectile to avoid a dependency
+(defun lsp-intellij--root-top-down-recurring (dir list)
+  "Identify a project root in DIR by recurring top-down search for files in LIST.
+Return the last (bottommost) matched directory in the topmost sequence
+of matched directories.  Nil otherwise."
+  (cl-some
+   (lambda (f)
+     (locate-dominating-file
+      dir
+      (lambda (dir)
+        (and (file-exists-p (expand-file-name f dir))
+             (or (string-match locate-dominating-stop-dir-regexp (lsp-intellij--parent dir))
+                 (not (file-exists-p (expand-file-name f (lsp-intellij--parent dir)))))))))
+   list))
+
 (defun lsp-intellij--get-root ()
   (let ((file (locate-dominating-file (buffer-file-name)
                                       (lambda (parent)
@@ -44,7 +71,12 @@
                                           (directory-files parent nil ".*.iml"))))))
     (when (not file)
       (error "No root found."))
-    (file-name-directory file)))
+    (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
+          (has-pom (> (length pom) 0))
+          (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
+                    (lsp-intellij--root-top-down-recurring file '("pom.xml"))
+                  file)))
+      (file-name-directory root))))
 
 (defun lsp-intellij--locations-to-xref-items (locations)
   "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."

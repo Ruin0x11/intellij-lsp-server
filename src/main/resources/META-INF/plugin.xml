@@ -24,8 +24,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.ruin.lsp.commands.document.hover.OneLineJavaDocInfoGeneratorFactory" />
         <applicationService serviceImplementation="com.ruin.lsp.model.WorkspaceManager" />
-        <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerService"
-                            serviceImplementation="com.ruin.lsp.model.LanguageServerServiceImpl" />
+        <applicationService serviceInterface="com.ruin.lsp.model.LanguageServerRunner"
+                            serviceImplementation="com.ruin.lsp.model.LanguageServerRunnerImpl" />
         <applicationService serviceImplementation="com.ruin.lsp.model.PreviousCompletionCacheService" />
         <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
     </extensions>
@@ -33,7 +33,7 @@
     <application-components>
         <component>
             <interface-class>com.ruin.lsp.model.LanguageServerService</interface-class>
-            <implementation-class>com.ruin.lsp.model.LanguageServerServiceImpl</implementation-class>
+            <implementation-class>com.ruin.lsp.model.LanguageServerService</implementation-class>
         </component>
     </application-components>
 
