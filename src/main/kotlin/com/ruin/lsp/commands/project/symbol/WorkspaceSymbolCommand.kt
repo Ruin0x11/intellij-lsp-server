@@ -21,6 +21,8 @@ import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.SymbolInformation
+import org.jetbrains.kotlin.asJava.classes.KtLightClass
+import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 
 const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {
@@ -50,8 +52,8 @@ fun PsiElement.toSymbolInformation(): SymbolInformation? {
         return null
     }
 
-    // filter elements that are kotlin-as-java
-    if (this is LightElement) {
+    // filter certain kotlin light elements, since they end up as duplicate results
+    if (isKotlinElementToFilter()) {
         return null
     }
 
@@ -65,6 +67,9 @@ fun PsiElement.toSymbolInformation(): SymbolInformation? {
 
     return SymbolInformation(name, kind, location, containerName)
 }
+
+private fun PsiElement.isKotlinElementToFilter() =
+    this is KtLightClass || this is KtLightMethod
 
 class SearchResult : ArrayList<Any>() {
     var needMore: Boolean = false

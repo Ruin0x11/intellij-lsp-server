@@ -14,10 +14,12 @@ import org.jetbrains.kotlin.KtNodeType
 import org.jetbrains.kotlin.KtNodeTypes
 import org.jetbrains.kotlin.asJava.namedUnwrappedElement
 import org.jetbrains.kotlin.idea.intentions.loopToCallChain.isConstant
+import org.jetbrains.kotlin.idea.refactoring.isCompanionMemberOf
 import org.jetbrains.kotlin.idea.refactoring.memberInfo.qualifiedClassNameForRendering
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
+import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 
 fun Position.toOffset(doc: Document) = doc.getLineStartOffset(this.line) + this.character
 
@@ -118,10 +120,11 @@ fun KtElement.ktSymbolKind(): SymbolKind? =
             else -> SymbolKind.Class
         }
         is KtConstructor<*> -> SymbolKind.Constructor
-        is KtFunction -> if (containingClass() != null)
-            SymbolKind.Method
-        else
-            SymbolKind.Function
+        is KtFunction -> when {
+            isInsideCompanion() -> SymbolKind.Function
+            containingClass() != null -> SymbolKind.Method
+            else -> SymbolKind.Function
+        }
         is KtProperty -> when {
             isConstant(this) -> SymbolKind.Constant
             isMember -> SymbolKind.Field
@@ -185,3 +188,6 @@ private fun methodParameterLabel(method: PsiMethod, parameter: PsiParameter): St
     StringBuilder().apply { generateType(this, parameter.type, method, false, true) }.toString()
 
 private fun isConstant(elt: KtProperty) = elt.modifierList?.getModifier(KtTokens.CONST_KEYWORD) != null
+
+private fun KtDeclaration.isInsideCompanion() =
+    (containingClassOrObject as? KtObjectDeclaration)?.isCompanion() == true

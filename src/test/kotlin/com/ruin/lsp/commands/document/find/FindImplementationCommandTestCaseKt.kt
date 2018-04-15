@@ -11,7 +11,7 @@ class FindImplementationCommandTestCaseKt : FindImplementationCommandTestBase() 
         Position(8, 14), "SubClass.kt", Position(8, 19))
 
     fun `test finds impl of interface`() = checkFindsLocation(forKotlin(INTERFACE_FILE_PATH),
-        Position(6, 6), "SubClass.kt", Position(5, 13))
+        Position(4, 15), "SubClass.kt", Position(6, 6))
 
     fun `test finds no impl of subclass`() = checkFindsNothing(forKotlin(SUBCLASS_FILE_PATH),
         Position(6, 11))

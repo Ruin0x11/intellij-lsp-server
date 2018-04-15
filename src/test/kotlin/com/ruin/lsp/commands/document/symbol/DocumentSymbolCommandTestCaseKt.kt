@@ -33,7 +33,7 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
             .assertHasSymbol("notBoring(Int, String)", "Dummy", SymbolKind.Method, range(25, 17, 25, 26))
             .assertHasSymbol("fluid()", "Dummy", SymbolKind.Method, range(27, 8, 27, 13))
             .assertHasSymbol("moreBoring()", "Dummy", SymbolKind.Method, range(40, 17, 40, 27))
-            .assertHasSymbol("answerQuestion(String)", "Dummy", SymbolKind.Method, range(47, 21, 47, 35))
+            .assertHasSymbol("answerQuestion(String)", "Dummy", SymbolKind.Function, range(47, 21, 47, 35))
     }
 
     fun `test property symbol`() {
