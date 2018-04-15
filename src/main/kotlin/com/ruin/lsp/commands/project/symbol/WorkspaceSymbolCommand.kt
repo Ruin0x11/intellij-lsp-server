@@ -6,6 +6,7 @@ import com.intellij.ide.actions.SearchEverywhereClassifier.EP_Manager.getProject
 import com.intellij.ide.util.gotoByName.*
 import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.registry.Registry
@@ -14,8 +15,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.impl.light.LightElement
 import com.ruin.lsp.commands.ProjectCommand
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.location
 import com.ruin.lsp.util.symbolKind
+import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.SymbolInformation
 
 const val MAX_SYMBOLS = 100

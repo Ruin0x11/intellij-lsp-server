@@ -26,7 +26,7 @@ class FindImplementationCommand(val position: Position) : DocumentCommand<Mutabl
         }
         val implementations = ref.get()
 
-        return implementations?.map{ it.nameIdentifierLocation() }?.toMutableList() ?: mutableListOf()
+        return implementations?.map{ it.location() }?.toMutableList() ?: mutableListOf()
     }
 }
 

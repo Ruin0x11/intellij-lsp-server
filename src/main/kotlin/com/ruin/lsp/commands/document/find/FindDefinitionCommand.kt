@@ -20,7 +20,6 @@ import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.location
-import com.ruin.lsp.util.nameIdentifierLocation
 import com.ruin.lsp.util.toOffset
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
@@ -48,13 +47,13 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         val offset = position.toOffset(doc)
 
         return when {
-            ctx.file.fileType is KotlinFileType -> executeForKotlin(ctx, doc, offset)
-            ctx.file.fileType is JavaFileType -> executeForJava(ctx, doc, offset)
+            ctx.file.fileType is KotlinFileType -> executeForKotlin(ctx, offset)
+            ctx.file.fileType is JavaFileType -> executeForJava(ctx, offset)
             else -> mutableListOf()
         }
     }
 
-    private fun executeForJava(ctx: ExecutionContext, doc: Document, offset: Int): MutableList<Location> {
+    private fun executeForJava(ctx: ExecutionContext, offset: Int): MutableList<Location> {
         val ref = ctx.file.findReferenceAt(offset)
 
         var lookup = ref?.resolve()
@@ -73,7 +72,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
             ?: mutableListOf()
     }
 
-    private fun executeForKotlin(ctx: ExecutionContext, doc: Document, offset: Int): MutableList<Location> {
+    private fun executeForKotlin(ctx: ExecutionContext, offset: Int): MutableList<Location> {
         try {
             var list = findKotlinDefinitionByReference(ctx, offset)
             if(list != null) {
@@ -104,7 +103,8 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
         val elt = ref?.resolve()
         if(elt != null) {
-            return mutableListOf(elt.nameIdentifierLocation())
+            val doc = getDocument(elt.containingFile) ?: return null
+            return mutableListOf(elt.location())
         }
         return null
     }
@@ -113,6 +113,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         val elt = ctx.file.findElementAt(offset)
         if(elt != null) {
             val results: MutableList<Location> = mutableListOf()
+            val doc = getDocument(ctx.file) ?: return null
             KotlinDefinitionsSearcher().execute(DefinitionsScopedSearch.SearchParameters(elt, getProjectScope(ctx.project), true)) {
                 val resolved = when (it) {
                     is PsiClass -> it.nameIdentifier ?: it
@@ -129,15 +130,15 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
     }
 
     private fun findKotlinSuperMethod(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
-        val elt = ctx.file.findElementAt(offset) ?: return mutableListOf()
+        val elt = ctx.file.findElementAt(offset) ?: return null
         val declaration = PsiTreeUtil.getParentOfType<PsiElement>(elt,
             KtNamedFunction::class.java,
             KtClass::class.java,
             KtProperty::class.java,
-            KtObjectDeclaration::class.java) as KtDeclaration? ?: return mutableListOf()
+            KtObjectDeclaration::class.java) as KtDeclaration? ?: return null
         val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
-        val superDeclarations = findSuperDeclarations(descriptor) ?: return mutableListOf()
-        return superDeclarations.mapNotNull { it.nameIdentifierLocation() }.toMutableList()
+        val superDeclarations = findSuperDeclarations(descriptor) ?: return null
+        return superDeclarations.map { it.location() }.toMutableList()
     }
 
     // copied from GotoSuperActionHandler

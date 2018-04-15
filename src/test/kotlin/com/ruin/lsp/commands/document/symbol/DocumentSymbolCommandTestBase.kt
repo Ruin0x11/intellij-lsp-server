@@ -14,7 +14,6 @@ abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
         val file = getVirtualFile(project, filePath)
         val command = DocumentSymbolCommand(TextDocumentIdentifier(file.url))
         val result = invokeCommandAndWait(command, file.url)
-        command.dispose()
         return result
     }
 

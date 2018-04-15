@@ -1,6 +1,6 @@
 package org.lsp.kotlinproject
 
-
+import org.lsp.kotlinproject.Dummy
 
 /**
  * Some dummy class for testing purposes
