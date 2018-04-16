@@ -3,13 +3,13 @@ package com.ruin.lsp.commands.document.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
-import com.intellij.refactoring.changeSignature.JavaMethodDescriptor
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.idea.completion.DeclarationLookupObjectImpl
 import org.jetbrains.kotlin.idea.core.completion.DeclarationLookupObject
+import org.jetbrains.kotlin.load.java.descriptors.JavaMethodDescriptor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
@@ -107,13 +107,6 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                         null
                     }
                 }
-                // joinToString, first, last, contains...
-                is DeserializedSimpleFunctionDescriptor -> {
-                    val name = descriptor.name
-                    val kType = descriptor.returnType
-                    val args = descriptor.valueParameters
-                    KtFunctionCompletionDecorator(lookup, name, kType, args)
-                }
                 is org.jetbrains.kotlin.descriptors.ClassDescriptor -> {
                     val kType = descriptor.classValueType ?: descriptor.defaultType
                     KtClassCompletionDecorator(lookup, psi as KtClass)
@@ -126,7 +119,7 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
             }
         }
 
-        private fun fromSyntheticLookupElement(lookup: LookupElement): CompletionDecorator<PsiElement>? {
+        private fun fromSyntheticLookupElement(lookup: LookupElement): CompletionDecorator<Any>? {
             val obj = lookup.`object`
             return if (obj is DeclarationLookupObject) {
                 val descriptor = obj.descriptor
@@ -137,10 +130,27 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                     } else {
                         null
                     }
+                    // joinToString, first, last, contains...
+                    is DeserializedSimpleFunctionDescriptor -> {
+                        val name = descriptor.name
+                        val kType = descriptor.returnType
+                        val args = descriptor.valueParameters
+                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                    }
                     // forEach
-                    is SamAdapterExtensionFunctionDescriptor -> null
+                    is SamAdapterExtensionFunctionDescriptor -> {
+                        val name = descriptor.name
+                        val kType = descriptor.returnType
+                        val args = descriptor.valueParameters
+                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                    }
                     // stream
-                    is JavaMethodDescriptor -> null
+                    is JavaMethodDescriptor -> {
+                        val name = descriptor.name
+                        val kType = descriptor.returnType
+                        val args = descriptor.valueParameters
+                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                    }
                     else -> null
                 }
             } else {

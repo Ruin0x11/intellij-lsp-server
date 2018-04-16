@@ -41,12 +41,13 @@ class CompletionCommand(val position: Position,
                 val el = completionResult.lookupElement
 
                 lookupElements.add(el)
-                ctx.profiler?.mark("Get elt " + el.psiElement?.symbolName())
+                ctx.profiler?.mark("Get elt $el")
             })
 
             val sorted: Ref<List<LookupElement>> = Ref(listOf())
             sorted.set(arranger.arrangeItems(lookup, false).first)
             sortedLookupElements = sorted.get()
+            ctx.profiler?.mark("Finish sorting")
         }
 
         val result = sortedLookupElements.mapIndexedNotNull { i, it ->
@@ -113,23 +114,4 @@ fun createResultSet(parameters: CompletionParameters, userPrefix: String?,
 fun findPrefix(position: PsiElement, offset: Int): String {
     // Class is deprecated, but the method seems to be used...
     return CompletionData.findPrefixStatic(position, offset)
-}
-
-private val CEILING = 999999999
-
-val MAX_RELEVANCE_VALUE = 99999999
-
-/**
- * Converts a relevance to a 9-digit sort text, so that
- * higher relevance would get a lower sort text.
- *
- * @param relevance, must be lower than 100,000,000
- * @return a 9-digit sort text
- * @throws IllegalArgumentException when relevance is greater or equal to 100,000,000")
- */
-fun relevanceFromIndex(relevance: Int): String {
-    if (relevance > MAX_RELEVANCE_VALUE) {
-        throw IllegalArgumentException("Relevance must be lower than 100,000,000")
-    }
-    return (CEILING - Math.max(relevance, 0)).toString()
 }

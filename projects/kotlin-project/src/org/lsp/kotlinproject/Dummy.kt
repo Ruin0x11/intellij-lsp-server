@@ -74,5 +74,5 @@ fun javaPropertyTestMethod() {
 }
 
 fun testList() {
-    ArrayList().
+    var list = listOf<Int>()
 }
