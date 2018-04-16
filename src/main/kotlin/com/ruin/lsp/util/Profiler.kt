@@ -11,7 +11,7 @@ import kotlin.collections.HashMap
  *
  * @author dhleong
  */
-open class Profiler(private var context: LanguageClient?) {
+open class Profiler(private var context: Any?) {
     private val LOG = Logger.getInstance(Profiler::class.java)
     private val start: Long = System.nanoTime()
     private val intervals = ArrayList<Pair<String, Long>>()
@@ -31,6 +31,8 @@ open class Profiler(private var context: LanguageClient?) {
         val now = System.nanoTime()
         val delta = now - last
         last = now
+        LOG.info("+" + format(delta, label))
+
 
         intervals.add(Pair(label, delta))
     }
@@ -45,9 +47,9 @@ open class Profiler(private var context: LanguageClient?) {
         mark(label)
         val total = System.nanoTime() - start
         intervals.forEach { (label, duration) ->
-            LOG.debug(format(duration, label))
+            LOG.info(format(duration, label))
         }
-        LOG.debug(format(total, "Total"))
+        LOG.info(format(total, "Total"))
     }
 
     open fun switchContext(newContext: LanguageClient) {
@@ -73,7 +75,7 @@ val DUMMY = object : Profiler(null) {
     }
 }
 
-private val sActiveProfilers = HashMap<LanguageClient?, Profiler>()
+private val sActiveProfilers = HashMap<Any?, Profiler>()
 
 private fun format(duration: Long, label: String?): String {
     val millis = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS)
@@ -84,7 +86,7 @@ private fun format(duration: Long, label: String?): String {
     }
 }
 
-fun startProfiler(context: LanguageClient): Profiler {
+fun startProfiler(context: Any): Profiler {
     val newProfiler = Profiler(context)
     sActiveProfilers.put(context, newProfiler)
     return newProfiler
@@ -104,7 +106,7 @@ fun startProfiler(context: LanguageClient): Profiler {
  * @param context The context passed to #start(), or
  * subsequently set with #switchContext()
  */
-fun with(context: LanguageClient): Profiler {
+fun with(context: Any): Profiler {
     val existing = sActiveProfilers[context]
     if (existing != null) {
         return existing

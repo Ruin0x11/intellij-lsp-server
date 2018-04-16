@@ -2,14 +2,15 @@ package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
-import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.*
+import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.CompletionResolveIndex
 import com.ruin.lsp.model.PreviousCompletionCacheService
-import com.ruin.lsp.util.withEditor
+import com.ruin.lsp.util.*
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionList
 import org.eclipse.lsp4j.Position
@@ -19,20 +20,27 @@ import java.util.*
 
 class CompletionCommand(val position: Position,
                         val snippetSupport: Boolean) : DocumentCommand<Either<MutableList<CompletionItem>, CompletionList>> {
-
     override fun execute(ctx: ExecutionContext): Either<MutableList<CompletionItem>, CompletionList> {
         val result: MutableList<CompletionItem> = mutableListOf()
         val prefix: String? = null
-        val lookupElements: MutableList<LookupElement> = mutableListOf()
+        var sortedLookupElements: List<LookupElement> = listOf()
 
         val completionCache = PreviousCompletionCacheService.getInstance()
         val completionId = completionCache.incrementId()
 
         withEditor(this, ctx.file, position) { editor ->
-            val params = makeCompletionParameters(editor, ctx.file, position)
+            val lookupElements: MutableList<LookupElement> = mutableListOf()
+            val params = makeCompletionParameters(editor, ctx.file, position)!!
+            val arranger = MyCompletionLookupArranger(params, CompletionLocation(params))
+            val lookup = LookupImpl(ctx.project, editor, arranger)
+
             var i = 0
-            performCompletion(params!!, prefix, ctx.cancelToken, Consumer { completionResult ->
+            performCompletion(params, prefix, ctx.cancelToken, Consumer { completionResult ->
+                lookup.addItem(completionResult.lookupElement, CamelHumpMatcher(""))
+                arranger.addElement(completionResult)
+
                 val el = completionResult.lookupElement
+
                 lookupElements.add(el)
                 val dec = CompletionDecorator.from(el, snippetSupport)
                 if (dec != null) {
@@ -41,10 +49,12 @@ class CompletionCommand(val position: Position,
                     })
                     i++
                 }
+                ctx.profiler?.mark("Get elt " + el.psiElement?.symbolName())
             })
+            sortedLookupElements = arranger.arrangeItems(lookup, false).first
         }
 
-        completionCache.cacheCompletion(ctx.file, lookupElements)
+        completionCache.cacheCompletion(ctx.file, sortedLookupElements)
 
         return Either.forRight(CompletionList(false, result))
     }
@@ -83,7 +93,6 @@ fun getVariantsFromContributors(parameters: CompletionParameters,
             return
         }
     }
-
 }
 
 fun createResultSet(parameters: CompletionParameters, userPrefix: String?,
