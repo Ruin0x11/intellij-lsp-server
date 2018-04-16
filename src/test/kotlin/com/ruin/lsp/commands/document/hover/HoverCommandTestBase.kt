@@ -1,6 +1,7 @@
 package com.ruin.lsp.commands.document.hover
 
 import com.intellij.openapi.project.DumbService
+import com.intellij.testFramework.UsefulTestCase
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
 import com.ruin.lsp.model.invokeCommandAndWait
@@ -12,6 +13,7 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))
             val result = invokeCommandAndWait(command, project, psiFile)
+            UsefulTestCase.assertNotEmpty(result.contents)
             val value = result.contents.first().right.value
             assertEquals("Expected \"$expected\" but got: \n$value",
                 expected, value)

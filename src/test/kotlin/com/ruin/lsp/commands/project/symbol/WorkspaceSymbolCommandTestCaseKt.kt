@@ -50,7 +50,7 @@ class WorkspaceSymbolCommandTestCaseKt : WorkspaceSymbolCommandTestBase() {
 
     fun `test finds function outside package`()  = checkHasResult("outsidePackage", listOf(
         SymbolInformation("outsidePackage(int)", SymbolKind.Function,
-            Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(65, 4, 65, 18)),
+            Location(uriForPath(projectName, forKotlin(DUMMY_FILE_PATH)), range(69, 4, 69, 18)),
             "DummyKt"
         )
     ))

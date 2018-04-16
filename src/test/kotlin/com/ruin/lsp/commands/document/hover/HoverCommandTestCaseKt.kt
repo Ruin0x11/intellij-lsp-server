@@ -25,9 +25,9 @@ class HoverCommandTestCaseKt : HoverCommandTestBase() {
 
     fun `test hover finds nothing`() = checkHoverIsEmpty(32, 1)
 
-    fun `test hover finds closure with arrow`() = checkHoverEquals(60, 20,
+    fun `test hover finds closure with arrow`() = checkHoverEquals(59, 20,
         "internal final fun withClosure(closure: (Int) → Unit): Unit defined in org.lsp.kotlinproject.Dummy")
 
-    fun `test hover finds closure parameter`() = checkHoverEquals(61, 10,
+    fun `test hover finds closure parameter`() = checkHoverEquals(60, 10,
         "value-parameter closure: (Int) → Unit")
 }
