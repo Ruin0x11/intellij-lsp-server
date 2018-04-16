@@ -56,10 +56,10 @@ open class Dummy {
         internal fun autoImportTestMethod2(): Int {
             Arr // java.util.ArrayList
         }
-    }
 
-    internal fun withClosure(closure: (Int) -> Unit) {
-        closure(42)
+        internal fun withClosure(closure: (Int) -> Unit) {
+            closure(42)
+        }
     }
 }
 
@@ -73,6 +73,6 @@ fun javaPropertyTestMethod() {
     getSet.objec
 }
 
-fun testList() {
-    var list = listOf<Int>()
+fun testClosure() {
+    Dummy.
 }

@@ -109,7 +109,12 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                 }
                 is org.jetbrains.kotlin.descriptors.ClassDescriptor -> {
                     val kType = descriptor.classValueType ?: descriptor.defaultType
-                    KtClassCompletionDecorator(lookup, psi as KtClass)
+
+                    when (psi) {
+                        is KtClass -> KtClassCompletionDecorator(lookup, psi)
+                        is KtObjectDeclaration -> null
+                        else -> null
+                    }
                 }
                 is org.jetbrains.kotlin.descriptors.TypeAliasDescriptor -> {
                     val kType = descriptor.expandedType
