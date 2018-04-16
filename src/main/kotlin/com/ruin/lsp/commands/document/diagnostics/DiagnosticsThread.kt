@@ -29,7 +29,6 @@ class DiagnosticsThread(val file: PsiFile, val document: Document, val client: L
     var diags: List<Diagnostic>? = null
 
     override fun run() {
-        return
         // Wait in case the user is updating a lot of text at once
         try {
             Thread.sleep(1000)

@@ -1,11 +1,15 @@
 package com.ruin.lsp.commands.document.diagnostics
 
+import com.ruin.lsp.JAVA_PROJECT
 import com.ruin.lsp.PROBLEMATIC_FILE_PATH
 import com.ruin.lsp.range
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 
 class DiagnosticsCommandTestCase : DiagnosticsCommandTestBase() {
+    override val projectName: String
+        get() = JAVA_PROJECT
+
     fun `test finds missing imports`() = checkDiagnosticsFound(PROBLEMATIC_FILE_PATH,
         listOf(
             Diagnostic(range(8, 8, 8, 19),
