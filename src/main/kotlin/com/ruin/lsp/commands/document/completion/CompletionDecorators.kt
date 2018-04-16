@@ -6,13 +6,20 @@ import com.intellij.psi.*
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
+import org.jetbrains.kotlin.builtins.extractParameterNameFromFunctionTypeArgument
+import org.jetbrains.kotlin.builtins.isBuiltinFunctionalType
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
+import org.jetbrains.kotlin.idea.completion.BasicLookupElementFactory
 import org.jetbrains.kotlin.idea.completion.DeclarationLookupObjectImpl
+import org.jetbrains.kotlin.idea.completion.LambdaSignatureTemplates
+import org.jetbrains.kotlin.idea.core.KotlinNameSuggester
 import org.jetbrains.kotlin.idea.core.completion.DeclarationLookupObject
 import org.jetbrains.kotlin.load.java.descriptors.JavaMethodDescriptor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
+import org.jetbrains.kotlin.renderer.render
+import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
 import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPropertyDescriptor
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor
@@ -102,7 +109,8 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                         val name = descriptor.name
                         val kType = descriptor.returnType
                         val args = descriptor.valueParameters
-                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                        val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
+                        KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
                     } else {
                         null
                     }
@@ -140,21 +148,24 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                         val name = descriptor.name
                         val kType = descriptor.returnType
                         val args = descriptor.valueParameters
-                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                        val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
+                        KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
                     }
                     // forEach
                     is SamAdapterExtensionFunctionDescriptor -> {
                         val name = descriptor.name
                         val kType = descriptor.returnType
                         val args = descriptor.valueParameters
-                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                        val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
+                        KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
                     }
                     // stream
                     is JavaMethodDescriptor -> {
                         val name = descriptor.name
                         val kType = descriptor.returnType
                         val args = descriptor.valueParameters
-                        KtFunctionCompletionDecorator(lookup, name, kType, args)
+                        val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
+                        KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
                     }
                     else -> null
                 }
@@ -234,16 +245,49 @@ class KtVariableCompletionDecorator(lookup: LookupElement, val property: KtPrope
     override fun formatLabel() = "${property.name} : $type"
 }
 
-class KtFunctionCompletionDecorator(lookup: LookupElement, val name: Name, val returnType: KotlinType?, val args: List<ValueParameterDescriptor>)
+class KtFunctionCompletionDecorator(lookup: LookupElement,
+                                    val name: Name,
+                                    val returnType: KotlinType?,
+                                    val args: List<ValueParameterDescriptor>,
+                                    val hasSynthesizedParameterNames: Boolean)
     : CompletionDecorator<Name>(lookup, name) {
     override val kind = CompletionItemKind.Function
+    private val parametersRenderer = BasicLookupElementFactory.SHORT_NAMES_RENDERER
 
-    private val argsString = args.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
+    private fun argsString(args: List<ValueParameterDescriptor>) =
+        if (isRenderableAsLambda() && args.isEmpty()) {
+            ""
+        } else {
+            parametersRenderer.renderValueParameters(args, hasSynthesizedParameterNames)
+        }
 
-    override fun formatLabel() = "$name($argsString) : $returnType"
+    private fun lastParameterType() = args.lastOrNull()?.original?.type
+    private fun isRenderableAsLambda() = lastParameterType()?.isBuiltinFunctionalType == true
+
+    private fun renderAsLambda(): String {
+        val parameterType = lastParameterType()!!
+        val explicitLambdaParameters = getValueParametersCountFromFunctionType(parameterType) > 1
+        val lambdaPresentation = if (explicitLambdaParameters)
+            LambdaSignatureTemplates.lambdaPresentation(parameterType, LambdaSignatureTemplates.SignaturePresentation.NAMES_OR_TYPES)
+        else
+            LambdaSignatureTemplates.DEFAULT_LAMBDA_PRESENTATION
+
+        return "$name${argsString(args.dropLast(1))} $lambdaPresentation : $returnType"
+    }
+
+    override fun formatLabel() =
+        if (isRenderableAsLambda()) {
+            renderAsLambda()
+        } else {
+            "$name${argsString(args)} : $returnType"
+        }
 
     override fun formatInsertText() =
+        if (isRenderableAsLambda()) {
+            super.formatInsertText() + buildLambdaMethodParams(args, clientSupportsSnippets)
+        } else {
             super.formatInsertText() + buildMethodParams(args, clientSupportsSnippets)
+        }
 }
 
 class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTypeAlias, val type: SimpleType)
@@ -299,35 +343,90 @@ fun buildParamsList(method: PsiMethod): CharSequence {
     return builder.toString()
 }
 
-fun buildMethodParams(method: PsiMethod, snippetSupport: Boolean) = if (snippetSupport)
+private fun buildMethodParams(method: PsiMethod, snippetSupport: Boolean) = if (snippetSupport)
     buildSnippetTabStops(method)
 else
     buildParens(method)
 
-fun buildMethodParams(params: List<ValueParameterDescriptor>, snippetSupport: Boolean) = if (snippetSupport)
+private fun buildMethodParams(params: List<ValueParameterDescriptor>, snippetSupport: Boolean) = if (snippetSupport)
     buildSnippetTabStops(params)
 else
     buildParens(params)
 
-fun buildParens(method: PsiMethod) = if (method.parameters.isEmpty()) "()" else "("
-fun buildParens(params: List<ValueParameterDescriptor>) = if (params.isEmpty()) "()" else "("
+private fun buildLambdaMethodParams(params: List<ValueParameterDescriptor>, snippetSupport: Boolean) = if (snippetSupport)
+    buildLambdaSnippetTabStops(params)
+else
+    buildLambdaParens(params)
 
-fun buildSnippetTabStops(method: PsiMethod): CharSequence {
+private fun buildParens(method: PsiMethod) = if (method.parameters.isEmpty()) "()" else "("
+private fun buildParens(parameters: List<ValueParameterDescriptor>) = if (parameters.isEmpty()) "()" else "("
+private fun buildLambdaParens(parameters: List<ValueParameterDescriptor>): CharSequence {
+    if (parameters.size != 1) {
+        return buildParens(parameters)
+    }
+
+    val lastParameter = parameters.last()
+    val parameterType = lastParameter.original.type
+    assert(parameterType.isBuiltinFunctionalType)
+    val explicitLambdaParameters = getValueParametersCountFromFunctionType(parameterType) > 1
+
+    return if (explicitLambdaParameters) {
+        val args = parameterType.arguments.dropLast(1) // last param is return type
+            .mapIndexed { i, it -> getNameForType(it.type) }
+            .joinToString(", ")
+        " { $args -> "
+    } else {
+        " { "
+    }
+}
+
+private fun buildSnippetTabStops(method: PsiMethod): CharSequence {
     val tabStops = method.parameterList.parameters.mapIndexed(::methodParamToSnippet).joinToString(", ")
 
     return "($tabStops)$0"
 }
-fun buildSnippetTabStops(parameters: List<ValueParameterDescriptor>): CharSequence {
+private fun buildSnippetTabStops(parameters: List<ValueParameterDescriptor>): CharSequence {
     val tabStops = parameters.mapIndexed(::methodParamToSnippet).joinToString(", ")
 
     return "($tabStops)$0"
 }
 
-fun methodParamToSnippet(index: Int, param: PsiParameter) =
-    "${'$'}${'{'}${index+1}:${param.name}${'}'}"
-fun methodParamToSnippet(index: Int, param: ValueParameterDescriptor) =
-    "${'$'}${'{'}${index+1}:${param.name}${'}'}"
+private fun buildLambdaSnippetTabStops(parameters: List<ValueParameterDescriptor>): CharSequence {
+    val preceedingTabStops = if (parameters.size > 1) {
+        parameters.dropLast(1)
+            .mapIndexed(::methodParamToSnippet)
+            .joinToString(", ")
+            .let { "($it) "}
+    } else {
+        " "
+    }
 
-fun getTypeName(type: PsiType?) =
+    val lastParameter = parameters.last()
+    val parameterType = lastParameter.original.type
+    assert(parameterType.isBuiltinFunctionalType)
+    val explicitLambdaParameters = getValueParametersCountFromFunctionType(parameterType) > 1
+    val lastIdx = parameters.size - 1
+
+    return if (explicitLambdaParameters) {
+        val args = parameterType.arguments.dropLast(1) // last param is return type
+            .mapIndexed { i, it -> methodParamToSnippet(lastIdx + i, getNameForType(it.type)) }
+            .joinToString(", ")
+        "$preceedingTabStops{ $args -> $0 }"
+    } else {
+        "$preceedingTabStops{ $0 }"
+    }
+}
+
+private fun methodParamToSnippet(index: Int, param: PsiParameter) =
+    methodParamToSnippet(index, param.name ?: "<unknown>")
+private fun methodParamToSnippet(index: Int, param: ValueParameterDescriptor) =
+    methodParamToSnippet(index, param.name.asString())
+private fun methodParamToSnippet(index: Int, name: String) =
+    "${'$'}${'{'}${index+1}:$name${'}'}"
+
+private fun getTypeName(type: PsiType?) =
     type?.presentableText ?: "void"
 
+private fun getNameForType(parameterType: KotlinType) =
+    parameterType.extractParameterNameFromFunctionTypeArgument()?.render()
+        ?: KotlinNameSuggester.suggestNamesByType(parameterType, { true }, "p")[0]

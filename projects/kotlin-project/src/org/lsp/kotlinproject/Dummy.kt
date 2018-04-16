@@ -57,8 +57,12 @@ open class Dummy {
             Arr // java.util.ArrayList
         }
 
-        internal fun withClosure(closure: (Int) -> Unit) {
-            closure(42)
+        internal fun withClosure(closure: (counter: Int, Int) -> Unit) {
+            closure(42, 1)
+        }
+
+        internal fun withClosureAndArg(str: String, closure: (counter: Int, Int) -> Unit) {
+            print("$str ${closure(42, 1)}")
         }
     }
 }

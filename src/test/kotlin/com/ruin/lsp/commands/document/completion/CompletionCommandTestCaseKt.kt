@@ -31,14 +31,31 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(61, 15), false,"closure : (Int) -> Unit", "closure")
 
     fun `test java getter to property completion`() =
-        checkContainsCompletion(Position(71, 16), false,"value (from getValue()) : int", "value")
+        checkContainsCompletion(Position(75, 16), false,"value (from getValue()) : int", "value")
 
     fun `test keyword name escaping`() =
-        checkContainsCompletion(Position(72, 16), false,"object (from getObject()) : Object", "`object`")
-
-    fun `test closure with brace syntax`() =
-        checkContainsCompletion(Position(76, 11), false,"withClosure { : Unit", "withClosure {")
+        checkContainsCompletion(Position(76, 16), false,"object (from getObject()) : Object", "`object`")
 
     fun `test companion object`() =
-        checkContainsCompletion(Position(76, 10), false,"withClosure { : Unit", "withClosure {")
+        checkContainsCompletion(Position(80, 10), false,"Dummy : companion object", "Dummy")
+
+    fun `test closure with brace syntax`() =
+        checkContainsCompletion(Position(80, 11), false,
+            "withClosure { counter, Int -> ... } : Unit",
+            "withClosure { counter, i -> ")
+
+    fun `test closure with brace syntax and snippet`() =
+        checkContainsCompletion(Position(80, 11), true,
+            "withClosure { counter, Int -> ... } : Unit",
+            "withClosure { ${'$'}${'{'}1:counter${'}'}, ${'$'}${'{'}2:i${'}'} -> ${'$'}0 }")
+
+    fun `test closure with preceeding argument and brace syntax`() =
+        checkContainsCompletion(Position(80, 11), false,
+            "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
+            "withClosureAndArg(")
+
+    fun `test closure with preceeding argument, brace syntax and snippet`() =
+        checkContainsCompletion(Position(80, 11), true,
+            "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
+            "withClosureAndArg(${'$'}${'{'}1:str${'}'}) { ${'$'}${'{'}2:counter${'}'}, ${'$'}${'{'}3:i${'}'} -> ${'$'}0 }")
 }
