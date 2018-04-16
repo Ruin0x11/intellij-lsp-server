@@ -36,8 +36,11 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
     fun `test keyword name escaping`() =
         checkContainsCompletion(Position(76, 16), false,"object (from getObject()) : Object", "`object`")
 
+    fun `test object`() =
+        checkContainsCompletion(Position(84, 12), false,"MyObject : object", "MyObject")
+
     fun `test companion object`() =
-        checkContainsCompletion(Position(80, 10), false,"Dummy : companion object", "Dummy")
+        checkContainsCompletion(Position(85, 17), false,"Companion : object", "Companion")
 
     fun `test closure with brace syntax`() =
         checkContainsCompletion(Position(80, 11), false,

@@ -79,6 +79,12 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
             .assertHasSymbol("question", "answerQuestion(String)", SymbolKind.Variable, range(47, 36, 47, 44))
     }
 
+    fun `test object symbol`() {
+        getSymbols(OBJECT_FILE_PATH)
+            .assertHasSymbol("MyObject", "MyObject.kt", SymbolKind.Class, range(9, 18, 9, 21))
+            .assertHasSymbol("Companion", "HasCompanion", SymbolKind.Class, range(9, 18, 9, 21))
+    }
+
     fun `test constant symbol`() {
         getSymbols(forKotlin(CONSTANTS_FILE_PATH))
             .assertHasSymbol("INT", "Constants", SymbolKind.Constant, range(9, 18, 9, 21))

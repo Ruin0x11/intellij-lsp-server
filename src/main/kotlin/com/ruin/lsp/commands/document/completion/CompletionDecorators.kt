@@ -120,7 +120,7 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
 
                     when (psi) {
                         is KtClass -> KtClassCompletionDecorator(lookup, psi)
-                        is KtObjectDeclaration -> null
+                        is KtObjectDeclaration -> KtObjectCompletionDecorator(lookup, psi)
                         else -> null
                     }
                 }
@@ -175,6 +175,7 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
         }
     }
 }
+
 
 // Java
 
@@ -305,6 +306,13 @@ class KtValueParameterCompletionDecorator(lookup: LookupElement, val valueParame
     override fun formatLabel() = "${valueParameter.name} : $type"
 }
 
+class KtObjectCompletionDecorator(lookup: LookupElement, val obj: KtObjectDeclaration)
+    : CompletionDecorator<KtObjectDeclaration>(lookup, obj){
+    override val kind = CompletionItemKind.Class
+
+    override fun formatLabel() = "${obj.name} : object"
+}
+
 class KtSyntheticPropertyCompletionDecorator(lookup: LookupElement, val method: PsiMethod, val realName: Name)
     : CompletionDecorator<PsiMethod>(lookup, method) {
     override val kind: CompletionItemKind
@@ -314,6 +322,7 @@ class KtSyntheticPropertyCompletionDecorator(lookup: LookupElement, val method: 
 
     override fun formatInsertText() = realName.asString().quoteIfNeeded()
 }
+
 
 fun buildDocComment(method: Any): String {
     val docComment = (method as? PsiDocCommentOwner)?.docComment ?: return ""

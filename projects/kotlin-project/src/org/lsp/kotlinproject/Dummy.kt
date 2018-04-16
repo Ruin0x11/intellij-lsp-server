@@ -77,6 +77,11 @@ fun javaPropertyTestMethod() {
     getSet.objec
 }
 
-fun testClosure() {
+fun testClosureCompletions() {
     Dummy.
+}
+
+fun testObjectCompletions() {
+    MyObject
+    HasCompanion.
 }

@@ -145,6 +145,7 @@ fun PsiElement.ktSymbolKind(): SymbolKind? =
         is KtVariableDeclaration -> SymbolKind.Variable
         is KtParameter -> SymbolKind.Variable
         is KtAnnotationEntry -> SymbolKind.Property
+        is KtObjectDeclaration -> SymbolKind.Class
         is KtConstantExpression ->
             when (this.node.elementType) {
                 KtNodeTypes.BOOLEAN_CONSTANT -> SymbolKind.Boolean
@@ -170,6 +171,7 @@ fun PsiElement.ktSymbolName(): String? =
         is KtVariableDeclaration -> name
         is KtParameter -> name
         is KtAnnotationEntry -> annotationLabel(this)
+        is KtObjectDeclaration -> name
         is KtConstantExpression -> text
         is KtStringTemplateExpression -> text
 

@@ -26,6 +26,8 @@ val PROBLEMATIC_TWICE_FILE_PATH = "src/org/lsp/javaproject/ProblematicTwice.java
 val CONSTANTS_FILE_PATH = "src/org/lsp/javaproject/Constants.java"
 val ENUM_TYPE_FILE_PATH = "src/org/lsp/javaproject/EnumType.java"
 
+val OBJECT_FILE_PATH = "src/org/lsp/kotlinproject/MyObject.kt"
+
 val MULTI_MODULE_APP_PATH = "application/src/main/java/hello/app/DemoApplication.java"
 val MAVEN_MULTI_MODULE_APP_PATH = "first-module/src/main/java/com/ruin/lsp/App.java"
 
