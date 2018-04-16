@@ -17,6 +17,9 @@ import com.intellij.util.containers.MultiMap
 import java.util.ArrayList
 import java.util.LinkedHashSet
 
+/**
+ * Mostly a copy of CompletionLookupArranger with the important parts for sorting completion items gutted out.
+ */
 class MyCompletionLookupArranger(val params: CompletionParameters, val location: CompletionLocation) : LookupArranger() {
 
     private val LOG = Logger.getInstance(MyCompletionLookupArranger::class.java)
@@ -83,8 +86,6 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
         //val toSelect = getItemToSelect(lookupImpl, listModel, onExplicitAction, relevantSelection)
         //LOG.assertTrue(toSelect >= 0)
         val toSelect = 0
-
-        //addDummyItems(items.size - listModel.size, listModel)
 
         return Pair(listModel.toMutableList(), toSelect)
     }

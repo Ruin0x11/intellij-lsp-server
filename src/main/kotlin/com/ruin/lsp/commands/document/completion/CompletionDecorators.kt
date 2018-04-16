@@ -1,28 +1,25 @@
 package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.*
+import com.intellij.refactoring.changeSignature.JavaMethodDescriptor
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.idea.completion.DeclarationLookupObjectImpl
-import org.jetbrains.kotlin.idea.core.KotlinNameSuggester
 import org.jetbrains.kotlin.idea.core.completion.DeclarationLookupObject
-import org.jetbrains.kotlin.idea.core.quoteIfNeeded
-import org.jetbrains.kotlin.idea.core.unquote
-import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
 import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPropertyDescriptor
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor
+import org.jetbrains.kotlin.synthetic.SamAdapterExtensionFunctionDescriptor
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
-import javax.lang.model.SourceVersion
 
 
 abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
@@ -65,16 +62,10 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
         fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<PsiElement>? {
             val psi = lookup.psiElement
 
-            // handle the case of making a Kotlin property from getter/setter
-            val obj = lookup.`object`
-            if (obj is DeclarationLookupObject) {
-                val desc = obj.descriptor
-                if (desc is SyntheticJavaPropertyDescriptor) {
-                    return fromSyntheticJavaProperty(lookup, desc)
-                }
-                if (desc is DeserializedSimpleFunctionDescriptor) {
-                    return null
-                }
+            // handle generated properties and language builtin methods
+            val synth = fromSyntheticLookupElement(lookup)
+            if (synth != null) {
+                return synth
             }
 
             val decorator = when (psi) {
@@ -89,6 +80,26 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
             }
             decorator?.clientSupportsSnippets = snippetSupport
             return decorator
+        }
+
+        private fun fromSyntheticLookupElement(lookup: LookupElement): CompletionDecorator<PsiElement>? {
+            val obj = lookup.`object`
+            if (obj is DeclarationLookupObject) {
+                val desc = obj.descriptor
+                when (desc) {
+                    // value from getValue()/setValue()
+                    is SyntheticJavaPropertyDescriptor -> null
+                    // joinToString, first, last, contains...
+                    is DeserializedSimpleFunctionDescriptor -> null
+                    // size
+                    is DeserializedPropertyDescriptor -> null
+                    // forEach
+                    is SamAdapterExtensionFunctionDescriptor -> null
+                    // stream
+                    is JavaMethodDescriptor -> null
+                }
+            }
+            return null
         }
 
         fun fromKotlin(lookup: LookupElement): CompletionDecorator<PsiElement>? {
