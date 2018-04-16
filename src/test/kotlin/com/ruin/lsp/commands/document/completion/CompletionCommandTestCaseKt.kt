@@ -35,4 +35,16 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
 
     fun `test keyword name escaping`() =
         checkContainsCompletion(Position(72, 16), false,"object (from getObject()) : Object", "`object`")
+
+    fun `test size property from getSize`() =
+        checkContainsCompletion(Position(15, 14), false,"size (from getSize()) : int", "size")
+
+    fun `test forEach`() =
+        checkContainsCompletion(Position(15, 15), false,"forEach", "forEach(")
+
+    fun `test kotlin collection method`() =
+        checkContainsCompletion(Position(15, 14), false,"map", "map(")
+
+    fun `test closure with brace syntax`() =
+        checkContainsCompletion(Position(15, 14), false,"map {", "map {")
 }

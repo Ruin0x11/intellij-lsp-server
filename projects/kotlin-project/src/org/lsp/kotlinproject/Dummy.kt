@@ -72,3 +72,7 @@ fun javaPropertyTestMethod() {
     getSet.value
     getSet.objec
 }
+
+fun testList() {
+    ArrayList().
+}

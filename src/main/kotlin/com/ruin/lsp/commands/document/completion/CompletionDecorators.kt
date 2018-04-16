@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
 
 
-abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
+abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val elt: T) {
     val completionItem: CompletionItem
         get() = CompletionItem().apply {
             label = formatLabel()
@@ -59,7 +59,7 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
     protected abstract fun formatLabel(): String
 
     companion object {
-        fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<PsiElement>? {
+        fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<Any>? {
             val psi = lookup.psiElement
 
             // handle generated properties and language builtin methods
@@ -82,27 +82,7 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
             return decorator
         }
 
-        private fun fromSyntheticLookupElement(lookup: LookupElement): CompletionDecorator<PsiElement>? {
-            val obj = lookup.`object`
-            if (obj is DeclarationLookupObject) {
-                val desc = obj.descriptor
-                when (desc) {
-                    // value from getValue()/setValue()
-                    is SyntheticJavaPropertyDescriptor -> null
-                    // joinToString, first, last, contains...
-                    is DeserializedSimpleFunctionDescriptor -> null
-                    // size
-                    is DeserializedPropertyDescriptor -> null
-                    // forEach
-                    is SamAdapterExtensionFunctionDescriptor -> null
-                    // stream
-                    is JavaMethodDescriptor -> null
-                }
-            }
-            return null
-        }
-
-        fun fromKotlin(lookup: LookupElement): CompletionDecorator<PsiElement>? {
+        fun fromKotlin(lookup: LookupElement): CompletionDecorator<Any>? {
             val descriptor = (lookup.`object` as? DeclarationLookupObjectImpl)?.descriptor ?: return null
             val psi = lookup.psiElement
             return when (descriptor) {
@@ -119,12 +99,20 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
                 }
                 is org.jetbrains.kotlin.descriptors.FunctionDescriptor -> {
                     if (psi is KtNamedFunction) {
+                        val name = descriptor.name
                         val kType = descriptor.returnType
                         val args = descriptor.valueParameters
-                        KtFunctionCompletionDecorator(lookup, psi, kType, args)
+                        KtFunctionCompletionDecorator(lookup, name, kType, args)
                     } else {
                         null
                     }
+                }
+                // joinToString, first, last, contains...
+                is DeserializedSimpleFunctionDescriptor -> {
+                    val name = descriptor.name
+                    val kType = descriptor.returnType
+                    val args = descriptor.valueParameters
+                    KtFunctionCompletionDecorator(lookup, name, kType, args)
                 }
                 is org.jetbrains.kotlin.descriptors.ClassDescriptor -> {
                     val kType = descriptor.classValueType ?: descriptor.defaultType
@@ -138,9 +126,23 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
             }
         }
 
-        fun fromSyntheticJavaProperty(lookup: LookupElement, desc: SyntheticJavaPropertyDescriptor): CompletionDecorator<PsiElement>? {
-            return if (lookup.psiElement is PsiMethod) {
-                KtSyntheticPropertyCompletionDecorator(lookup, lookup.psiElement as PsiMethod, desc.name)
+        private fun fromSyntheticLookupElement(lookup: LookupElement): CompletionDecorator<PsiElement>? {
+            val obj = lookup.`object`
+            return if (obj is DeclarationLookupObject) {
+                val descriptor = obj.descriptor
+                when (descriptor) {
+                    // value from getValue()/setValue(), size from getSize()
+                    is SyntheticJavaPropertyDescriptor, is DeserializedPropertyDescriptor -> if (lookup.psiElement is PsiMethod) {
+                        KtSyntheticPropertyCompletionDecorator(lookup, lookup.psiElement as PsiMethod, descriptor.name)
+                    } else {
+                        null
+                    }
+                    // forEach
+                    is SamAdapterExtensionFunctionDescriptor -> null
+                    // stream
+                    is JavaMethodDescriptor -> null
+                    else -> null
+                }
             } else {
                 null
             }
@@ -217,16 +219,16 @@ class KtVariableCompletionDecorator(lookup: LookupElement, val property: KtPrope
     override fun formatLabel() = "${property.name} : $type"
 }
 
-class KtFunctionCompletionDecorator(lookup: LookupElement, val function: KtNamedFunction, val type: KotlinType?, val params: List<ValueParameterDescriptor>)
-    : CompletionDecorator<KtNamedFunction>(lookup, function) {
+class KtFunctionCompletionDecorator(lookup: LookupElement, val name: Name, val returnType: KotlinType?, val args: List<ValueParameterDescriptor>)
+    : CompletionDecorator<Name>(lookup, name) {
     override val kind = CompletionItemKind.Function
 
-    val argsString = params.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
+    private val argsString = args.joinToString(", ") { "${it.name.asString()}: ${it.type}" }
 
-    override fun formatLabel() = "${function.name}($argsString) : $type"
+    override fun formatLabel() = "$name($argsString) : $returnType"
 
     override fun formatInsertText() =
-            super.formatInsertText() + buildMethodParams(params, clientSupportsSnippets)
+            super.formatInsertText() + buildMethodParams(args, clientSupportsSnippets)
 }
 
 class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTypeAlias, val type: SimpleType)
@@ -254,7 +256,7 @@ class KtSyntheticPropertyCompletionDecorator(lookup: LookupElement, val method: 
     override fun formatInsertText() = realName.asString().quoteIfNeeded()
 }
 
-fun buildDocComment(method: PsiElement): String {
+fun buildDocComment(method: Any): String {
     val docComment = (method as? PsiDocCommentOwner)?.docComment ?: return ""
 
     return docComment.text
