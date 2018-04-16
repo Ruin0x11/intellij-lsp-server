@@ -31,8 +31,8 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(61, 15), false,"closure : (Int) -> Unit", "closure")
 
     fun `test java getter to property completion`() =
-        checkContainsCompletion(Position(71, 15), false,"value (from getValue()) : int", "value")
+        checkContainsCompletion(Position(71, 16), false,"value (from getValue()) : int", "value")
 
     fun `test keyword name escaping`() =
-        checkContainsCompletion(Position(72, 15), false,"object (from getObject()) : Object", "`object`")
+        checkContainsCompletion(Position(72, 16), false,"object (from getObject()) : Object", "`object`")
 }
