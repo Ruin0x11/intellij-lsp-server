@@ -21,7 +21,6 @@ import java.util.*
 class CompletionCommand(val position: Position,
                         val snippetSupport: Boolean) : DocumentCommand<Either<MutableList<CompletionItem>, CompletionList>> {
     override fun execute(ctx: ExecutionContext): Either<MutableList<CompletionItem>, CompletionList> {
-        val result: MutableList<CompletionItem> = mutableListOf()
         val prefix: String? = null
         var sortedLookupElements: List<LookupElement> = listOf()
 
@@ -34,7 +33,6 @@ class CompletionCommand(val position: Position,
             val arranger = MyCompletionLookupArranger(params, CompletionLocation(params))
             val lookup = LookupImpl(ctx.project, editor, arranger)
 
-            var i = 0
             performCompletion(params, prefix, ctx.cancelToken, Consumer { completionResult ->
                 lookup.addItem(completionResult.lookupElement, CamelHumpMatcher(""))
                 arranger.addElement(completionResult)
@@ -42,13 +40,6 @@ class CompletionCommand(val position: Position,
                 val el = completionResult.lookupElement
 
                 lookupElements.add(el)
-                val dec = CompletionDecorator.from(el, snippetSupport)
-                if (dec != null) {
-                    result.add(dec.completionItem.apply {
-                        data = CompletionResolveIndex(completionId, i)
-                    })
-                    i++
-                }
                 ctx.profiler?.mark("Get elt " + el.psiElement?.symbolName())
             })
             sortedLookupElements = arranger.arrangeItems(lookup, false).first
@@ -56,7 +47,14 @@ class CompletionCommand(val position: Position,
 
         completionCache.cacheCompletion(ctx.file, sortedLookupElements)
 
-        return Either.forRight(CompletionList(false, result))
+        val result = sortedLookupElements.mapIndexedNotNull { i, it ->
+            val dec = CompletionDecorator.from(it, snippetSupport)
+            dec?.completionItem?.apply {
+                CompletionResolveIndex(completionId, i)
+            }
+        }
+
+        return Either.forRight(CompletionList(false, result.toMutableList()))
     }
 }
 

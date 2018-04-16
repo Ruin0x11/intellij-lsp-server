@@ -46,6 +46,15 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
         items.add(item.lookupElement)
         associateSorter(item.lookupElement, item.sorter as CompletionSorterImpl)
 
+        val sorter = obtainSorter(item.lookupElement)
+        var classifier: Classifier<LookupElement>? = myClassifiers[sorter]
+        if (classifier == null) {
+            myClassifiers[sorter] = sorter.buildClassifier(EmptyClassifier())
+            classifier = myClassifiers[sorter]
+        }
+        val context = createContext()
+        classifier!!.addElement(item.lookupElement, context)
+
         super.addElement(item.lookupElement, presentation)
     }
 
@@ -177,7 +186,7 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
         val list = lookup.list
         val testMode = ApplicationManager.getApplication().isUnitTestMode
         val limit = Math.max(list.lastVisibleIndex, model.size) + maxLookupListHeight * 3
-        addSomeItems(model, byRelevance, Condition { lastAdded -> !testMode && model.size >= limit })
+        addSomeItems(model, byRelevance, Condition { !testMode && model.size >= limit })
     }
 
     private fun ensureItemAdded(items: Set<LookupElement>,
@@ -234,6 +243,18 @@ internal data class PresentationInvariant(val itemText: String?, val tail: Strin
         if (result != 0) return result
 
         return StringUtil.naturalCompare(type ?: "", other.type ?: "")
+    }
+
+}
+
+private class EmptyClassifier constructor() : Classifier<LookupElement>(null, "empty") {
+
+    override fun getSortingWeights(items: Iterable<LookupElement>, context: ProcessingContext): List<Pair<LookupElement, Any>> {
+        return emptyList()
+    }
+
+    override fun classify(source: Iterable<LookupElement>, context: ProcessingContext): Iterable<LookupElement> {
+        return source
     }
 
 }

@@ -63,7 +63,7 @@ fun textRangeToRange(editor: Editor, range: TextRange) =
 
 
 private fun findHighlights(project: Project, editor: Editor, file: PsiFile): List<DocumentHighlight>? {
-    val handler = HighlightUsagesHandler.createCustomHandler(editor, file)
+    val handler: HighlightUsagesHandlerBase<PsiElement>? = HighlightUsagesHandler.createCustomHandler(editor, file)
 
     return if (handler != null) {
         getHighlightsFromHandler(handler, editor)

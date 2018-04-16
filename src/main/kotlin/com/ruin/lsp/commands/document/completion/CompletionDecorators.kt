@@ -16,10 +16,12 @@ import org.jetbrains.kotlin.idea.core.unquote
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
 import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
+import javax.lang.model.SourceVersion
 
 
 abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement, val elt: T) {
@@ -231,17 +233,6 @@ class KtSyntheticPropertyCompletionDecorator(lookup: LookupElement, val method: 
     : CompletionDecorator<PsiMethod>(lookup, method) {
     override val kind: CompletionItemKind
         get() = CompletionItemKind.Property
-
-    private fun isKeyword(text: String): Boolean {
-        return (KtTokens.KEYWORDS.types + KtTokens.SOFT_KEYWORDS.types).any { it.toString() == text }
-    }
-
-    private fun isRedundantBackticks(node: ASTNode): Boolean {
-        val text = node.text
-        if (!(text.startsWith("`") && text.endsWith("`"))) return false
-        val unquotedText = text.unquote()
-        return KotlinNameSuggester.isIdentifier(unquotedText) && !isKeyword(unquotedText)
-    }
 
     override fun formatLabel() = "$realName (from ${method.name}${buildParamsList(method)}) : ${getTypeName(method.returnType)}"
 

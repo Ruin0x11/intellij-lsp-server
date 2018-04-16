@@ -10,7 +10,7 @@ class ProjectUtilTest : BaseTestCase() {
         get() = TESTABLE_PROJECT
 
     fun `test finds project`() {
-        val project = com.ruin.lsp.util.getProject(getProjectIml())
+        val project = com.ruin.lsp.util.getProject(getProjectPath())
         assertNotNull(project)
         assertEquals(TESTABLE_PROJECT, project!!.name)
     }

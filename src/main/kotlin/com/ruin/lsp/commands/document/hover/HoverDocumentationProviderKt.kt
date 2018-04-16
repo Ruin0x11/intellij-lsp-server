@@ -45,7 +45,9 @@ class HoverDocumentationProviderKt : AbstractDocumentationProvider() {
 
     private fun unescape(s: String): String {
         return s.replace("""<p>.*</p>""".toRegex(),  "") // remove docstring
+            .replace("""<div class='definition'>.*</div>""".toRegex(),  "")
             .let { StringUtil.stripHtml(it, true) }
+            .split("\n").first()
             .let(StringUtil::unescapeXml)
             .let(StringEscapeUtils::unescapeHtml) // converts HTML character entities
     }

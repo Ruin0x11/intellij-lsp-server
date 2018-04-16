@@ -39,7 +39,7 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     protected fun getProjectIml() = getProjectIml(projectName)
 
     override fun getProject(): Project {
-        val path = getProjectIml(projectName)
+        val path = getProjectPath(projectName)
         return ensureProject(path)
     }
 
