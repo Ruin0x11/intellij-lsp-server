@@ -104,9 +104,9 @@ fun startProfiler(context: Any): Profiler {
  * of the way," so I think this works
  *
  * @param context The context passed to #start(), or
- * subsequently set with #switchContext()
+ * subsequently set withProfiler #switchContext()
  */
-fun with(context: Any): Profiler {
+fun withProfiler(context: Any): Profiler {
     val existing = sActiveProfilers[context]
     if (existing != null) {
         return existing

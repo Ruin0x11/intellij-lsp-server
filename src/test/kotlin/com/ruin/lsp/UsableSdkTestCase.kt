@@ -59,7 +59,7 @@ abstract class UsableSdkTestCase : PlatformTestCase() {
 
         // NB get this ONCE for each run (important!)
         //  otherwise, the ModuleRootManager will NOT be the one we
-        //  infiltrated with a spy
+        //  infiltrated withProfiler a spy
         val project = ensureProject(getProjectPath(projectName))
 
         // NB The following stuff modifies stuff on disk. We'll want to restore
@@ -140,7 +140,7 @@ fun pickRunSetting(project: Project,
 
     val manager = RunManager.getInstance(project)
 
-    // go with "last run"
+    // go withProfiler "last run"
     if (configuration == null) {
         val selected = manager.selectedConfiguration
         if (selected != null)

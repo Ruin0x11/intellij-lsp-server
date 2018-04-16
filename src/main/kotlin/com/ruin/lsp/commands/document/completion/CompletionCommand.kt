@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
 import com.ruin.lsp.commands.DocumentCommand
@@ -42,17 +43,21 @@ class CompletionCommand(val position: Position,
                 lookupElements.add(el)
                 ctx.profiler?.mark("Get elt " + el.psiElement?.symbolName())
             })
-            sortedLookupElements = arranger.arrangeItems(lookup, false).first
-        }
 
-        completionCache.cacheCompletion(ctx.file, sortedLookupElements)
+            val sorted: Ref<List<LookupElement>> = Ref(listOf())
+            sorted.set(arranger.arrangeItems(lookup, false).first)
+            sortedLookupElements = sorted.get()
+        }
 
         val result = sortedLookupElements.mapIndexedNotNull { i, it ->
             val dec = CompletionDecorator.from(it, snippetSupport)
             dec?.completionItem?.apply {
-                CompletionResolveIndex(completionId, i)
+                this.sortText = i.toString()
+                this.data = CompletionResolveIndex(completionId, i)
             }
         }
+
+        completionCache.cacheCompletion(ctx.file, sortedLookupElements)
 
         return Either.forRight(CompletionList(false, result.toMutableList()))
     }
@@ -108,4 +113,23 @@ fun createResultSet(parameters: CompletionParameters, userPrefix: String?,
 fun findPrefix(position: PsiElement, offset: Int): String {
     // Class is deprecated, but the method seems to be used...
     return CompletionData.findPrefixStatic(position, offset)
+}
+
+private val CEILING = 999999999
+
+val MAX_RELEVANCE_VALUE = 99999999
+
+/**
+ * Converts a relevance to a 9-digit sort text, so that
+ * higher relevance would get a lower sort text.
+ *
+ * @param relevance, must be lower than 100,000,000
+ * @return a 9-digit sort text
+ * @throws IllegalArgumentException when relevance is greater or equal to 100,000,000")
+ */
+fun relevanceFromIndex(relevance: Int): String {
+    if (relevance > MAX_RELEVANCE_VALUE) {
+        throw IllegalArgumentException("Relevance must be lower than 100,000,000")
+    }
+    return (CEILING - Math.max(relevance, 0)).toString()
 }

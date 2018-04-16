@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
 import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
@@ -70,6 +71,9 @@ abstract class CompletionDecorator<out T : PsiElement>(val lookup: LookupElement
                 val desc = obj.descriptor
                 if (desc is SyntheticJavaPropertyDescriptor) {
                     return fromSyntheticJavaProperty(lookup, desc)
+                }
+                if (desc is DeserializedSimpleFunctionDescriptor) {
+                    return null
                 }
             }
 

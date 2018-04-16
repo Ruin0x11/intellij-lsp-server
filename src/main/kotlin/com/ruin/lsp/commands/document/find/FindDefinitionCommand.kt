@@ -4,6 +4,7 @@ import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
 import com.intellij.psi.search.GlobalSearchScope
@@ -152,9 +153,13 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
             KtClass::class.java,
             KtProperty::class.java,
             KtObjectDeclaration::class.java) as KtDeclaration? ?: return null
-        val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
-        val superDeclarations = findSuperDeclarations(descriptor) ?: return null
-        return superDeclarations.map { it.location() }.toMutableList()
+        try {
+            val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
+            val superDeclarations = findSuperDeclarations(descriptor) ?: return null
+            return superDeclarations.map { it.location() }.toMutableList()
+        } catch (e: IndexNotReadyException) {
+            return mutableListOf()
+        }
     }
 
     // copied from GotoSuperActionHandler

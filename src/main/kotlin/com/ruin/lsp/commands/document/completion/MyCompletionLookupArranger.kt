@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Key
@@ -53,6 +54,12 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
             classifier = myClassifiers[sorter]
         }
         val context = createContext()
+
+        // can't be run on dispatch thread
+        ApplicationManager.getApplication().executeOnPooledThread {
+            StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
+        }.get()
+
         classifier!!.addElement(item.lookupElement, context)
 
         super.addElement(item.lookupElement, presentation)
