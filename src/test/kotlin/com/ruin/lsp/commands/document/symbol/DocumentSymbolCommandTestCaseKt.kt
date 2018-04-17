@@ -8,7 +8,7 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
 
     fun `test file symbol`() {
         getSymbols(forKotlin(DUMMY_FILE_PATH))
-            .assertHasSymbol("Dummy.kt", null, SymbolKind.File, range(0, 0, 87, 0))
+            .assertHasSymbol("Dummy.kt", null, SymbolKind.File, range(0, 0, 98, 0))
     }
 
     fun `test module symbol`() {

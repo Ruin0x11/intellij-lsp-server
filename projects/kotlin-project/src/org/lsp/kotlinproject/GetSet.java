@@ -2,6 +2,7 @@ package org.lsp.kotlinproject;
 
 public class GetSet {
     private int value;
+    public int thing;
 
     public int getValue() {
         return this.value;

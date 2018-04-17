@@ -39,7 +39,6 @@ class WorkspaceManager {
             LOG.warn("URI was opened again without being closed, resetting: ${textDocument.uri}")
             managedTextDocuments.remove(textDocument.uri)
         }
-
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {

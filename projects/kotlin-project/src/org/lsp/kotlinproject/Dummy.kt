@@ -85,3 +85,14 @@ fun testObjectCompletions() {
     MyObject
     HasCompanion.
 }
+
+fun testReturnCompletion() {
+    Dummy.withClosure { counter, i ->
+        return
+    }
+}
+
+fun testJavaPropertyCompletion() {
+    val getSet = GetSet()
+    getSet.thing
+}

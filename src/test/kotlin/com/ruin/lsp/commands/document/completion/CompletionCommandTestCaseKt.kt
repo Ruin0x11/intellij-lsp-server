@@ -22,25 +22,28 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(16, 17), true, "notBoring(number: Int) : Unit", "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
 
     fun `test variable completion`() =
-        checkContainsCompletion(Position(15, 12), false,"list : [ERROR : Type for List<String>()]", "list")
+        checkContainsCompletion(Position(15, 12), false, "list : [ERROR : Type for List<String>()]", "list")
 
     fun `test class completion`() =
-        checkContainsCompletion(Position(13, 13), false,"org.lsp.kotlinproject.Dummy", "Dummy")
+        checkContainsCompletion(Position(13, 13), false, "org.lsp.kotlinproject.Dummy", "Dummy")
 
     fun `test value parameter completion`() =
-        checkContainsCompletion(Position(64, 23), false,"str : String", "str")
+        checkContainsCompletion(Position(64, 23), false, "str : String", "str")
 
     fun `test java getter to property completion`() =
-        checkContainsCompletion(Position(75, 16), false,"value (from getValue()) : int", "value")
+        checkContainsCompletion(Position(75, 16), false, "value (from getValue()) : int", "value")
+
+    fun `test java value to property completion`() =
+        checkContainsCompletion(Position(96,  16), false, "thing : Int", "thing")
 
     fun `test keyword name escaping`() =
-        checkContainsCompletion(Position(76, 16), false,"object (from getObject()) : Object", "`object`")
+        checkContainsCompletion(Position(76, 16), false, "object (from getObject()) : Object", "`object`")
 
     fun `test object`() =
-        checkContainsCompletion(Position(84, 12), false,"MyObject : object", "MyObject")
+        checkContainsCompletion(Position(84, 12), false, "MyObject : object", "MyObject")
 
     fun `test companion object`() =
-        checkContainsCompletion(Position(85, 17), false,"Companion : object", "Companion")
+        checkContainsCompletion(Position(85, 17), false, "Companion : object", "Companion")
 
     fun `test closure with brace syntax`() =
         checkContainsCompletion(Position(80, 11), false,
