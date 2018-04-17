@@ -22,6 +22,8 @@ Can also find super method if available.
 Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
 ![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
+### Kotlin support
+![Kotlin support](https://sub.god.jp/f/necrpl.gif)
 
 ## Feature list
 | Name                        | Method                            |                    | Emacs function                                         |
