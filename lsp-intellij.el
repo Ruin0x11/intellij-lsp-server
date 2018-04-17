@@ -150,13 +150,13 @@ of matched directories.  Nil otherwise."
     (lsp--text-document-position-params))
    t))
 
-(defun lsp-intellij--render-string (str)
+(defun lsp-intellij--render-string (str mode)
   (condition-case nil
-      (with-temp-buffer
-	(delay-mode-hooks (java-mode))
-	(insert str)
-	(font-lock-ensure)
-	(buffer-string))
+    (with-temp-buffer
+        (delay-mode-hooks (funcall mode))
+        (insert str)
+        (font-lock-ensure)
+        (buffer-string))
     (error str)))
 
 (defconst lsp-intellij-dummy-executable
@@ -189,7 +189,8 @@ TCP, even if it isn't the one being communicated with.")
   ;; Ensure the client uses the server's sync method
   (setq-local lsp-document-sync-method nil)
   (add-hook 'lsp-after-open-hook (lambda () (setq-local xref-backend-functions (list #'lsp-intellij--xref-backend))))
-  (lsp-provide-marked-string-renderer client "java" #'lsp-intellij--render-string))
+  (lsp-provide-marked-string-renderer client "java" (lambda (s) (lsp-intellij--render-string s 'java-mode)))
+  (lsp-provide-marked-string-renderer client "kotlin" (lambda (s) (lsp-intellij--render-string s 'kotlin-mode))))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
                        "127.0.0.1" 8080

@@ -10,9 +10,6 @@ import org.eclipse.lsp4j.Diagnostic
 
 
 abstract class DiagnosticsCommandTestBase : BaseTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
     protected fun checkDiagnosticsFound(filePath: String, expected: List<Diagnostic>) {
         val file = getVirtualFile(project, filePath)
         val psiFile = ensurePsiFromUri(project, file.url)

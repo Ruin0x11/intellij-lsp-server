@@ -13,7 +13,7 @@ class ProjectUtilMavenMultiModuleTest : BaseTestCase() {
         get() = MAVEN_MULTI_MODULE_PROJECT
 
     fun `test finds project`() {
-        val project = com.ruin.lsp.util.getProject(getProjectIml())
+        val project = com.ruin.lsp.util.getProject(getProjectPath())
         assertNotNull(project)
         assertEquals(MAVEN_MULTI_MODULE_PROJECT, project!!.name)
         ProjectUtil.closeAndDispose(project)

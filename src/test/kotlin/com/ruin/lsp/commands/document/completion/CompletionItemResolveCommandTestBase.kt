@@ -16,7 +16,6 @@ import com.ruin.lsp.pickRunSetting
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextEdit
-import kotlin.test.assertNotNull
 
 abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
      val filePath: String
@@ -49,7 +48,7 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
         val file = com.ruin.lsp.util.getPsiFile(project, filePath)
         val completionResult = invokeCommandAndWait(completionCommand, project, file!!)
         val itemToImport: CompletionItem? = completionResult.right.items.find { it.label == selectedItem }
-        assertNotNull(itemToImport, "Item $selectedItem not in completion results: ${completionResult.right.items}")
+        assertNotNull("Item $selectedItem not in completion results: ${completionResult.right.items}", itemToImport)
         val command = CompletionItemResolveCommand(itemToImport!!)
         val res = invokeCommandAndWait(command, project, file)
         ProjectUtil.closeAndDispose(project)
