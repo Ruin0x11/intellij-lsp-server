@@ -24,7 +24,7 @@ class HoverCommand(val position: Position) : DocumentCommand<Hover>, Disposable 
         if (DumbService.isDumb(ctx.project)) {
             return Hover(mutableListOf())
         }
-        val ref: Ref<String> = Ref("")
+        val ref: Ref<MarkedString> = Ref(MarkedString("", ""))
         withEditor(this, ctx.file, position) { editor ->
             val originalElement = ctx.file.findElementAt(editor.caretModel.offset)
 
@@ -32,14 +32,15 @@ class HoverCommand(val position: Position) : DocumentCommand<Hover>, Disposable 
 
             if (element != null) {
                 try {
-                    val result = provider(element.language)?.generateDoc(element, originalElement)?.trim() ?: ""
-                    ref.set(result)
+                    val lang = element.language
+                    val result = provider(lang)?.generateDoc(element, originalElement)?.trim() ?: ""
+                    ref.set(MarkedString(lang.displayName.toLowerCase(), result))
                 } catch (ex: IndexNotReadyException) {
                 }
             }
         }
 
-        val markedString = MarkedString(ctx.file.language.displayName, ref.get())
+        val markedString = ref.get()
 
         return if (markedString.value.isEmpty())
             Hover(mutableListOf())
