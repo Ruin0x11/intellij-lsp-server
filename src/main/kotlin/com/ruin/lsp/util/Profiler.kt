@@ -31,7 +31,7 @@ open class Profiler(private var context: Any?) {
         val now = System.nanoTime()
         val delta = now - last
         last = now
-        LOG.info("+" + format(delta, label))
+        LOG.debug("+" + format(delta, label))
 
 
         intervals.add(Pair(label, delta))
@@ -47,9 +47,9 @@ open class Profiler(private var context: Any?) {
         mark(label)
         val total = System.nanoTime() - start
         intervals.forEach { (label, duration) ->
-            LOG.info(format(duration, label))
+            LOG.debug(format(duration, label))
         }
-        LOG.info(format(total, "Total"))
+        LOG.debug(format(total, "Total"))
     }
 
     open fun switchContext(newContext: LanguageClient) {
