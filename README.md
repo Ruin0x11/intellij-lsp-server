@@ -64,7 +64,7 @@ To use the server with Emacs, [lsp-mode](https://github.com/emacs-lsp/lsp-mode) 
   (require 'lsp-intellij)
   (add-hook 'java-mode-hook #'lsp-intellij-enable))
 ```
-Then visit a `.java` file tracked by a project you've opened in IDEA.
+Then visit a `.java` file tracked by a project you've opened in IDEA. You can do the same for Kotlin by installing `kotlin-mode`, then adding another hook for `lsp-intellij-enable` in `kotlin-mode-hook`.
 
 For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` are required. Here are the respective config options for each.
 ```emacs-lisp
@@ -117,7 +117,6 @@ Then you should have a similar structure to the following:
 
 ## Caveats
 - Alpha-quality, and probably really unstable.
-- Only targets Java for now, though there is no reason awareness of other languages can't be added.
 - Tested primarily with Emacs' [lsp-mode](https://github.com/emacs-lsp/lsp-mode). There are apparently some differences in the way `lsp-mode` implements the specification, so those are currently reflected in the code.
 - Editing in both IDEA and the LSP client at the same time isn't supported currently.
 
