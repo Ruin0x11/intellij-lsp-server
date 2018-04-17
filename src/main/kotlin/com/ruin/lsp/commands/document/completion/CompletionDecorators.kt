@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.builtins.isBuiltinFunctionalType
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.idea.completion.BasicLookupElementFactory
 import org.jetbrains.kotlin.idea.completion.DeclarationLookupObjectImpl
+import org.jetbrains.kotlin.idea.completion.KeywordLookupObject
 import org.jetbrains.kotlin.idea.completion.LambdaSignatureTemplates
 import org.jetbrains.kotlin.idea.core.KotlinNameSuggester
 import org.jetbrains.kotlin.idea.core.completion.DeclarationLookupObject
@@ -72,6 +73,10 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
     companion object {
         fun from(lookup: LookupElement, snippetSupport: Boolean): CompletionDecorator<Any>? {
             val psi = lookup.psiElement
+
+            if (lookup.`object` is String || lookup.`object` is KeywordLookupObject) {
+                return KtKeywordCompletionDecorator(lookup)
+            }
 
             // handle generated properties and language builtin methods
             var decorator = fromSyntheticLookupElement(lookup)
@@ -345,6 +350,16 @@ class KtSyntheticPropertyCompletionDecorator(lookup: LookupElement, val method: 
     override fun formatLabel() = "$realName (from ${method.name}${buildParamsList(method)}) : ${getTypeName(method.returnType)}"
 
     override fun formatInsertText() = realName.asString().quoteIfNeeded()
+}
+
+class KtKeywordCompletionDecorator(lookup: LookupElement)
+    : CompletionDecorator<String>(lookup, lookup.lookupString) {
+    override val kind: CompletionItemKind
+        get() = CompletionItemKind.Keyword
+
+    override fun formatLabel() = lookup.lookupString
+
+    override fun formatInsertText() = lookup.lookupString
 }
 
 

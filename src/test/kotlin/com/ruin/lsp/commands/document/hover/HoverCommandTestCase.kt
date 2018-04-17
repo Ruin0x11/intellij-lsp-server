@@ -11,7 +11,7 @@ class HoverCommandTestCase : HoverCommandTestBase() {
         get() = DUMMY_FILE_PATH
 
     fun `test hover finds class info`() = checkHoverEquals(8, 16,
-        "package org.lsp.javaproject; public class Dummy extends java.lang.Object ")
+        "package org.lsp.javaproject; public class Dummy extends java.lang.Object")
 
     fun `test hover finds method info`() = checkHoverEquals(46, 25,
         "static int answerQuestion(String question)")

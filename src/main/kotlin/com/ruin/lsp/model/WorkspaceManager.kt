@@ -87,7 +87,6 @@ class WorkspaceManager {
     }
 
     @Synchronized
-
     fun onTextDocumentChanged(params: DidChangeTextDocumentParams, project: Project) {
         val textDocument = params.textDocument
         val contentChanges = params.contentChanges

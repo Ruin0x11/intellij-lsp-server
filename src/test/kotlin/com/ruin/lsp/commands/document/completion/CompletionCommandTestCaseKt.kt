@@ -34,7 +34,7 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(75, 16), false, "value (from getValue()) : int", "value")
 
     fun `test java value to property completion`() =
-        checkContainsCompletion(Position(96,  16), false, "thing : Int", "thing")
+        checkContainsCompletion(Position(96, 16), false, "thing : Int", "thing")
 
     fun `test keyword name escaping`() =
         checkContainsCompletion(Position(76, 16), false, "object (from getObject()) : Object", "`object`")
@@ -44,6 +44,9 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
 
     fun `test companion object`() =
         checkContainsCompletion(Position(85, 17), false, "Companion : object", "Companion")
+
+    fun `test return statement in closure`() =
+        checkContainsCompletion(Position(90, 14), false, "return@withClosure", "return@withClosure")
 
     fun `test closure with brace syntax`() =
         checkContainsCompletion(Position(80, 11), false,

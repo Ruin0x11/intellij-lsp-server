@@ -209,14 +209,13 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     if (virtual == null || !virtual.exists()) {
         throw IllegalArgumentException("Couldn't locate virtual file @" + file)
     }
-    LocalFileSystem.getInstance().refreshFiles(Collections.singletonList(virtual))
 
     return virtual
 }
 
 fun getDocument(project: Project, uri: String): Document? {
     val normalizedUri = normalizeUri(uri)
-    val  filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
+    val filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
     val virtual = getVirtualFile(project, filePath)
     return invokeAndWaitIfNeeded(asWriteAction(
         Computable<Document> {

@@ -29,5 +29,8 @@ class HoverCommandTestCaseKt : HoverCommandTestBase() {
     fun `test hover finds closure parameter`() = checkHoverEquals(60, 19,
         "value-parameter closure: (counter: Int, Int) → Unit")
 
+    fun `test hover finds java information in kotlin file`() = checkHoverEquals(95, 19,
+        "package org.lsp.kotlinproject; public class GetSet extends java.lang.Object")
+
     fun `test hover finds nothing`() = checkHoverIsEmpty(32, 1)
 }

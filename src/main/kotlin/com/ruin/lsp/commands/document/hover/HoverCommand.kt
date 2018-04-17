@@ -1,6 +1,7 @@
 package com.ruin.lsp.commands.document.hover
 
 import com.intellij.codeInsight.documentation.DocumentationManager
+import com.intellij.lang.Language
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationProvider
 import com.intellij.lang.java.JavaLanguage
@@ -31,14 +32,14 @@ class HoverCommand(val position: Position) : DocumentCommand<Hover>, Disposable 
 
             if (element != null) {
                 try {
-                    val result = provider(ctx.file)?.generateDoc(element, originalElement) ?: ""
+                    val result = provider(element.language)?.generateDoc(element, originalElement)?.trim() ?: ""
                     ref.set(result)
                 } catch (ex: IndexNotReadyException) {
                 }
             }
         }
 
-        val markedString = MarkedString("java", ref.get())
+        val markedString = MarkedString(ctx.file.language.displayName, ref.get())
 
         return if (markedString.value.isEmpty())
             Hover(mutableListOf())
@@ -46,8 +47,8 @@ class HoverCommand(val position: Position) : DocumentCommand<Hover>, Disposable 
             Hover(mutableListOf(Either.forRight<String, MarkedString>(markedString)))
     }
 
-    private fun provider(file: PsiFile): DocumentationProvider? {
-        return when(file.language) {
+    private fun provider(language: Language): DocumentationProvider? {
+        return when(language) {
             is JavaLanguage -> HoverDocumentationProvider()
             is KotlinLanguage -> HoverDocumentationProviderKt()
             else -> null
