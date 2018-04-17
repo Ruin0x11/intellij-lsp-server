@@ -25,6 +25,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.util.io.URLUtil
 import com.ruin.lsp.model.MyLanguageClient
 import com.ruin.lsp.model.MyLanguageServer
 import com.ruin.lsp.values.DocumentUri
@@ -38,10 +39,17 @@ import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
-fun ensurePsiFromUri(project: Project, uri: DocumentUri) = resolvePsiFromUri(project, uri)
+fun ensurePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null) = resolvePsiFromUri(project, uri, client)
     ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
-fun resolvePsiFromUri(project: Project, uri: DocumentUri): PsiFile? {
+fun resolvePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null): PsiFile? {
+    if (client != null) {
+        val tempDirectory = client.temporaryDirectory().get().directory
+        val prefix = tempDirectory.uriCommonPrefixWith(uri)
+        if (prefix == tempDirectory) {
+            return resolveJarUri(uri, tempDirectory)?.let { getPsiFile(project, getVirtualFile(it)) }
+        }
+    }
     val filePath = projectRelativeFilePath(project, uri) ?: return null
     return getPsiFile(project, filePath) ?: return null
 }
@@ -49,17 +57,39 @@ fun resolvePsiFromUri(project: Project, uri: DocumentUri): PsiFile? {
 fun ensureProjectFromRootUri(uri: String) = resolveProjectFromRootUri(uri)
     ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
 
+fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
+    val split = uri.substring(tempDirectory.length).split("/", limit = 3)
+    if (split.size != 3) {
+        return null
+    }
+    val (_ /* "lsp-intellij" */, jarName, internalPath) = split
+    val jarpathFile = tempDirectory.plus("lsp-intellij/$jarName/jarpath")
+    val realJarFile = uriToPath(jarpathFile)
+        .let { File(it) }.readText()
+        .let { uriToPath(it) }.let { File(it) }
+    if (!realJarFile.exists()) {
+        return null
+    }
+    return URLUtil.getJarEntryURL(realJarFile, internalPath).toString()
+}
 /**
  * Given a project and a file URI, returns the path of the file relative to the project base path.
  */
 fun projectRelativeFilePath(project: Project, uri: DocumentUri): String? {
     val newUri = normalizeUri(uri)
     val projPathUri = getURIForFile(File(project.basePath))
-    val prefix = newUri.commonPrefixWith(projPathUri, true)
-    if(prefix.isEmpty()) {
-        return null
-    }
+    val prefix = newUri.uriCommonPrefixWith(projPathUri) ?: return null
     return newUri.substring(prefix.length)
+}
+
+fun DocumentUri.uriCommonPrefixWith(other: DocumentUri): String? {
+    val prefix = this.commonPrefixWith(other, true)
+
+    return if (prefix.isEmpty() || prefix == "file:///") {
+        null
+    } else {
+        prefix
+    }
 }
 
 fun resolveProjectFromRootUri(uri: DocumentUri): Project? {
@@ -199,10 +229,18 @@ fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
 fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     val projectDir = uriToPath(project.baseDir.toString())
     val file = File(projectDir, filePath)
+
+    return loadVirtualFile(file)
+}
+
+fun getVirtualFile(fullPath: DocumentUri): VirtualFile {
+    return loadVirtualFile(File(uriToPath(fullPath)))
+}
+
+private fun loadVirtualFile(file: File): VirtualFile {
     if (!file.exists()) {
         throw IllegalArgumentException("Couldn't find file " + file)
     }
-
     // load the VirtualFile and ensure it's up to date
     val virtual = LocalFileSystem.getInstance()
         .refreshAndFindFileByIoFile(file)

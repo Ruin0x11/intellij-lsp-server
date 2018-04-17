@@ -120,7 +120,7 @@ fun <T: Any> asInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
      CompletableFuture.supplyAsync {
         executeAndGetResult(project, uri, command, client, server)
@@ -130,7 +130,7 @@ fun <T: Any> asCancellableInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
     CompletableFutures.computeAsync { cancelToken ->
         executeAndGetResult(project, uri, command, client, server, cancelToken)
@@ -142,11 +142,11 @@ private fun <T : Any> executeAndGetResult(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
     return invokeAndWaitIfNeeded(Computable<T> {
-        val file = ensurePsiFromUri(project, uri)
+        val file = ensurePsiFromUri(project, uri, client)
         val profiler = if (client != null) startProfiler(client) else DUMMY
         profiler.mark("Start ${command.javaClass.canonicalName}")
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)

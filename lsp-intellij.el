@@ -74,7 +74,7 @@ of matched directories.  Nil otherwise."
    ;; extracted from archive-mode (prevents error when LSP mode hooks run)
    (and (string-match-p "\.jar:[a-zA-Z]+" file-name) (not (file-exists-p file-name)))
    ;; extracted using lsp-intellij
-   (string-suffix-p temporary-file-directory file-name t)))
+   (string-match-p (regexp-quote temporary-file-directory) file-name)))
 
 (defun lsp-intellij--get-root ()
   (if (lsp-intellij--is-extracted-jar-file (buffer-file-name))
@@ -144,13 +144,13 @@ of matched directories.  Nil otherwise."
 
 Used for allowing IntelliJ to find the actual jar an extracted jar file is contained in."
   (with-temp-buffer
-    (insert archive-path)
+    (insert (lsp--path-to-uri archive-path))
     (write-file (concat dest "jarpath") nil)))
 
 (defun lsp-intellij--extract-archive-file (archive original-archive internal-path dest)
   "Extracts the file at INTERNAL-PATH inside a .jar ARCHIVE to DEST.
 
-Also writes the location of ORIGINAL-ARCHIVE, containing the compiled classes, so Intellij can find it."
+Also writes the location of ORIGINAL-ARCHIVE, containing the compiled classes, so IntelliJ can find it."
   (let* ((internal-dir (substring (file-name-directory internal-path) 1))
          (internal-file (file-name-nondirectory internal-path))
          (internal-name (file-name-sans-extension internal-file))
@@ -203,6 +203,8 @@ Return the file path if found, nil otherwise."
     )
   )
 
+
+
 (defun lsp-intellij-find-implementations ()
   "List all implementations for the Java element at point."
   (interactive)
@@ -252,7 +254,7 @@ Return the file path if found, nil otherwise."
 lsp-mode requires a process to be opened when starting a server over
 TCP, even if it isn't the one being communicated with.")
 
-(defconst lsp-intellij--handlers
+(defconst lsp-intellij--notification-handlers
   '(("idea/indexStarted" .
      (lambda (_w _p)
        (message "Indexing started.")
@@ -262,9 +264,17 @@ TCP, even if it isn't the one being communicated with.")
        (message "Indexing finished.")
        (setq lsp-status nil)))))
 
+(defconst lsp-intellij--request-handlers
+  '(("idea/temporaryDirectory" .
+     (lambda (_w _p)
+       (list :directory (lsp--path-to-uri temporary-file-directory))))))
+
 (defun lsp-intellij--initialize-client (client)
   (mapcar #'(lambda (p) (lsp-client-on-notification client (car p) (cdr p)))
-	  lsp-intellij--handlers)
+	  lsp-intellij--notification-handlers)
+  (mapcar #'(lambda (p) (lsp-client-on-request client (car p) (cdr p)))
+	  lsp-intellij--request-handlers)
+
   ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
   ;; so the proper coding system needs to be set to capture the \r\n.
   (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
@@ -276,8 +286,7 @@ TCP, even if it isn't the one being communicated with.")
 
   (lsp-provide-marked-string-renderer client "java" (lambda (s) (lsp-intellij--render-string s 'java-mode)))
   (lsp-provide-marked-string-renderer client "kotlin" (lambda (s) (lsp-intellij--render-string s 'kotlin-mode)))
-  (lsp-client-register-uri-handler client "jar" 'lsp-intellij--visit-jar-uri)
-  )
+  (lsp-client-register-uri-handler client "jar" 'lsp-intellij--visit-jar-uri))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
                        "127.0.0.1" 8080
