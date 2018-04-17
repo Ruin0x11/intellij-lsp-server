@@ -76,6 +76,7 @@ For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` ar
       company-lsp-cache-candidates t)
 (push 'company-lsp company-backends)
 (push 'java-mode company-global-modes)
+(push 'kotlin-mode company-global-modes) ;; if using Kotlin
 ```
 
 ### Spacemacs
