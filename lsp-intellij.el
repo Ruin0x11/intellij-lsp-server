@@ -70,23 +70,27 @@ of matched directories.  Nil otherwise."
              hash-table)))
 
 (defun lsp-intellij--is-extracted-jar-file (file-name)
-  (string-match-p (regexp-quote temporary-file-directory) (buffer-file-name)))
+  (or
+   ;; extracted from archive-mode (prevents error when LSP mode hooks run)
+   (and (string-match-p "\.jar:[a-zA-Z]+" file-name) (not (file-exists-p file-name)))
+   ;; extracted using lsp-intellij
+   (string-suffix-p temporary-file-directory file-name t)))
 
 (defun lsp-intellij--get-root ()
   (if (lsp-intellij--is-extracted-jar-file (buffer-file-name))
-    (lsp--workspace-root (lsp-intellij--any-value-in-hash lsp--workspaces)))
-  (let ((file (locate-dominating-file (buffer-file-name)
-                                      (lambda (parent)
-                                        (when (directory-name-p parent)
-                                          (directory-files parent nil ".*.iml"))))))
-    (when (not file)
-      (error "No root found."))
-    (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
-          (has-pom (> (length pom) 0))
-          (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
-                    (lsp-intellij--root-top-down-recurring file '("pom.xml"))
-                  file)))
-      (file-name-directory root))))
+      (lsp--workspace-root (lsp-intellij--any-value-in-hash lsp--workspaces))
+    (let ((file (locate-dominating-file (buffer-file-name)
+                                        (lambda (parent)
+                                          (when (directory-name-p parent)
+                                            (directory-files parent nil ".*.iml"))))))
+      (when (not file)
+        (error "No root found."))
+      (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
+             (has-pom (> (length pom) 0))
+             (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
+                       (lsp-intellij--root-top-down-recurring file '("pom.xml"))
+                     file)))
+        (file-name-directory root)))))
 
 (defun lsp-intellij--locations-to-xref-items (locations)
   "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."
@@ -132,16 +136,25 @@ of matched directories.  Nil otherwise."
 (defun lsp-intellij--make-jar-temp-path (jar-path internal-path)
   "Return a temporary path for a jar-internal file to be extracted to."
   (let* ((jar-file-name (file-name-base jar-path))
-         (internal-dir (file-name-directory internal-path))
-         (temp-path (concat temporary-file-directory "lsp-intellij/" jar-file-name internal-dir)))
+         (temp-path (concat temporary-file-directory "lsp-intellij/" jar-file-name "/")))
     temp-path))
 
-(defun lsp-intellij--extract-archive-file (archive internal-path dest)
+(defun lsp-intellij--write-jar-metadata (archive-path dest)
+  "Write a metadata file that points to ARCHIVE-PATH, a jar file path.
+
+Used for allowing IntelliJ to find the actual jar an extracted jar file is contained in."
+  (with-temp-buffer
+    (insert archive-path)
+    (write-file (concat dest "jarpath") nil)))
+
+(defun lsp-intellij--extract-archive-file (archive original-archive internal-path dest)
+  "Extracts the file at INTERNAL-PATH inside a .jar ARCHIVE to DEST.
+
+Also writes the location of ORIGINAL-ARCHIVE, containing the compiled classes, so Intellij can find it."
   (let* ((internal-dir (substring (file-name-directory internal-path) 1))
          (internal-file (file-name-nondirectory internal-path))
          (internal-name (file-name-sans-extension internal-file))
-         (search-string (concat internal-dir internal-name))
-         (outpath (concat dest internal-file)))
+         (search-string (concat internal-dir internal-name)))
     (save-window-excursion
       (find-file archive)
       (let ((archive-buffer (current-buffer)))
@@ -149,8 +162,9 @@ of matched directories.  Nil otherwise."
         (re-search-forward search-string)
         (archive-extract)
         (let ((extract-buffer (current-buffer))
-              (outpath (concat dest (file-name-nondirectory (buffer-file-name)))))
-          (mkdir dest t)
+              (outpath (concat dest internal-dir (file-name-nondirectory (buffer-file-name)))))
+          (mkdir (file-name-directory outpath) t)
+          (lsp-intellij--write-jar-metadata original-archive dest)
           (write-file outpath nil)
           (kill-buffer archive-buffer)
           (kill-buffer extract-buffer)
@@ -160,10 +174,10 @@ of matched directories.  Nil otherwise."
   "\\\.\\(java\\|kt\\|scala\\|xml\\|MF\\)$")
 
 (defun lsp-intellij--extracted-file-exists (temp-path internal-file-base)
-  "Test if a file with a similar filename has already been extracted from a JAR.
+  "Test if a file with a similar filename has already been extracted from a jar.
 
-Used for finding the corresponding .java/.kt file from a JAR's .class file.
-Return the file path if found."
+Used for finding the corresponding .java/.kt file from a jar's .class file.
+Return the file path if found, nil otherwise."
   (cl-find-if (lambda (s) (and (eq (file-name-sans-extension s) internal-file-base)
                                (string-match-p lsp-intellij--file-extracted-from-jar-regex s)))
               (directory-files temp-path)))
@@ -183,7 +197,7 @@ Return the file path if found."
     ;; TODO: find attached sources using IntelliJ request, in case they live elsewhere
     ;; TODO: return cached dir if exists
     ;(lsp-intellij--extracted-file-exists temp-path (file-name-base internal-path))
-    (lsp-intellij--extract-archive-file jar-to-extract internal-path temp-path)
+    (lsp-intellij--extract-archive-file jar-to-extract jar-path internal-path temp-path)
     ;; the temp path has to be recognizable by the server as "this is from a jar" and associate the correct jar-internal VirtualFile, otherwise code awareness is lost
     ;; make the file read-only
     )
