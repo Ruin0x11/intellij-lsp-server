@@ -29,5 +29,5 @@ class FindDefinitionCommandTestCaseKt : FindDefinitionCommandTestBase() {
 
     fun `test finds java class`() =
         checkFindsLocation(forKotlin(DUMMY_FILE_PATH),
-            Position(70, 21), "GetSet.java", Position(2, 13))
+            Position(74, 20), "GetSet.java", Position(2, 13))
 }

@@ -33,7 +33,7 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
             .assertHasSymbol("notBoring(Int, String)", "Dummy", SymbolKind.Method, range(25, 17, 25, 26))
             .assertHasSymbol("fluid()", "Dummy", SymbolKind.Method, range(27, 8, 27, 13))
             .assertHasSymbol("moreBoring()", "Dummy", SymbolKind.Method, range(40, 17, 40, 27))
-            .assertHasSymbol("answerQuestion(String)", "Dummy", SymbolKind.Function, range(47, 21, 47, 35))
+            .assertHasSymbol("answerQuestion(String)", "Companion", SymbolKind.Function, range(47, 21, 47, 35))
             .assertHasSymbol("outsidePackage(Int)", "Dummy.kt", SymbolKind.Function, range(69, 4, 69, 18))
     }
 
@@ -81,15 +81,15 @@ class DocumentSymbolCommandTestCaseKt : DocumentSymbolCommandTestBase() {
 
     fun `test object symbol`() {
         getSymbols(OBJECT_FILE_PATH)
-            .assertHasSymbol("MyObject", "MyObject.kt", SymbolKind.Class, range(9, 18, 9, 21))
-            .assertHasSymbol("Companion", "HasCompanion", SymbolKind.Class, range(9, 18, 9, 21))
+            .assertHasSymbol("MyObject", "MyObject.kt", SymbolKind.Class, range(4, 7, 4, 15))
+            .assertHasSymbol("Companion", "HasCompanion", SymbolKind.Class, range(7, 4, 7, 23))
     }
 
     fun `test constant symbol`() {
         getSymbols(forKotlin(CONSTANTS_FILE_PATH))
-            .assertHasSymbol("INT", "Constants", SymbolKind.Constant, range(9, 18, 9, 21))
-            .assertHasSymbol("STRING", "Constants", SymbolKind.Constant, range(10, 26, 10, 32))
-            .assertHasSymbol("ENUM_TYPE", "Constants", SymbolKind.Constant, range(11, 18, 11, 27))
+            .assertHasSymbol("INT", "Companion", SymbolKind.Constant, range(9, 18, 9, 21))
+            .assertHasSymbol("STRING", "Companion", SymbolKind.Constant, range(10, 26, 10, 32))
+            .assertHasSymbol("ENUM_TYPE", "Companion", SymbolKind.Field, range(11, 12, 11, 21))
     }
 
     fun `test string symbol`() {

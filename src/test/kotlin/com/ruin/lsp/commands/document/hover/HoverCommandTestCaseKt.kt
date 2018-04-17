@@ -23,11 +23,11 @@ class HoverCommandTestCaseKt : HoverCommandTestBase() {
     fun `test hover finds variable info`() = checkHoverEquals(15, 10,
         "val list: [ERROR : Type for List()]")
 
+    fun `test hover finds closure in function value parameters with arrow`() = checkHoverEquals(59, 27,
+        "internal final fun withClosure(closure: (counter: Int, Int) → Unit): Unit defined in org.lsp.kotlinproject.Dummy.Companion")
+
+    fun `test hover finds closure parameter`() = checkHoverEquals(60, 19,
+        "value-parameter closure: (counter: Int, Int) → Unit")
+
     fun `test hover finds nothing`() = checkHoverIsEmpty(32, 1)
-
-    fun `test hover finds closure with arrow`() = checkHoverEquals(59, 20,
-        "internal final fun withClosure(closure: (Int) → Unit): Unit defined in org.lsp.kotlinproject.Dummy")
-
-    fun `test hover finds closure parameter`() = checkHoverEquals(60, 10,
-        "value-parameter closure: (Int) → Unit")
 }

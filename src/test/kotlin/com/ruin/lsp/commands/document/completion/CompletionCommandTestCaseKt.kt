@@ -28,7 +28,7 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(13, 13), false,"org.lsp.kotlinproject.Dummy", "Dummy")
 
     fun `test value parameter completion`() =
-        checkContainsCompletion(Position(61, 15), false,"closure : (Int) -> Unit", "closure")
+        checkContainsCompletion(Position(64, 23), false,"str : String", "str")
 
     fun `test java getter to property completion`() =
         checkContainsCompletion(Position(75, 16), false,"value (from getValue()) : int", "value")

@@ -9,7 +9,7 @@ internal class Constants {
     companion object {
         const val INT = 42
         const private val STRING = "string"
-        const val ENUM_TYPE = EnumType.FOO
+        val ENUM_TYPE = EnumType.FOO
         var sNotConstant = 12
     }
 }

@@ -59,11 +59,11 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
         val context = createContext()
 
         // can't be run on dispatch thread
-        ReadAction.run<Exception> {
-            ApplicationManager.getApplication().executeOnPooledThread {
+        ApplicationManager.getApplication().executeOnPooledThread {
+            ReadAction.run<Exception> {
                 StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
-            }.get()
-        }
+            }
+        }.get()
 
         classifier!!.addElement(item.lookupElement, context)
 
