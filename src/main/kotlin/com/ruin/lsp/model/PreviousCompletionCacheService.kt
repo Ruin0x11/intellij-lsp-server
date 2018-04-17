@@ -8,6 +8,9 @@ import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.values.DocumentUri
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * Stores the previous completion result, for later retrieval in the Completion Resolve request.
+ */
 class PreviousCompletionCacheService {
     private val myCompletionId: AtomicLong = AtomicLong(0)
     private var elements: List<LookupElement> = listOf()
