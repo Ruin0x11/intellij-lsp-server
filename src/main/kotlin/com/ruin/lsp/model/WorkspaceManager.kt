@@ -21,9 +21,9 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 /**
  * Manages files opened by LSP clients.
  *
- * The idea is that we want to deal with PSI files as little as possible due to threading constraints and the fact that
+ * The idea is that we want to deal withProfiler PSI files as little as possible due to threading constraints and the fact that
  * they constantly go invalid. Instead, this class keeps a separate ground truth, and when document changes come in, it
- * is possible to reload the corresponding PSI file with the changed contents.
+ * is possible to reload the corresponding PSI file withProfiler the changed contents.
  */
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
@@ -39,7 +39,6 @@ class WorkspaceManager {
             LOG.warn("URI was opened again without being closed, resetting: ${textDocument.uri}")
             managedTextDocuments.remove(textDocument.uri)
         }
-
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
@@ -88,7 +87,6 @@ class WorkspaceManager {
     }
 
     @Synchronized
-
     fun onTextDocumentChanged(params: DidChangeTextDocumentParams, project: Project) {
         val textDocument = params.textDocument
         val contentChanges = params.contentChanges
@@ -296,7 +294,7 @@ private fun normalizeText(text: String) = text.replace("\r\n", "\n")
 /**
  * Sorts text edits from furthest in the file to nearest to the top of the file.
  *
- * Prevents issues with the actual text edit range changing when applying multiple edits in sequence.
+ * Prevents issues withProfiler the actual text edit range changing when applying multiple edits in sequence.
  */
 fun sortTextEditChanges(edits: List<TextEdit>?): List<TextEdit>? =
     edits?.sortedWith(compareBy({ it.range.start.line }, { it.range.start.character }))?.reversed()

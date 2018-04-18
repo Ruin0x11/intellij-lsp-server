@@ -55,6 +55,21 @@ fun withEditor(context: Disposable, file: PsiFile, position: Position = Position
     }
 }
 
+fun withEditor(context: Disposable, file: PsiFile, offset: Int, callback: (Editor) -> Unit) {
+    val editor = createEditor(context, file, offset)
+
+    try {
+        callback(editor)
+    } catch (e: Exception) {
+        LOG.error("Exception during editor callback: " + e
+            + e.stackTrace.asList().joinToString("\n") { it.toString() }
+        )
+    } finally {
+        val editorFactory = EditorFactory.getInstance()
+        editorFactory.releaseEditor(editor)
+    }
+}
+
 /**
  * Gathers a list of TextEdits by copying a PsiFile, running an operation on the copy and diffing the results.
  *
@@ -67,6 +82,7 @@ fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): Li
     withEditor(Disposer.newDisposable(), copy, Position(0, 0)) { editor ->
         callback(editor, copy)
     }
+
     val oldDoc = getDocument(file) ?: return null
     val newDoc = getDocument(copy) ?: return null
     LOG.debug("=== Old doc:\n${oldDoc.text}")

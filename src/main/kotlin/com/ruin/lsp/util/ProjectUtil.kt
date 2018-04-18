@@ -71,13 +71,7 @@ fun resolveProjectFromRootUri(uri: DocumentUri): Project? {
         LOG.warn("root URI at $uri isn't a directory.")
         return null
     }
-    val imlFile = directory.listFiles().firstOrNull { it.extension == "iml" }
-    if (imlFile != null) {
-        return ensureProject(imlFile.absolutePath)
-    }
-
-    LOG.warn("Unable to resolve project from URI $newUri")
-    return null
+    return ensureProject(directory.absolutePath)
 }
 
 data class CachedProject(val project: Project, var disposable: Disposable? = null)
@@ -147,17 +141,9 @@ fun getProject(projectPath: String): Project? {
         val projectRef = Ref<Project>()
         ApplicationManager.getApplication().runWriteAction {
             try {
-                val alreadyOpenProject = mgr.openProjects.find { proj ->
-                    if (proj.projectFilePath?.contains(".idea") == true) {
-                        val prefix = proj.projectFilePath!!
-                            .substringBefore(".idea")
-                            .replace("\\", "/")
-                        projectPath
-                            .replace("\\", "/")
-                            .startsWith(prefix, true)
-                    } else {
-                        false
-                    }
+                val alreadyOpenProject = mgr.openProjects.find {
+                    uriToPath(it.baseDir.path)
+                        .equals(projectPath.replace("\\", "/"), true)
                 }
 
                 val project = alreadyOpenProject ?: mgr.loadAndOpenProject(projectPath)
@@ -211,7 +197,8 @@ fun getPsiFile(project: Project, virtual: VirtualFile): PsiFile? {
 }
 
 fun getVirtualFile(project: Project, filePath: String): VirtualFile {
-    val file = File(project.basePath, filePath)
+    val projectDir = uriToPath(project.baseDir.toString())
+    val file = File(projectDir, filePath)
     if (!file.exists()) {
         throw IllegalArgumentException("Couldn't find file " + file)
     }
@@ -222,14 +209,13 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     if (virtual == null || !virtual.exists()) {
         throw IllegalArgumentException("Couldn't locate virtual file @" + file)
     }
-    LocalFileSystem.getInstance().refreshFiles(Collections.singletonList(virtual))
 
     return virtual
 }
 
 fun getDocument(project: Project, uri: String): Document? {
     val normalizedUri = normalizeUri(uri)
-    val  filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
+    val filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
     val virtual = getVirtualFile(project, filePath)
     return invokeAndWaitIfNeeded(asWriteAction(
         Computable<Document> {
@@ -276,6 +262,17 @@ fun createEditor(context: Disposable, file: PsiFile, position: Position = Positi
     val editorFactory = EditorFactory.getInstance()
     val created = editorFactory.createEditor(doc, file.project) as EditorEx
     created.caretModel.moveToLogicalPosition(LogicalPosition(position.line, position.character))
+
+    Disposer.register(context, Disposable { editorFactory.releaseEditor(created) })
+
+    return created
+}
+
+fun createEditor(context: Disposable, file: PsiFile, offset: Int): EditorEx {
+    val doc = getDocument(file)!!
+    val editorFactory = EditorFactory.getInstance()
+    val created = editorFactory.createEditor(doc, file.project) as EditorEx
+    created.caretModel.moveToOffset(offset)
 
     Disposer.register(context, Disposable { editorFactory.releaseEditor(created) })
 

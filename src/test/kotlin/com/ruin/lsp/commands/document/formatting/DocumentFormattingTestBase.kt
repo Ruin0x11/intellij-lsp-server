@@ -18,8 +18,10 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextEdit
 
 abstract class DocumentFormattingTestBase : LightPlatformCodeInsightFixtureTestCase() {
+    abstract val fileType: FileType
+
     protected fun checkDocumentFormat(before: String, after: String, options: FormattingOptions, range: Range? = null) {
-        myFixture.configureByText(JavaFileType.INSTANCE, before)
+        myFixture.configureByText(fileType, before)
         val doc = getDocument(myFixture.file)!!
         val command = DocumentFormattingCommand(options, range)
         val result = invokeCommandAndWait(command, project, myFixture.file)

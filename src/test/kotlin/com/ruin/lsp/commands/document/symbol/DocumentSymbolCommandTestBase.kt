@@ -12,13 +12,10 @@ import org.eclipse.lsp4j.TextDocumentIdentifier
 import java.io.File
 
 abstract class DocumentSymbolCommandTestBase : BaseTestCase() {
-    override val projectName = JAVA_PROJECT
-
     protected fun getSymbols(filePath: String): List<SymbolInformation> {
         val file = resolvePsiFromUri(project, getURIForFile(File(filePath)))!!
         val command = DocumentSymbolCommand(TextDocumentIdentifier(getURIForFile(file)))
         val result = invokeCommandAndWait(command, project, file)
-        command.dispose()
         return result
     }
 

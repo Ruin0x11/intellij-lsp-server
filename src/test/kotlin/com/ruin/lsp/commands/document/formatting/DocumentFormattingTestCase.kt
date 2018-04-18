@@ -1,9 +1,13 @@
 package com.ruin.lsp.commands.document.formatting
 
+import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.fileTypes.FileType
 import com.ruin.lsp.range
 import org.eclipse.lsp4j.FormattingOptions
 
 class DocumentFormattingTestCase : DocumentFormattingTestBase() {
+    override val fileType = JavaFileType.INSTANCE
+
     val TESTCASE = """
         public class Dood        {
         public static  void main(String[  ]    args){

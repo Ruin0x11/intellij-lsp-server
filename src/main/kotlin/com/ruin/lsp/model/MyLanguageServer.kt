@@ -156,10 +156,11 @@ private fun <T : Any> executeAndGetResult(
     return invokeAndWaitIfNeeded(Computable<T> {
         val file = ensurePsiFromUri(project, uri)
         val profiler = if (client != null) startProfiler(client) else DUMMY
+        profiler.mark("Start ${command.javaClass.canonicalName}")
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
-        profiler.finish("Done")
         val result = command.execute(context)
         command.dispose()
+        profiler.finish("Done ${command.javaClass.canonicalName}")
         result
     })
 }

@@ -14,6 +14,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.offsetToPosition
+import com.ruin.lsp.util.startProfiler
+import com.ruin.lsp.util.withProfiler
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.PublishDiagnosticsParams
@@ -29,16 +31,22 @@ class DiagnosticsThread(val file: PsiFile, val document: Document, val client: L
     var diags: List<Diagnostic>? = null
 
     override fun run() {
+        startProfiler(this)
         // Wait in case the user is updating a lot of text at once
         try {
             Thread.sleep(1000)
         } catch (e: InterruptedException) {
-
+            withProfiler(this).finish("interrupt")
+            return
         }
 
+        withProfiler(this).mark("after wait")
         val infos = getHighlights(file, document)
+        withProfiler(this).mark("highlight")
         diags = infos.mapNotNull { it.toDiagnostic(document) }
+        withProfiler(this).mark("to diagnostic")
         client?.publishDiagnostics(PublishDiagnosticsParams(getURIForFile(file), diags))
+        withProfiler(this).finish("publish")
     }
 }
 

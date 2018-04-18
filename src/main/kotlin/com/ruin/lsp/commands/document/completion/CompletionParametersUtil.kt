@@ -31,7 +31,7 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = CompletionParameters::class.java.getDeclaredConstructor(
                 PsiElement::class.java /* position */, PsiFile::class.java /* originalFile */,
                 CompletionType::class.java, Int::class.javaPrimitiveType /* offset */, Int::class.javaPrimitiveType /* invocationCount */,
-                Editor::class.java
+                Editor::class.java, CompletionProcess::class.java
             )
             ctor.isAccessible = true
             sConstructor = ctor
@@ -39,14 +39,13 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = cached
         }
 
-        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor)
+        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor, VoidCompletionProcess())
     } catch (e: Throwable) {
         e.printStackTrace()
     }
 
     return null
 }
-
 fun makeCompletionParameters(editor: Editor, psiFile: PsiFile, position: Position): CompletionParameters? {
     val offset = position.toOffset(editor.document)
     val elemAtPos = psiFile.findElementAt(offset)
@@ -108,4 +107,8 @@ private fun insertDummyIdentifier(originalFile: PsiFile,
     PsiDocumentManager.getInstance(originalFile.project)
         .commitDocument(copyDocument)
     return hostCopy[0].findElementAt(position.textOffset)
+}
+
+internal class VoidCompletionProcess : CompletionProcess {
+    override fun isAutopopupCompletion() = true
 }

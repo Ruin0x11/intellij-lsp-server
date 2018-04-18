@@ -6,9 +6,11 @@ import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCa
 import com.ruin.lsp.util.ensureProject
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.values.DocumentUri
+import org.jetbrains.kotlin.utils.fileUtils.withReplacedExtensionOrNull
 import java.io.File
 
 val JAVA_PROJECT = "java-project"
+val KOTLIN_PROJECT = "kotlin-project"
 val LOOPING_PROJECT = "looping-project"
 val RUNNABLE_PROJECT = "runnable-project"
 val TESTABLE_PROJECT = "testable-project"
@@ -24,6 +26,8 @@ val PROBLEMATIC_TWICE_FILE_PATH = "src/org/lsp/javaproject/ProblematicTwice.java
 val CONSTANTS_FILE_PATH = "src/org/lsp/javaproject/Constants.java"
 val ENUM_TYPE_FILE_PATH = "src/org/lsp/javaproject/EnumType.java"
 
+val OBJECT_FILE_PATH = "src/org/lsp/kotlinproject/MyObject.kt"
+
 val MULTI_MODULE_APP_PATH = "application/src/main/java/hello/app/DemoApplication.java"
 val MAVEN_MULTI_MODULE_APP_PATH = "first-module/src/main/java/com/ruin/lsp/App.java"
 
@@ -37,7 +41,7 @@ abstract class BaseTestCase : LightPlatformCodeInsightFixtureTestCase() {
     protected fun getProjectIml() = getProjectIml(projectName)
 
     override fun getProject(): Project {
-        val path = getProjectIml(projectName)
+        val path = getProjectPath(projectName)
         return ensureProject(path)
     }
 
@@ -66,3 +70,7 @@ fun uriForPath(projectName: String, filePath: String): DocumentUri {
     val file = File(projectPath, filePath)
     return getURIForFile(file)
 }
+
+fun forKotlin(path: String) =
+    File(path.replace("javaproject", "kotlinproject"))
+    .withReplacedExtensionOrNull("java", "kt")!!.path

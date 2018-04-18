@@ -44,4 +44,4 @@ fun searchImplementations(editor: Editor, element: PsiElement?, offset: Int): Ar
     return ImplementationSearcher().searchImplementations(element, editor, includeSelf, onRef)
 }
 
-fun getFlags() = TargetElementUtil.getInstance().definitionSearchFlags;
+fun getFlags() = TargetElementUtil.getInstance().definitionSearchFlags
