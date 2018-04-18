@@ -52,8 +52,8 @@ fun PsiElement.location() =
     location(getURIForFile(this.containingFile), getDocument(this.containingFile)!!)
 
 fun PsiElement.location(uri: DocumentUri, doc: Document) =
-    ((this as? PsiNameIdentifierOwner)?.nameIdentifier ?: this).textRange.let { range ->
-        Location(uri, Range(offsetToPosition(doc, range.startOffset), offsetToPosition(doc, range.endOffset)))
+    ((this as? PsiNameIdentifierOwner)?.nameIdentifier ?: this).textRange.let { textRange ->
+        Location(uri, textRange.toRange(doc))
     }
 
 fun PsiElement.symbolKind(): SymbolKind? =

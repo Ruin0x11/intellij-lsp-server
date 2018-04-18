@@ -35,7 +35,7 @@ class FindUsagesCommand(val position: Position) : DocumentCommand<MutableList<Lo
 
 fun extractLocationFromRaw(usage: Usage): Location? {
     return if (usage is UsageInfo2UsageAdapter) {
-         usage.element?.location()
+         usage.element?.sourceLocationIfPossible()
     } else {
         null
     }

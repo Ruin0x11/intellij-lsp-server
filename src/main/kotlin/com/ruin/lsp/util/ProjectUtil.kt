@@ -13,12 +13,14 @@ import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
+import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.wm.WindowManager
@@ -42,6 +44,7 @@ import java.util.*
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 private val SOURCE_FILE_TO_CLASS_REGEX = """\.(java|kt|scala)$""".toRegex()
+private val POSSIBLE_SOURCE_EXTENSIONS = listOf(".java", ".kt", ".scala")
 
 fun ensurePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null) = resolvePsiFromUri(project, uri, client)
     ?: throw IllegalArgumentException("Unable to resolve file at $uri")
@@ -58,26 +61,6 @@ fun resolvePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClie
     return getPsiFile(project, filePath) ?: return null
 }
 
-fun ensureProjectFromRootUri(uri: String) = resolveProjectFromRootUri(uri)
-    ?: throw IllegalArgumentException("Unable to resolve document and file at $uri")
-
-fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
-    val split = uri.substring(tempDirectory.length).split("/", limit = 3)
-    if (split.size != 3) {
-        return null
-    }
-    val (_ /* "lsp-intellij" */, jarName, internalSourceFile) = split
-    val jarpathFile = tempDirectory.plus("lsp-intellij/$jarName/jarpath")
-    val realJarFile = uriToPath(jarpathFile)
-        .let { File(it) }.readText()
-        .let { uriToPath(it) }.let { File(it) }
-    if (!realJarFile.exists()) {
-        return null
-    }
-    val internalClassFile = internalSourceFile.replace(SOURCE_FILE_TO_CLASS_REGEX, ".class")
-    return URLUtil.getJarEntryURL(realJarFile, internalClassFile).toString()
-        .replace("""^jar:file:/""".toRegex(), "jar://")
-}
 /**
  * Given a project and a file URI, returns the path of the file relative to the project base path.
  */
@@ -149,7 +132,7 @@ fun cacheProject(absolutePath: String, project: Project) {
 
 fun ensureProject(projectPath: String): Project {
     val project = getProject(projectPath)
-        ?: throw IllegalArgumentException("Couldn't find document at " + projectPath)
+        ?: throw IllegalArgumentException("Couldn't find document at $projectPath")
     if (project.isDisposed)
         throw IllegalArgumentException("Project $project was already disposed!")
 
@@ -195,7 +178,7 @@ fun getProject(projectPath: String): Project? {
             }
         }
 
-        val project = projectRef.get() ?: throw IOException("Failed to obtain document " + projectPath)
+        val project = projectRef.get() ?: throw IOException("Failed to obtain document $projectPath")
 
         // Wait until the project is initialized to prevent invokeAndWait hangs
         while (!project.isInitialized) {
@@ -236,14 +219,14 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
     val projectDir = uriToPath(project.baseDir.toString())
     val file = File(projectDir, filePath)
     if (!file.exists()) {
-        throw IllegalArgumentException("Couldn't find file " + file)
+        throw IllegalArgumentException("Couldn't find file $file")
     }
 
     // load the VirtualFile and ensure it's up to date
     val virtual = LocalFileSystem.getInstance()
         .refreshAndFindFileByIoFile(file)
     if (virtual == null || !virtual.exists()) {
-        throw IllegalArgumentException("Couldn't locate virtual file @" + file)
+        throw IllegalArgumentException("Couldn't locate virtual file @$file")
     }
 
     return virtual
@@ -275,8 +258,33 @@ fun getDocument(project: Project, uri: String): Document? {
         }))
 }
 
+fun getLibrarySourceVirtualFile(virtual: VirtualFile, index: ProjectFileIndex): VirtualFile? {
+    val classRoot = index.getClassRootForFile(virtual) ?: return null
+    val relativePath = VfsUtilCore.getRelativePath(virtual, classRoot) ?: return null
+
+    searchForOtherSourceDirs@ for (entry in index.getOrderEntriesForFile(virtual)) {
+        for (sourceRoot in entry.getFiles(OrderRootType.SOURCES)) {
+            for (ext in POSSIBLE_SOURCE_EXTENSIONS) {
+                val possibleSourceFilename = relativePath.replace("""\.class$""".toRegex(), ext)
+                val sourceFile = sourceRoot.findFileByRelativePath(possibleSourceFilename)
+                if (sourceFile != null) {
+                    return sourceFile
+                }
+            }
+        }
+    }
+
+    return null
+}
+
 fun getDocument(file: PsiFile): Document? {
-    val virtual = file.virtualFile ?: return file.viewProvider.document
+    var virtual = file.virtualFile ?: return file.viewProvider.document
+
+//    val index = ProjectFileIndex.getInstance(file.project)
+//    if (index.isInLibraryClasses(virtual)) {
+//        virtual = getLibrarySourceVirtualFile(virtual, index) ?: virtual
+//    }
+
     var doc = FileDocumentManager.getInstance()
         .getDocument(virtual)
     if (doc == null) {
@@ -365,6 +373,38 @@ fun uriToPath(uri: String): String {
         "^file:/+".toRegex().replace(newUri, "/")
     }
 }
+
+
+fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
+    val pair = jarExtractedFileToJarpathFile(uri, tempDirectory) ?: return null
+    val (internalSourceFile, jarpathFileUri) = pair
+
+    val realJarPath = uriToPath(jarpathFileUri)
+        .let { File(it) }.readText()
+
+    return getJarEntryURI(realJarPath, internalSourceFile)
+}
+
+fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: DocumentUri): Pair<String, DocumentUri>? {
+    val split = extractedFileUri.substring(tempDirectory.length).split("/", limit = 3)
+    if (split.size != 3) {
+        return null
+    }
+    val (_ /* "lsp-intellij" */, jarName, internalSourceFile) = split
+    val jarpathFileUri = tempDirectory.plus("lsp-intellij/$jarName/jarpath")
+    return Pair(internalSourceFile, jarpathFileUri)
+}
+
+fun getJarEntryURI(jarUri: DocumentUri, internalSourceFile: String): String? {
+    val realJarFile = File(uriToPath(jarUri))
+    if (!realJarFile.exists()) {
+        return null
+    }
+    //val internalClassFile = internalSourceFile.replace(SOURCE_FILE_TO_CLASS_REGEX, CLASS_FILE_EXTENSION)
+    return URLUtil.getJarEntryURL(realJarFile, internalSourceFile).toString()
+        .replace("""^jar:file:/""".toRegex(), "jar://")
+}
+
 
 private fun hideProjectFrame(project: Project?) {
     val mgr = WindowManager.getInstance()

@@ -15,6 +15,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.impl.light.LightElement
 import com.ruin.lsp.commands.ProjectCommand
+import com.ruin.lsp.commands.document.find.sourceLocationIfPossible
 import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.SymbolInformation
@@ -58,7 +59,7 @@ fun PsiElement.toSymbolInformation(): SymbolInformation? {
 
     val name = this.symbolName() ?: return null
     val kind = this.symbolKind() ?: return null
-    val location = this.location()
+    val location = this.sourceLocationIfPossible()
     val containerName =
         if (this.parent is PsiNameIdentifierOwner)
             (this.parent as PsiNameIdentifierOwner).name

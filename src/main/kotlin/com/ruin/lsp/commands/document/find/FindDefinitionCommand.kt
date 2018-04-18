@@ -1,30 +1,39 @@
 package com.ruin.lsp.commands.document.find
 
+import com.intellij.codeEditor.JavaEditorFileSwapper
 import com.intellij.codeInsight.TargetElementUtil
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProcess
+import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.extensions.Extensions
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
+import com.intellij.openapi.fileEditor.ex.FileEditorProviderManager
+import com.intellij.openapi.fileEditor.impl.EditorFileSwapper
+import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
+import com.intellij.openapi.fileEditor.impl.EditorWithProviderComposite
 import com.intellij.openapi.project.IndexNotReadyException
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope.getProjectScope
-import com.intellij.psi.search.ProjectScopeImpl
-import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
 import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.util.getDocument
-import com.ruin.lsp.util.location
-import com.ruin.lsp.util.toOffset
-import com.ruin.lsp.util.withEditor
+import com.ruin.lsp.util.*
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.jetbrains.kotlin.backend.common.push
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
@@ -68,7 +77,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
             val targetElements = GotoDeclarationAction.findTargetElementsNoVS(ctx.project, editor, offset, false)
             val elementAtPointer = ctx.file.findElementAt(TargetElementUtil.adjustOffset(ctx.file, editor.document, offset))
-            val results = targetElements?.mapNotNull { it.location() }
+            val results = targetElements?.mapNotNull { it.sourceLocationIfPossible() }
             loc = if (results?.isNotEmpty() == true) {
                 results.toMutableList()
             } else {
@@ -137,7 +146,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
                     else -> it
                 }
 
-                results.push(resolved.location())
+                results.push(resolved.sourceLocationIfPossible())
             }
             if (results.isNotEmpty()) {
                 return results
@@ -156,7 +165,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         try {
             val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
             val superDeclarations = findSuperDeclarations(descriptor) ?: return null
-            return superDeclarations.map { it.location() }.toMutableList()
+            return superDeclarations.map { it.sourceLocationIfPossible() }.toMutableList()
         } catch (e: IndexNotReadyException) {
             return mutableListOf()
         }
