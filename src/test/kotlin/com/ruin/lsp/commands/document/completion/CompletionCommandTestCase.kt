@@ -25,4 +25,18 @@ class CompletionCommandTestCase : CompletionCommandTestBase() {
 
     fun `test class completion`() =
         checkContainsCompletion(Position(13, 17), false,"org.lsp.javaproject.Dummy", "Dummy")
+
+    fun `test does a thing`() =
+        doAThing("""
+public static class Dood {
+  private int thing = 1;
+  public static void main(String[] args) {
+    Asd<caret>
+  }
+
+  class Asdfg {
+    public int zxcvh = 2;
+  }
+}
+        """.trimIndent(), false, "list", "list")
 }

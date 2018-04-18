@@ -18,4 +18,18 @@ abstract class CompletionCommandTestBase : FileEditingTestCase() {
         assertTrue("Expected $expected, $expectedInsert to be included but got: \n${result.right}",
             result.right.items.any { it.label == expected && it.insertText == expectedInsert })
     }
+
+    protected fun doAThing(code: String, snippet: Boolean, expected: String, expectedInsert: String) {
+        val file = myFixture.configureByText("Dood.java", code)
+        val pos = myFixture.editor.caretModel.logicalPosition
+
+        val command = CompletionCommand(Position(pos.line, pos.column), snippet)
+        val result = invokeCommandAndWait(command, myFixture.project, file)
+        assertTrue(result.right.items.all {
+            it.insertTextFormat == InsertTextFormat.PlainText ||
+                it.insertTextFormat == InsertTextFormat.Snippet
+        })
+        assertTrue("Expected $expected, $expectedInsert to be included but got: \n${result.right}",
+            result.right.items.any { it.label == expected && it.insertText == expectedInsert })
+    }
 }
