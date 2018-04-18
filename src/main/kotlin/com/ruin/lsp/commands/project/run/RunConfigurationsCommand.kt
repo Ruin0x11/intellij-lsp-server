@@ -1,4 +1,4 @@
-package com.ruin.lsp.commands.project.runconfigurations
+package com.ruin.lsp.commands.project.run
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings

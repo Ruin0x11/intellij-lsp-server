@@ -1,17 +1,14 @@
-package com.ruin.lsp.commands.project.runconfigurations
+package com.ruin.lsp.commands.project.run
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.application.ApplicationConfiguration
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.JavaCommandLine
-import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.DefaultJavaProgramRunner
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.ruin.lsp.commands.ProjectCommand
-import com.ruin.lsp.model.RunConfigurationDescription
 import com.ruin.lsp.model.RunProjectCommandLine
 
 class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectCommandLine> {
@@ -34,7 +31,6 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
                         return RunProjectCommandLine(line.preparedCommandLine, line.workDirectory.absolutePath, classpath)
                     }
                 }
-
             }
         }
 
