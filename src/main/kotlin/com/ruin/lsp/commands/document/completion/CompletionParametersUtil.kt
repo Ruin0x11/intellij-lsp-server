@@ -31,7 +31,7 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = CompletionParameters::class.java.getDeclaredConstructor(
                 PsiElement::class.java /* position */, PsiFile::class.java /* originalFile */,
                 CompletionType::class.java, Int::class.javaPrimitiveType /* offset */, Int::class.javaPrimitiveType /* invocationCount */,
-                Editor::class.java, CompletionProcess::class.java
+                Editor::class.java
             )
             ctor.isAccessible = true
             sConstructor = ctor
@@ -39,7 +39,7 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = cached
         }
 
-        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor, VoidCompletionProcess())
+        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor)
     } catch (e: Throwable) {
         e.printStackTrace()
     }
