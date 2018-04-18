@@ -1,7 +1,9 @@
 package com.ruin.lsp
 
 import com.ruin.lsp.util.*
+import com.ruin.lsp.values.DocumentUri
 import java.io.File
+import kotlin.test.assertEquals
 
 
 class ProjectUtilTest : BaseTestCase() {
@@ -75,6 +77,21 @@ class ProjectUtilTest : BaseTestCase() {
                 "Expected: $expected\n" +
                     "Got: $it"
             }) }
+    }
+
+
+    fun `test converts file extracted from jar to internal source dir`() {
+        val tempDir = "file:///tmp/"
+        val expected: Pair<String, DocumentUri> = Pair("org/ruin/stuff/MyClass.class", "file:///tmp/lsp-intellij/my-library/jarpath")
+
+        val cases = listOf(
+            "file:///tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class",
+            "file://tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class"
+        ).map { jarExtractedFileToJarpathFile(it, tempDir) }
+
+        cases.forEach {
+            assertEquals(expected, it)
+        }
     }
 }
 

@@ -4,7 +4,7 @@
 
 ;; Author:  Ruin0x11
 ;; Keywords: java
-;; Package-Requires: ((emacs "25.1") (lsp-mode "3.0"))
+;; Package-Requires: ((emacs "25.1") (lsp-mode "4.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -64,60 +64,107 @@ of matched directories.  Nil otherwise."
                  (not (file-exists-p (expand-file-name f (lsp-intellij--parent dir)))))))))
    list))
 
+(defun lsp-intellij--any-value-in-hash (hash-table)
+  (block nil
+    (maphash (lambda (k v) (return v))
+             hash-table)))
+
+(defun lsp-intellij--is-extracted-jar-file (file-name)
+  (or
+   ;; extracted from archive-mode (prevents error when LSP mode hooks run)
+   (and (string-match-p "\.jar:[a-zA-Z]+" file-name) (not (file-exists-p file-name)))
+   ;; extracted using lsp-intellij
+   (string-match-p (regexp-quote temporary-file-directory) file-name)))
+
 (defun lsp-intellij--get-root ()
-  (let ((file (locate-dominating-file (buffer-file-name)
-                                      (lambda (parent)
-                                        (when (directory-name-p parent)
-                                          (directory-files parent nil ".*.iml"))))))
-    (when (not file)
-      (error "No root found."))
-    (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
-          (has-pom (> (length pom) 0))
-          (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
-                    (lsp-intellij--root-top-down-recurring file '("pom.xml"))
-                  file)))
-      (file-name-directory root))))
+  (if (lsp-intellij--is-extracted-jar-file (buffer-file-name))
+      (lsp--workspace-root (lsp-intellij--any-value-in-hash lsp--workspaces))
+    (let ((file (locate-dominating-file (buffer-file-name)
+                                        (lambda (parent)
+                                          (when (directory-name-p parent)
+                                            (directory-files parent nil ".*.iml"))))))
+      (when (not file)
+        (error "No root found."))
+      (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
+             (has-pom (> (length pom) 0))
+             (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
+                       (lsp-intellij--root-top-down-recurring file '("pom.xml"))
+                     file)))
+        (file-name-directory root)))))
 
-(defun lsp-intellij--locations-to-xref-items (locations)
-  "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."
-  (let* ((filtered-locs (seq-filter
-                         (lambda (loc)
-                           (string-prefix-p "file" (gethash "uri" loc)))
-                         locations))
-         (fn (lambda (loc) (lsp--uri-to-path (gethash "uri" loc))))
-         ;; locations-by-file is an alist of the form
-         ;; ((FILENAME . LOCATIONS)...), where FILENAME is a string of the
-         ;; actual file name, and LOCATIONS is a list of Location objects
-         ;; pointing to Ranges inside that file.
-         (locations-by-file (seq-group-by fn filtered-locs))
-         (items-by-file (mapcar #'lsp--get-xrefs-in-file locations-by-file)))
-    (apply #'append items-by-file)))
+(defun lsp-intellij--make-jar-temp-path (jar-path internal-path)
+  "Return a temporary path for the file in the jar at JAR-PATH, INTERNAL-PATH, to be extracted to."
+  (let* ((jar-file-name (file-name-base jar-path))
+         (temp-path (concat temporary-file-directory "lsp-intellij/" jar-file-name "/")))
+    temp-path))
 
+(defun lsp-intellij--write-jar-metadata (archive-path dest)
+  "Write a metadata file that points to jar file ARCHIVE-PATH at DEST.
 
-(defun lsp-intellij--xref-backend () 'xref-lsp-intellij)
+Used for allowing IntelliJ to find the actual jar an extracted jar file is contained in."
+  (with-temp-buffer
+    (insert (lsp--path-to-uri archive-path))
+    (write-file (concat dest "jarpath") nil)))
 
-(cl-defmethod xref-backend-apropos ((_backend (eql xref-lsp-intellij)) pattern)
-  (let* ((symbols (lsp--send-request (lsp--make-request
-                                     "workspace/symbol"
-                                     `(:query ,pattern))))
-         ;; filter out paths inside JARs
-         (filtered-syms (seq-filter
-                         (lambda (sym)
-                           (string-prefix-p "file" (gethash "uri" (gethash "location" sym))))
-                         symbols)))
-    (mapcar 'lsp--symbol-information-to-xref filtered-syms)))
+(defun lsp-intellij--extract-archive-file (source-archive original-archive internal-path dest)
+  "Extracts the file inside a .jar SOURCE-ARCHIVE at INTERNAL-PATH to DEST.
 
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-lsp-intellij)))
-  (xref-backend-identifier-at-point 'xref-lsp))
+Also writes the location of ORIGINAL-ARCHIVE, containing the compiled classes, so IntelliJ can find it."
+  (let* ((internal-dir (substring (file-name-directory internal-path) 1))
+         (internal-file (file-name-nondirectory internal-path))
+         (internal-name (file-name-sans-extension internal-file))
+         (search-string (concat internal-dir internal-name)))
+    (save-window-excursion
+      (find-file source-archive)
+      (let ((archive-buffer (current-buffer)))
+        (goto-char (point-min))
+        (re-search-forward search-string)
+        (archive-extract)
+        (let ((extract-buffer (current-buffer))
+              (outpath (concat dest internal-dir (file-name-nondirectory (buffer-file-name)))))
+          (mkdir (file-name-directory outpath) t)
+          (lsp-intellij--write-jar-metadata original-archive dest)
+          (write-file outpath nil)
+          (kill-buffer archive-buffer)
+          (kill-buffer extract-buffer)
+          outpath)))))
 
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-lsp-intellij)))
-  (xref-backend-identifier-completion-table 'xref-lsp))
+(defconst lsp-intellij--file-extracted-from-jar-regex
+  "\\\.\\(java\\|kt\\|scala\\|xml\\|MF\\)$")
 
-(cl-defmethod xref-backend-definitions ((_backend (eql xref-lsp-intellij)) identifier)
-  (xref-backend-definitions 'xref-lsp identifier))
+(defun lsp-intellij--extracted-file-exists (basename temp-path)
+  "Test if a file with name BASENAME at TEMP-PATH has been extracted from a jar.
 
-(cl-defmethod xref-backend-references ((_backend (eql xref-lsp-intellij)) identifier)
-  (xref-backend-references 'xref-lsp identifier))
+Used for finding the corresponding .java/.kt file from a jar's .class file.
+Return the file path if found, nil otherwise."
+  (and (file-exists-p temp-path)
+       (cl-find-if (lambda (s) (and (eq (file-name-sans-extension s) basename)
+                                    (string-match-p lsp-intellij--file-extracted-from-jar-regex s)))
+                   (directory-files temp-path))))
+
+(defun lsp-intellij--visit-jar-uri (uri)
+  "Visit a URI with the jar:// protocol by extracting the from the jar and visiting it."
+  (let* ((url (url-generic-parse-url uri))
+         (drive-letter (url-host url))
+         (raw (url-filename url))
+         (paths (split-string raw "!"))
+         (jar-path (concat drive-letter ":" (car paths)))
+         (internal-path (cadr paths))
+         (sources-jar-path (replace-regexp-in-string "\.jar$" "-sources.jar" jar-path))
+         (jar-to-extract (if (file-exists-p sources-jar-path) sources-jar-path jar-path))
+         (temp-path (lsp-intellij--make-jar-temp-path jar-to-extract internal-path)))
+
+    ;; For now, just error if no sources are found.
+    ;; In the future we could request IntelliJ to give us the decompiled .class file source.
+    (if (file-exists-p sources-jar-path)
+        (if-let ((existing-file
+                  (lsp-intellij--extracted-file-exists
+                   (file-name-base internal-path)
+                   temp-path)))
+            existing-file
+          (lsp-intellij--extract-archive-file
+           jar-to-extract jar-to-extract internal-path temp-path))
+      (error "No sources found for file in JAR: %s" uri))))
 
 (defun lsp-intellij-find-implementations ()
   "List all implementations for the Java element at point."
@@ -141,7 +188,7 @@ of matched directories.  Nil otherwise."
    t))
 
 (defun lsp-intellij-toggle-frame-visibility ()
-  "Toggles visibility of the current project's frame."
+  "Toggle visibility of the current project's frame."
   (interactive)
   (lsp--cur-workspace-check)
   (lsp--send-request
@@ -152,7 +199,7 @@ of matched directories.  Nil otherwise."
 
 (defun lsp-intellij--render-string (str mode)
   (condition-case nil
-    (with-temp-buffer
+      (with-temp-buffer
         (delay-mode-hooks (funcall mode))
         (insert str)
         (font-lock-ensure)
@@ -168,7 +215,7 @@ of matched directories.  Nil otherwise."
 lsp-mode requires a process to be opened when starting a server over
 TCP, even if it isn't the one being communicated with.")
 
-(defconst lsp-intellij--handlers
+(defconst lsp-intellij--notification-handlers
   '(("idea/indexStarted" .
      (lambda (_w _p)
        (message "Indexing started.")
@@ -178,9 +225,17 @@ TCP, even if it isn't the one being communicated with.")
        (message "Indexing finished.")
        (setq lsp-status nil)))))
 
+(defconst lsp-intellij--request-handlers
+  '(("idea/temporaryDirectory" .
+     (lambda (_w _p)
+       (list :directory (lsp--path-to-uri temporary-file-directory))))))
+
 (defun lsp-intellij--initialize-client (client)
   (mapcar #'(lambda (p) (lsp-client-on-notification client (car p) (cdr p)))
-	  lsp-intellij--handlers)
+          lsp-intellij--notification-handlers)
+  (mapcar #'(lambda (p) (lsp-client-on-request client (car p) (cdr p)))
+          lsp-intellij--request-handlers)
+
   ;; Emacs strips out the \r in \r\n by default, even with lsp-mode,
   ;; so the proper coding system needs to be set to capture the \r\n.
   (setq-local default-process-coding-system (cons 'utf-8 'utf-8))
@@ -188,9 +243,10 @@ TCP, even if it isn't the one being communicated with.")
   (setq-local coding-system-for-write 'binary)
   ;; Ensure the client uses the server's sync method
   (setq-local lsp-document-sync-method nil)
-  (add-hook 'lsp-after-open-hook (lambda () (setq-local xref-backend-functions (list #'lsp-intellij--xref-backend))))
+
   (lsp-provide-marked-string-renderer client "java" (lambda (s) (lsp-intellij--render-string s 'java-mode)))
-  (lsp-provide-marked-string-renderer client "kotlin" (lambda (s) (lsp-intellij--render-string s 'kotlin-mode))))
+  (lsp-provide-marked-string-renderer client "kotlin" (lambda (s) (lsp-intellij--render-string s 'kotlin-mode)))
+  (lsp-client-register-uri-handler client "jar" 'lsp-intellij--visit-jar-uri))
 
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
                        "127.0.0.1" 8080

@@ -16,6 +16,14 @@ import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.containers.MultiMap
 import java.util.ArrayList
 import java.util.LinkedHashSet
+import kotlin.Any
+import kotlin.Array
+import kotlin.Boolean
+import kotlin.Comparable
+import kotlin.Comparator
+import kotlin.Exception
+import kotlin.Int
+import kotlin.String
 
 /**
  * Mostly a copy of CompletionLookupArranger with the important parts for sorting completion items gutted out.

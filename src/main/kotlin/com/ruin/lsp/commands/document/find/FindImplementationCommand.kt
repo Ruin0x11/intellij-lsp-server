@@ -9,7 +9,10 @@ import com.intellij.psi.PsiElement
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.util.*
+import com.ruin.lsp.util.ensureTargetElement
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.util.toOffset
+import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 
@@ -26,7 +29,7 @@ class FindImplementationCommand(val position: Position) : DocumentCommand<Mutabl
         }
         val implementations = ref.get()
 
-        return implementations?.map{ it.location() }?.toMutableList() ?: mutableListOf()
+        return implementations?.map{ it.sourceLocationIfPossible() }?.toMutableList() ?: mutableListOf()
     }
 }
 

@@ -17,7 +17,7 @@ import java.io.IOException
 import java.lang.reflect.Constructor
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.commands.completion.CompletionParametersUtil")
-var sConstructor: Constructor<CompletionParameters>? = null
+private var sConstructor: Constructor<CompletionParameters>? = null
 
 fun newInstance(position: PsiElement?, originalFile: PsiFile,
                 completionType: CompletionType, offset: Int, invocationCount: Int, editor: Editor): CompletionParameters? {

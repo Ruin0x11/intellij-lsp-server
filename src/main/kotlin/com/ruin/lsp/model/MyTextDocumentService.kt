@@ -38,10 +38,10 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, FindDefinitionCommand(position.position), server.client)
 
     override fun formatting(params: DocumentFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options))
+        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options), server.client)
 
     override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options, params.range))
+        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options, params.range), server.client)
 
     override fun onTypeFormatting(params: DocumentOnTypeFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
