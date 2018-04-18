@@ -234,11 +234,6 @@ fun getVirtualFile(project: Project, filePath: String): VirtualFile {
 
 fun getJarVirtualFile(jarUri: DocumentUri) = VirtualFileManager.getInstance().findFileByUrl(jarUri)
 
-//fun getJarVirtualFile(jarUri: DocumentUri): VirtualFile {
-//    JarFileSystem.JAR_SEPARATOR
-//    return JarFileSystem.getInstance().getVirtualFileForJar()
-//}
-
 fun getDocument(project: Project, uri: String): Document? {
     val normalizedUri = normalizeUri(uri)
     val filePath = projectRelativeFilePath(project, normalizedUri) ?: return null
@@ -278,12 +273,7 @@ fun getLibrarySourceVirtualFile(virtual: VirtualFile, index: ProjectFileIndex): 
 }
 
 fun getDocument(file: PsiFile): Document? {
-    var virtual = file.virtualFile ?: return file.viewProvider.document
-
-//    val index = ProjectFileIndex.getInstance(file.project)
-//    if (index.isInLibraryClasses(virtual)) {
-//        virtual = getLibrarySourceVirtualFile(virtual, index) ?: virtual
-//    }
+    val virtual = file.virtualFile ?: return file.viewProvider.document
 
     var doc = FileDocumentManager.getInstance()
         .getDocument(virtual)
