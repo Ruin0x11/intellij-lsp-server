@@ -105,7 +105,7 @@ fun PsiElement.sourceLocationIfPossible(): Location {
         if (newFilePair != null) return@forEach
     }
 
-    if (newFilePair == null) {
+    if (newFilePair == null || newFilePair?.first == null || newFilePair?.second == null) {
         return location
     }
 

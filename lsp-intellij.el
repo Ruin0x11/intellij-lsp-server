@@ -92,47 +92,6 @@ of matched directories.  Nil otherwise."
                      file)))
         (file-name-directory root)))))
 
-(defun lsp-intellij--locations-to-xref-items (locations)
-  "Return a list of `xref-item' from LOCATIONS, except for those inside JARs."
-  (let* ((filtered-locs (seq-filter
-                         (lambda (loc)
-                           (string-prefix-p "file" (gethash "uri" loc)))
-                         locations))
-         (fn (lambda (loc) (lsp--uri-to-path (gethash "uri" loc))))
-         ;; locations-by-file is an alist of the form
-         ;; ((FILENAME . LOCATIONS)...), where FILENAME is a string of the
-         ;; actual file name, and LOCATIONS is a list of Location objects
-         ;; pointing to Ranges inside that file.
-         (locations-by-file (seq-group-by fn filtered-locs))
-         (items-by-file (mapcar #'lsp--get-xrefs-in-file locations-by-file)))
-    (apply #'append items-by-file)))
-
-
-(defun lsp-intellij--xref-backend () 'xref-lsp-intellij)
-
-(cl-defmethod xref-backend-apropos ((_backend (eql xref-lsp-intellij)) pattern)
-  (let* ((symbols (lsp--send-request (lsp--make-request
-                                     "workspace/symbol"
-                                     `(:query ,pattern))))
-         ;; filter out paths inside JARs
-         (filtered-syms (seq-filter
-                         (lambda (sym)
-                           (string-prefix-p "file" (gethash "uri" (gethash "location" sym))))
-                         symbols)))
-    (mapcar 'lsp--symbol-information-to-xref filtered-syms)))
-
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-lsp-intellij)))
-  (xref-backend-identifier-at-point 'xref-lsp))
-
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-lsp-intellij)))
-  (xref-backend-identifier-completion-table 'xref-lsp))
-
-(cl-defmethod xref-backend-definitions ((_backend (eql xref-lsp-intellij)) identifier)
-  (xref-backend-definitions 'xref-lsp identifier))
-
-(cl-defmethod xref-backend-references ((_backend (eql xref-lsp-intellij)) identifier)
-  (xref-backend-references 'xref-lsp identifier))
-
 (defun lsp-intellij--make-jar-temp-path (jar-path internal-path)
   "Return a temporary path for the file in the jar at JAR-PATH, INTERNAL-PATH, to be extracted to."
   (let* ((jar-file-name (file-name-base jar-path))
@@ -284,7 +243,6 @@ TCP, even if it isn't the one being communicated with.")
   (setq-local coding-system-for-write 'binary)
   ;; Ensure the client uses the server's sync method
   (setq-local lsp-document-sync-method nil)
-  (add-hook 'lsp-after-open-hook (lambda () (setq-local xref-backend-functions (list #'lsp-intellij--xref-backend))))
 
   (lsp-provide-marked-string-renderer client "java" (lambda (s) (lsp-intellij--render-string s 'java-mode)))
   (lsp-provide-marked-string-renderer client "kotlin" (lambda (s) (lsp-intellij--render-string s 'kotlin-mode)))

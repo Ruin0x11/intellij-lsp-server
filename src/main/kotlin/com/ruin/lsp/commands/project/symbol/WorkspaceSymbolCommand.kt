@@ -11,9 +11,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.impl.light.LightElement
+import com.intellij.psi.search.ProjectScope
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.commands.document.find.sourceLocationIfPossible
 import com.ruin.lsp.util.*
@@ -32,8 +34,8 @@ class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<Sym
 
         val ref: Ref<List<SearchResult>> = Ref(listOf())
         ApplicationManager.getApplication().invokeAndWait {
-            var symbols = getSymbols(ctx, query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
-            var classes = getClasses(query, MAX_SYMBOLS, true, NonInteractiveChooseByName(ctx, gotoClassModel, null))
+            val symbols = getSymbols(ctx, query, MAX_SYMBOLS, false, NonInteractiveChooseByName(ctx, gotoSymbolModel, null))
+            val classes = getClasses(ctx, query, MAX_SYMBOLS, false, NonInteractiveChooseByName(ctx, gotoClassModel, null))
             ref.set(listOf(symbols, classes))
         }
 
@@ -73,11 +75,12 @@ class SearchResult : ArrayList<Any>() {
 }
 
 /** copied from SearchEverywhereAction */
-private fun getClasses(pattern: String, max: Int, includeLibs: Boolean, chooseByNamePopup: ChooseByNameBase?): SearchResult {
+private fun getClasses(project: Project, pattern: String, max: Int, includeLibs: Boolean, chooseByNamePopup: ChooseByNameBase?): SearchResult {
     val classes = SearchResult()
     if (chooseByNamePopup == null || shouldSkipPattern(pattern)) {
         return classes
     }
+    val scope = ProjectScope.getProjectScope(project)
     val myProgressIndicator = DaemonProgressIndicator()
     chooseByNamePopup.provider.filterElements(chooseByNamePopup, pattern, includeLibs,
         myProgressIndicator) { o ->
@@ -86,13 +89,17 @@ private fun getClasses(pattern: String, max: Int, includeLibs: Boolean, chooseBy
                 classes.needMore = true
                 return@filterElements false
             }
-            classes.add(o)
+            val element = o as? PsiClass
+            val virtualFile = SearchEverywhereClassifier.EP_Manager.getVirtualFile(o)
+            val isElementWithoutFile = element != null && element.containingFile == null
+            val isFileInScope = virtualFile != null && (includeLibs || scope?.accept(virtualFile))
+            if (isElementWithoutFile || isFileInScope) {
+                classes.add(o)
+            }
         }
         true
     }
-    return if (!includeLibs && classes.isEmpty()) {
-        getClasses(pattern, max, true, chooseByNamePopup)
-    } else classes
+    return classes
 }
 
 /** copied from SearchEverywhereAction */
@@ -101,7 +108,7 @@ private fun getSymbols(project: Project, pattern: String, max: Int, includeLibs:
     if (!Registry.`is`("search.everywhere.symbols") || shouldSkipPattern(pattern)) {
         return symbols
     }
-    val scope = getProjectScope(project)
+    val scope = ProjectScope.getProjectScope(project)
     val myProgressIndicator = DaemonProgressIndicator()
     chooseByNamePopup.provider.filterElements(chooseByNamePopup, pattern, includeLibs,
         myProgressIndicator) { o ->
@@ -124,11 +131,7 @@ private fun getSymbols(project: Project, pattern: String, max: Int, includeLibs:
         symbols.needMore = symbols.size == max
         !symbols.needMore
     }
-
-    return if (!includeLibs && symbols.isEmpty()) {
-        getSymbols(project, pattern, max, true, chooseByNamePopup)
-    } else symbols
-
+    return symbols
 }
 
 class NonInteractiveChooseByName(project: Project, model: ChooseByNameModel, context: PsiElement?)
