@@ -1,26 +1,9 @@
 package com.ruin.lsp.commands.document.find
 
-import com.intellij.codeEditor.JavaEditorFileSwapper
 import com.intellij.codeInsight.TargetElementUtil
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProcess
-import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.ScrollType
-import com.intellij.openapi.extensions.Extensions
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
-import com.intellij.openapi.fileEditor.ex.FileEditorProviderManager
-import com.intellij.openapi.fileEditor.impl.EditorFileSwapper
-import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
-import com.intellij.openapi.fileEditor.impl.EditorWithProviderComposite
 import com.intellij.openapi.project.IndexNotReadyException
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.search.ProjectScope.getProjectScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
@@ -30,10 +13,12 @@ import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
-import com.ruin.lsp.util.*
+import com.ruin.lsp.util.getDocument
+import com.ruin.lsp.util.location
+import com.ruin.lsp.util.toOffset
+import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
 import org.jetbrains.kotlin.backend.common.push
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
@@ -47,7 +32,7 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
-import java.util.ArrayList
+import java.util.*
 
 class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
     override fun execute(ctx: ExecutionContext): MutableList<Location> {

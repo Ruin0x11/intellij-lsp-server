@@ -2,14 +2,12 @@ package com.ruin.lsp.commands.document.hover
 
 import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.lang.Language
-import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.lang.documentation.DocumentationProvider
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.util.Ref
-import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.util.withEditor

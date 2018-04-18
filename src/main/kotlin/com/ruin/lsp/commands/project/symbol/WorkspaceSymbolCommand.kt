@@ -2,11 +2,9 @@ package com.ruin.lsp.commands.project.symbol
 
 import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.ide.actions.SearchEverywhereClassifier
-import com.intellij.ide.actions.SearchEverywhereClassifier.EP_Manager.getProjectScope
 import com.intellij.ide.util.gotoByName.*
 import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.registry.Registry
@@ -14,17 +12,13 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.impl.light.LightElement
 import com.intellij.psi.search.ProjectScope
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.commands.document.find.sourceLocationIfPossible
-import com.ruin.lsp.util.*
-import com.ruin.lsp.values.DocumentUri
+import com.ruin.lsp.util.symbolKind
+import com.ruin.lsp.util.symbolName
 import org.eclipse.lsp4j.SymbolInformation
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
-import org.jetbrains.kotlin.asJava.elements.KtLightMethod
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.KtFunction
 
 const val MAX_SYMBOLS = 100
 class WorkspaceSymbolCommand(val query: String) : ProjectCommand<MutableList<SymbolInformation>> {

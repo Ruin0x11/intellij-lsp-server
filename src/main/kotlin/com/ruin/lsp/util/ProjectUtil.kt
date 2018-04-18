@@ -43,7 +43,6 @@ import java.util.*
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
-private val SOURCE_FILE_TO_CLASS_REGEX = """\.(java|kt|scala)$""".toRegex()
 private val POSSIBLE_SOURCE_EXTENSIONS = listOf(".java", ".kt", ".scala")
 
 fun ensurePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null) = resolvePsiFromUri(project, uri, client)

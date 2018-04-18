@@ -1,6 +1,6 @@
 package com.ruin.lsp.commands.document.symbol
 
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.LanguageServerException
