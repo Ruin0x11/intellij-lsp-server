@@ -8,6 +8,7 @@ import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
 import com.intellij.task.*
 import com.intellij.util.concurrency.Semaphore
 import com.ruin.lsp.commands.ProjectCommand
@@ -38,6 +39,8 @@ class BuildProjectCommand(private val id: String,
             id = env.assignNewExecutionId()
         }
         ExecutionManagerImpl.EXECUTION_SESSION_ID_KEY.set(env, id)
+
+        VirtualFileManagerImpl.getInstance().syncRefresh()
 
         try {
             //val done = Semaphore()
