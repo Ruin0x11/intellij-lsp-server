@@ -50,6 +50,7 @@ fun ensurePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClien
 
 fun resolvePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null): PsiFile? {
     if (client != null) {
+        // TODO: deadlock
         val tempDirectory = client.temporaryDirectory().get().directory
         val prefix = tempDirectory.uriCommonPrefixWith(uri)
         if (prefix == tempDirectory) {

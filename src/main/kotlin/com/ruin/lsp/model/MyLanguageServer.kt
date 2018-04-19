@@ -104,7 +104,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         asInvokeAndWaitFuture(context.rootProject!!, RunConfigurationsCommand())
 
     override fun buildProject(params: BuildProjectParams): CompletableFuture<BuildProjectResult> =
-        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors))
+        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors, client!!))
 
     override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
         asInvokeAndWaitFuture(context.rootProject!!, RunProjectCommand(params.id))

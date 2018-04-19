@@ -13,13 +13,16 @@ import com.intellij.task.*
 import com.intellij.util.concurrency.Semaphore
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.model.BuildProjectResult
+import com.ruin.lsp.model.BuildResult
+import com.ruin.lsp.model.MyLanguageClient
 import org.slf4j.LoggerFactory
 
 private val LOG = LoggerFactory.getLogger(BuildProjectCommand::class.java)
 
 class BuildProjectCommand(private val id: String,
                           private val forceMakeProject: Boolean,
-                          private val ignoreErrors: Boolean) : ProjectCommand<BuildProjectResult> {
+                          private val ignoreErrors: Boolean,
+                          private val client: MyLanguageClient) : ProjectCommand<BuildProjectResult> {
     override fun execute(ctx: Project): BuildProjectResult {
         val runManager = RunManager.getInstance(ctx) as RunManagerImpl
         val setting = runManager.getConfigurationById(id) ?: return BuildProjectResult(false)
@@ -45,14 +48,7 @@ class BuildProjectCommand(private val id: String,
         try {
             //val done = Semaphore()
             //done.down()
-            val callback = ProjectTaskNotification { executionResult ->
-                if ((executionResult.errors == 0 || ignoreErrors) && !executionResult.isAborted) {
-                    LOG.info("===== Compile Finished =====")
-                } else {
-                    LOG.info("!!!!!  Compile Failed  !!!!!\n$executionResult")
-                }
-                //done.up()
-            }
+            val callback = notifyBuildFinished(client)
 
             TransactionGuard.submitTransaction(ctx, Runnable {
                 val sessionId = ExecutionManagerImpl.EXECUTION_SESSION_ID_KEY.get(env)
@@ -64,7 +60,7 @@ class BuildProjectCommand(private val id: String,
                 }
             })
             // can't wait here, as CompileDriver will try to run the callback that releases the semaphore on the EDT
-            // after the compile finishes, which causes a deadlock as we're already in the EDT.
+            // after the compile finishes, which causes a deadlock as we're already on the EDT.
             //done.waitFor()
         } catch (e: Exception) {
             return BuildProjectResult(false)
@@ -72,4 +68,14 @@ class BuildProjectCommand(private val id: String,
 
         return BuildProjectResult(true)
     }
+
+    private fun notifyBuildFinished(client: MyLanguageClient): ProjectTaskNotification {
+        return ProjectTaskNotification { executionResult ->
+            // TODO: somehow get a CompileContextImpl and send the actual error messages/locations
+            client.notifyBuildFinished(executionResult.buildResult())
+        }
+    }
+
+    private fun ProjectTaskResult.buildResult() =
+        BuildResult(errors, warnings, isAborted)
 }

@@ -205,30 +205,61 @@ Return the file path if found, nil otherwise."
                         (list :textDocument (lsp-text-document-identifier)
                               :id (gethash "id" config))))))
 
-         (if (not (gethash "command" command))
-             (error "Run configuration unsupported: %s" (gethash "name" config))
-           (let ((default-directory (gethash "workingDirectory" command))
-                 (command-str (replace-regexp-in-string "\n" " "
-                                                        (gethash "command" command))))
-             (setenv "CLASSPATH" (gethash "classpath" command))
-             (compile command-str))))
+         (cond
+          ((not (gethash "command" command))
+           (error "Run configuration unsupported: %s" (gethash "name" config)))
+
+          ((gethash "needsRebuild" command)
+           (progn
+             (setq lsp-intellij--run-after-build-command command)
+             (lsp-intellij--do-build-project config)))
+
+          (t (lsp-intellij--do-run-project command))))
      (message "No run configurations were found.")))
+
+(defun lsp-intellij--do-run-project (command)
+  (let ((default-directory (gethash "workingDirectory" command))
+        (command-str (replace-regexp-in-string "\n" " "
+                                               (gethash "command" command))))
+    (setenv "CLASSPATH" (gethash "classpath" command))
+    (compile command-str)))
+
+;; TODO: make a hash listing a build per config
+(defvar lsp-intellij--run-after-build-command nil
+  "Run configuration to run after the current build finishes")
 
 (defun lsp-intellij-build-project ()
   "Start building a project using an IntelliJ run configuration."
   (interactive)
   (if-let ((config (lsp-intellij--choose-run-configuration)))
-      (let ((command (lsp--send-request
-                      (lsp--make-request
-                       "idea/buildProject"
-                       (list :textDocument (lsp-text-document-identifier)
-                             :id (gethash "id" config)
-                             :forceMakeProject nil
-                             :ignoreErrors nil)))))
-        (if (not (gethash "started" command))
-            (error "Build failed to start")
-          (message "Build started.")))
+      (lsp-intellij--do-build-project config)
     (message "No run configurations were found.")))
+
+(defun lsp-intellij--do-build-project (config)
+  (let ((command (lsp--send-request
+                  (lsp--make-request
+                   "idea/buildProject"
+                   (list :textDocument (lsp-text-document-identifier)
+                         :id (gethash "id" config)
+                         :forceMakeProject nil
+                         :ignoreErrors nil)))))
+    (if (not (gethash "started" command))
+        (error "Build failed to start")
+      (message "Build started."))))
+
+(defun lsp-intellij--on-build-finished (workspace params)
+  (let ((errors (gethash "errors" params))
+        (warnings (gethash "warnings" params))
+        (is-aborted (gethash "isAborted" params)))
+    (cond
+     ((> errors 0) (message "Build failed with %s errors and %s warnings." errors warnings))
+     (is-aborted (message "Build was aborted."))
+     (t (progn
+          (message "Build finished with %s warnings." warnings)
+          (when-let ((command lsp-intellij--run-after-build-command))
+            (lsp-intellij--do-run-project command)
+            (setq lsp-intellij--run-after-build-command nil))))
+     )))
 
 (defun lsp-intellij-open-project-structure ()
   "Open the Project Structure dialog for the current project."
@@ -276,7 +307,10 @@ TCP, even if it isn't the one being communicated with.")
     ("idea/indexFinished" .
      (lambda (_w _p)
        (message "Indexing finished.")
-       (setq lsp-status nil)))))
+       (setq lsp-status nil)))
+    ("idea/buildFinished" .
+     (lambda (w p)
+       (lsp-intellij--on-build-finished w p)))))
 
 (defconst lsp-intellij--request-handlers
   '(("idea/temporaryDirectory" .

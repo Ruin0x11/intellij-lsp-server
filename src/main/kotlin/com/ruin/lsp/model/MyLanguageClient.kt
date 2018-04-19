@@ -15,6 +15,10 @@ interface MyLanguageClient : LanguageClient {
 
     @JsonNotification("idea/indexFinished")
     fun notifyIndexFinished()
+
+    @JsonNotification("idea/buildFinished")
+    fun notifyBuildFinished(result: BuildResult)
 }
 
 data class TemporaryDirectoryResult(val directory: DocumentUri)
+data class BuildResult(val errors: Int, val warnings: Int, val isAborted: Boolean)
