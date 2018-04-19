@@ -94,7 +94,7 @@ allprojects {
 val versionSuffix = if (channel.isBlank()) "" else "-$channel"
 
 project(":") {
-    version = "0.1"
+    version = "0.2"
     intellij {
         pluginName = "intellij-lsp-server"
     }
