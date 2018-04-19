@@ -1,8 +1,9 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.fileTypes.FileType
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.JAVA_PROJECT
-import org.eclipse.lsp4j.Position
 
 class CompletionCommandTestCase : CompletionCommandTestBase() {
     override val projectName: String
@@ -11,32 +12,36 @@ class CompletionCommandTestCase : CompletionCommandTestBase() {
     override val filePath: String
         get() = DUMMY_FILE_PATH
 
+    override val fileType = JavaFileType.INSTANCE!!
+
     fun `test function completion`() =
-        checkContainsCompletion(Position(13, 29), false, "boring() : void", "boring()")
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |   public void myFunction() { }
+            |}
+            """.trimMargin(), "new MyClass().myF<caret>", "myFunction() : void", "myFunction()")
 
-    fun `test function completion with parameter`() =
-        checkContainsCompletion(Position(46, 32), false, "answerQuestion(String question) : int", "answerQuestion(")
+    fun `test function with parameter completion`() =
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |   public int myFunction(int number) { return 1; }
+            |}
+            """.trimMargin(), "new MyClass().myF<caret>", "myFunction(int number) : int", "myFunction(")
 
-    fun `test function snippet`() =
-        checkContainsCompletion(Position(13, 29), true, "notBoring(int number) : void", "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
+    fun `test function snippet completion`() =
+        doTestWithSnippet("MyClass.java", """
+            |public class MyClass {
+            |   public int myFunction(int number) { return 1; }
+            |}
+            """.trimMargin(), "new MyClass().myF<caret>", "myFunction(int number) : int", "myFunction(${'$'}${'{'}1:number${'}'})${'$'}0")
 
     fun `test variable completion`() =
-        checkContainsCompletion(Position(15, 12), false,"list : ArrayList<String>", "list")
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |   public ArrayList<String> list;
+            |}
+            """.trimMargin(), "new MyClass().li<caret>", "list : ArrayList<String>", "list")
 
     fun `test class completion`() =
-        checkContainsCompletion(Position(13, 17), false,"org.lsp.javaproject.Dummy", "Dummy")
-
-    fun `test does a thing`() =
-        doAThing("""
-public static class Dood {
-  private int thing = 1;
-  public static void main(String[] args) {
-    Asd<caret>
-  }
-
-  class Asdfg {
-    public int zxcvh = 2;
-  }
-}
-        """.trimIndent(), false, "list", "list")
+        doTest("MyClass.java", "public static class MyClass {}", "MyCl<caret>", "MyClass", "MyClass")
 }

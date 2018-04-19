@@ -53,7 +53,7 @@ fun makeCompletionParameters(editor: Editor, psiFile: PsiFile, position: Positio
     val completionType = CompletionType.BASIC
 
     if (elemAtPos == null) {
-        LOG.warn("Couldn't find element at " + offset)
+        LOG.warn("Couldn't find element at $offset")
         LOG.warn("psif=" + psiFile.text)
         try {
             LOG.warn("file=" + String(psiFile.virtualFile.contentsToByteArray()))

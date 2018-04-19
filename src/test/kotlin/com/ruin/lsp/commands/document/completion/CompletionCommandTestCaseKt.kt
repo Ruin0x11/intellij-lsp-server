@@ -1,9 +1,10 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.android.ide.common.res2.DataFile
 import com.ruin.lsp.DUMMY_FILE_PATH
 import com.ruin.lsp.KOTLIN_PROJECT
 import com.ruin.lsp.forKotlin
-import org.eclipse.lsp4j.Position
+import org.jetbrains.kotlin.idea.KotlinFileType
 
 class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
     override val projectName: String
@@ -12,59 +13,88 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
     override val filePath: String
         get() = forKotlin(DUMMY_FILE_PATH)
 
+    override val fileType = KotlinFileType.INSTANCE!!
+
     fun `test function completion`() =
-        checkContainsCompletion(Position(13, 30), false, "boring() : Unit", "boring()")
+        doTest("functions.kt", "fun boring() {}", "bo<caret>",
+            "boring() : Unit", "boring()")
 
     fun `test function completion with parameter`() =
-        checkContainsCompletion(Position(42, 32), false, "answerQuestion(question: String) : Int", "answerQuestion(")
+        doTest("functions.kt","pub fun lessBoring(number: Int) : String = arg.toString()", "le<caret>",
+            "lessBoring(number: Int) : String", "lessBoring(")
 
-    fun `test function snippet`() =
-        checkContainsCompletion(Position(16, 17), true, "notBoring(number: Int) : Unit", "notBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
+    fun `test function snippet completion`() =
+        doTestWithSnippet("functions.kt","fun lessBoring(number: Int) : String = arg.toString()", "le<caret>",
+            "lessBoring(number: Int) : String", "lessBoring(${'$'}${'{'}1:number${'}'})${'$'}0")
 
     fun `test variable completion`() =
-        checkContainsCompletion(Position(15, 12), false, "list : [ERROR : Type for List<String>()]", "list")
+        doTest("variables.kt", "pub val string = \"asdf\"", "st<caret>",
+            "string : String", "string")
 
     fun `test class completion`() =
-        checkContainsCompletion(Position(13, 13), false, "org.lsp.kotlinproject.Dummy", "Dummy")
+        doTest("MyClass.kt", "class MyClass {}", "MyC<caret>",
+            "MyClass", "MyClass")
 
     fun `test value parameter completion`() =
-        checkContainsCompletion(Position(64, 23), false, "str : String", "str")
+        doTest("util.kt", "", "fun funcWithArg(number: Int) { num<caret> }",
+            "number : Int", "number")
 
     fun `test java getter to property completion`() =
-        checkContainsCompletion(Position(75, 16), false, "value (from getValue()) : int", "value")
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |    private int value;
+            |    public int getValue() { return this.value; }
+            |    public void setValue(int value) { this.value = value; }
+            |}
+            """.trimMargin(), "MyClass().v<caret>",
+            "value (from getValue()) : int", "value")
 
     fun `test java value to property completion`() =
-        checkContainsCompletion(Position(96, 16), false, "thing : Int", "thing")
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |    public int getThing() { return 42; }
+            |}
+            """.trimMargin(), "MyClass().t<caret>",
+            "thing (from getThing()) : int", "thing")
 
     fun `test keyword name escaping`() =
-        checkContainsCompletion(Position(76, 16), false, "object (from getObject()) : Object", "`object`")
+        doTest("MyClass.java", """
+            |public class MyClass {
+            |    private Object object;
+            |    public Object getObject() { return this.object; }
+            |}
+            """.trimMargin(), "MyClass().o<caret>",
+            "object (from getObject()) : Object", "`object`")
 
     fun `test object`() =
-        checkContainsCompletion(Position(84, 12), false, "MyObject : object", "MyObject")
+        doTest("MyObject.kt", "object MyObject {}", "MyO<caret>",
+            "MyObject : object", "MyObject")
 
     fun `test companion object`() =
-        checkContainsCompletion(Position(85, 17), false, "Companion : object", "Companion")
+        doTest("HasCompanion.kt", "class HasCompanion { companion object {} }", "HasCompanion.C<caret>",
+            "Companion : object", "Companion")
 
     fun `test return statement in closure`() =
-        checkContainsCompletion(Position(90, 14), false, "return@withClosure", "return@withClosure")
+        doTest("util.kt", "", "listOf<Int>().forEach { retur<caret> }",
+            "return@forEach", "return@forEach")
 
     fun `test closure with brace syntax`() =
-        checkContainsCompletion(Position(80, 11), false,
+        doTest("functions.kt", "fun withClosure(closure: (counter: Int, Int) -> Unit) {}", "withC<caret>",
             "withClosure { counter, Int -> ... } : Unit",
             "withClosure { counter, i -> ")
 
     fun `test closure with brace syntax and snippet`() =
-        checkContainsCompletion(Position(80, 11), true,
+        doTestWithSnippet("functions.kt", "fun withClosure(closure: (counter: Int, Int) -> Unit) {}", "withC<caret>",
             "withClosure { counter, Int -> ... } : Unit",
             "withClosure { ${'$'}${'{'}1:counter${'}'}, ${'$'}${'{'}2:i${'}'} -> ${'$'}0 }")
 
     fun `test closure with preceeding argument and brace syntax`() =
-        checkContainsCompletion(Position(80, 11), false,
+        doTest("functions.kt", "fun withClosureAndArg(str: String, closure: (counter: Int, Int) -> Unit) {}", "withC<caret>",
             "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
             "withClosureAndArg(")
 
     fun `test closure with preceeding argument, brace syntax and snippet`() =
-        checkContainsCompletion(Position(80, 11), true,
+        doTestWithSnippet("functions.kt", "fun withClosureAndArg(str: String, closure: (counter: Int, Int) -> Unit) {}", "withC<caret>",
             "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
             "withClosureAndArg(${'$'}${'{'}1:str${'}'}) { ${'$'}${'{'}2:counter${'}'}, ${'$'}${'{'}3:i${'}'} -> ${'$'}0 }")
 }
