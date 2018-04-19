@@ -18,9 +18,7 @@ class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
     }
 
-    override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {
-        val cachedProjectPath = sProjectCache.keys.firstOrNull()
-            ?: return CompletableFuture.supplyAsync { mutableListOf<SymbolInformation>() }
-        return asInvokeAndWaitFuture(server.context.rootProject!!, getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
-    }
+    override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> =
+        asInvokeAndWaitFuture(server.context.rootProject!!, WorkspaceSymbolCommand(params.query))
+
 }

@@ -13,6 +13,8 @@ interface MyLanguageServerExtensions {
 
     @JsonRequest fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>>
 
+    @JsonRequest fun buildProject(params: BuildProjectParams): CompletableFuture<BuildProjectResult>
+
     @JsonRequest fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine>
 
     @JsonRequest fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean>
@@ -22,7 +24,13 @@ interface MyLanguageServerExtensions {
 
 data class RunConfigurationDescription(val id: String, val name: String, val configType: String)
 
+data class BuildProjectParams(val textDocument: TextDocumentIdentifier,
+                              val id: String,
+                              val forceMakeProject: Boolean,
+                              val ignoreErrors: Boolean)
+data class BuildProjectResult(val started: Boolean)
 data class RunProjectParams(val textDocument: TextDocumentIdentifier, val id: String)
-data class RunProjectCommandLine(val command: String? = null,
+data class RunProjectCommandLine(val needsRebuild: Boolean,
+                                 val command: String? = null,
                                  val workingDirectory: String? = null,
                                  val classpath: String? = null)

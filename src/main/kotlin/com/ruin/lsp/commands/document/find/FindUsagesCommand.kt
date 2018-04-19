@@ -10,8 +10,8 @@ import com.intellij.usages.*
 import com.intellij.util.Processor
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
-import com.ruin.lsp.commands.project.symbol.toSymbolInformation
-import com.ruin.lsp.util.*
+import com.ruin.lsp.util.findTargetElement
+import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
@@ -35,7 +35,7 @@ class FindUsagesCommand(val position: Position) : DocumentCommand<MutableList<Lo
 
 fun extractLocationFromRaw(usage: Usage): Location? {
     return if (usage is UsageInfo2UsageAdapter) {
-         usage.element?.location()
+         usage.element?.sourceLocationIfPossible()
     } else {
         null
     }

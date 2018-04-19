@@ -14,6 +14,7 @@ import com.ruin.lsp.commands.document.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.document.find.FindImplementationCommand
 import com.ruin.lsp.commands.project.dialog.OpenProjectStructureCommand
 import com.ruin.lsp.commands.project.dialog.ToggleFrameVisibilityCommand
+import com.ruin.lsp.commands.project.run.BuildProjectCommand
 import com.ruin.lsp.commands.project.run.RunConfigurationsCommand
 import com.ruin.lsp.commands.project.run.RunProjectCommand
 import com.ruin.lsp.util.*
@@ -100,22 +101,24 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), client)
 
     override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, RunConfigurationsCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, RunConfigurationsCommand())
+
+    override fun buildProject(params: BuildProjectParams): CompletableFuture<BuildProjectResult> =
+        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors))
 
     override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, RunProjectCommand(params.id))
+        asInvokeAndWaitFuture(context.rootProject!!, RunProjectCommand(params.id))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, OpenProjectStructureCommand())
 
     override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, ToggleFrameVisibilityCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, ToggleFrameVisibilityCommand())
 }
 
 
 fun <T: Any> asInvokeAndWaitFuture(
     project: Project,
-    uri: DocumentUri,
     command: ProjectCommand<T>): CompletableFuture<T> =
     CompletableFuture.supplyAsync {
         invokeAndWaitIfNeeded(Computable<T> {
@@ -127,7 +130,7 @@ fun <T: Any> asInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
      CompletableFuture.supplyAsync {
         executeAndGetResult(project, uri, command, client, server)
@@ -137,7 +140,7 @@ fun <T: Any> asCancellableInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null): CompletableFuture<T> =
     CompletableFutures.computeAsync { cancelToken ->
         executeAndGetResult(project, uri, command, client, server, cancelToken)
@@ -149,11 +152,11 @@ private fun <T : Any> executeAndGetResult(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: LanguageClient? = null,
+    client: MyLanguageClient? = null,
     server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
     return invokeAndWaitIfNeeded(Computable<T> {
-        val file = ensurePsiFromUri(project, uri)
+        val file = ensurePsiFromUri(project, uri, client)
         val profiler = if (client != null) startProfiler(client) else DUMMY
         profiler.mark("Start ${command.javaClass.canonicalName}")
         val context = ExecutionContext(project, file, client, server, profiler, cancelToken)

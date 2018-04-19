@@ -3,18 +3,12 @@ package com.ruin.lsp.commands.document.find
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.resolve.reference.impl.PsiMultiReference
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope.getProjectScope
-import com.intellij.psi.search.ProjectScopeImpl
-import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
 import com.intellij.psi.search.searches.SuperMethodsSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
@@ -38,7 +32,7 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
-import java.util.ArrayList
+import java.util.*
 
 class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableList<Location>> {
     override fun execute(ctx: ExecutionContext): MutableList<Location> {
@@ -68,7 +62,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
 
             val targetElements = GotoDeclarationAction.findTargetElementsNoVS(ctx.project, editor, offset, false)
             val elementAtPointer = ctx.file.findElementAt(TargetElementUtil.adjustOffset(ctx.file, editor.document, offset))
-            val results = targetElements?.mapNotNull { it.location() }
+            val results = targetElements?.mapNotNull { it.sourceLocationIfPossible() }
             loc = if (results?.isNotEmpty() == true) {
                 results.toMutableList()
             } else {
@@ -137,7 +131,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
                     else -> it
                 }
 
-                results.push(resolved.location())
+                results.push(resolved.sourceLocationIfPossible())
             }
             if (results.isNotEmpty()) {
                 return results
@@ -156,7 +150,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         try {
             val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
             val superDeclarations = findSuperDeclarations(descriptor) ?: return null
-            return superDeclarations.map { it.location() }.toMutableList()
+            return superDeclarations.map { it.sourceLocationIfPossible() }.toMutableList()
         } catch (e: IndexNotReadyException) {
             return mutableListOf()
         }

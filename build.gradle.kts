@@ -70,7 +70,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
-        setPlugins("properties", "maven", "junit", "kotlin")
+        setPlugins("properties", "maven", "junit", "kotlin", "android", "gradle", "groovy")
     }
 
     tasks.withType<KotlinCompile> {
@@ -94,7 +94,7 @@ allprojects {
 val versionSuffix = if (channel.isBlank()) "" else "-$channel"
 
 project(":") {
-    version = "0.1"
+    version = "0.2"
     intellij {
         pluginName = "intellij-lsp-server"
     }
