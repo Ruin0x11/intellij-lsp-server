@@ -2,7 +2,7 @@ package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
-import com.intellij.codeInsight.lookup.*
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
@@ -11,7 +11,7 @@ import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.model.CompletionResolveIndex
 import com.ruin.lsp.model.PreviousCompletionCacheService
-import com.ruin.lsp.util.*
+import com.ruin.lsp.util.withEditor
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionList
 import org.eclipse.lsp4j.Position

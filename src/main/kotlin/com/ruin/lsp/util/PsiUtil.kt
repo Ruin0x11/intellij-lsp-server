@@ -10,14 +10,9 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
-import org.jetbrains.kotlin.KtNodeType
 import org.jetbrains.kotlin.KtNodeTypes
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
-import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
-import org.jetbrains.kotlin.asJava.namedUnwrappedElement
-import org.jetbrains.kotlin.idea.intentions.loopToCallChain.isConstant
-import org.jetbrains.kotlin.idea.refactoring.isCompanionMemberOf
 import org.jetbrains.kotlin.idea.refactoring.memberInfo.qualifiedClassNameForRendering
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
@@ -52,8 +47,8 @@ fun PsiElement.location() =
     location(getURIForFile(this.containingFile), getDocument(this.containingFile)!!)
 
 fun PsiElement.location(uri: DocumentUri, doc: Document) =
-    ((this as? PsiNameIdentifierOwner)?.nameIdentifier ?: this).textRange.let { range ->
-        Location(uri, Range(offsetToPosition(doc, range.startOffset), offsetToPosition(doc, range.endOffset)))
+    ((this as? PsiNameIdentifierOwner)?.nameIdentifier ?: this).textRange.let { textRange ->
+        Location(uri, textRange.toRange(doc))
     }
 
 fun PsiElement.symbolKind(): SymbolKind? =
