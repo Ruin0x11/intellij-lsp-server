@@ -22,7 +22,7 @@ internal class CompletionResultSetImpl(consumer: Consumer<CompletionResult>, pri
 
     override fun addElement(element: LookupElement) {
         if (!element.isValid) {
-            println("Invalid lookup element: " + element)
+            println("Invalid lookup element: $element")
             return
         }
 

@@ -33,7 +33,9 @@ class CompletionCommand(val position: Position,
 
         withEditor(this, ctx.file, position) { editor ->
             val completionResults: MutableList<CompletionResult> = mutableListOf()
-            val params = makeCompletionParameters(editor, ctx.file, position)!!
+            val (translator, hostCopyOffsets) = insertDummyIdentifier2()
+            val newContext = createCompletionContext(ctx.file, )
+            val params = makeCompletionParameters(editor, 0, newContext)!!
             val arranger = MyCompletionLookupArranger(params, CompletionLocation(params))
             val lookup = LookupImpl(ctx.project, editor, arranger)
 

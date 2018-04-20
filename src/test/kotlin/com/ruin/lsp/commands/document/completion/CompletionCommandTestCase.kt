@@ -25,5 +25,4 @@ class CompletionCommandTestCase : CompletionCommandTestBase() {
 
     fun `test class completion`() =
         checkContainsCompletion(Position(13, 17), false,"org.lsp.javaproject.Dummy", "Dummy")
-
 }
