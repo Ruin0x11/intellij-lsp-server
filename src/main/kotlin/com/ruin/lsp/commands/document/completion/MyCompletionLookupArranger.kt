@@ -68,9 +68,13 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
         }
         val context = createContext()
 
-        classifier!!.addElement(item.lookupElement, context)
+        ReadAction.run<Exception> {
+            classifier!!.addElement(item.lookupElement, context)
+        }
 
-        StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
+        ApplicationManager.getApplication().executeOnPooledThread {
+            StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
+        }.get()
 
         super.addElement(item.lookupElement, presentation)
     }

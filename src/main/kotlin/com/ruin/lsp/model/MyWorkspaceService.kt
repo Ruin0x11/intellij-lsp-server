@@ -1,5 +1,6 @@
 package com.ruin.lsp.model
 
+import com.google.gson.JsonObject
 import com.ruin.lsp.commands.project.symbol.WorkspaceSymbolCommand
 import com.ruin.lsp.util.getURIForFile
 import com.ruin.lsp.util.sProjectCache
@@ -16,8 +17,12 @@ class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
     }
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
-        val thing = params.settings
-        println(thing)
+        val settings = params.settings as JsonObject
+        val intellij = settings.get("intellij").asJsonObject
+        val options = intellij.entrySet().map {
+            Pair(it.key, it.value.asString)
+        }
+        server.context.config.putAll(options)
     }
 
     override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {
