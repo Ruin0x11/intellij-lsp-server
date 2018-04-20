@@ -16,6 +16,8 @@ class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
     }
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
+        val thing = params.settings
+        println(thing)
     }
 
     override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {

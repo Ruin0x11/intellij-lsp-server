@@ -35,7 +35,6 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     var myTextDocumentService = MyTextDocumentService(this)
     var myWorkspaceService = MyWorkspaceService(this)
 
-    var client: MyLanguageClient? = null
     var diagnosticsFutures: HashMap<DocumentUri, Future<*>> = HashMap()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
@@ -63,7 +62,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     override fun connect(client: LanguageClient?) {
-        this.client = client as MyLanguageClient
+        this.context.client = client as MyLanguageClient
     }
 
     fun computeAllDiagnostics() {
@@ -71,7 +70,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     fun computeDiagnostics(uri: DocumentUri) {
-        if (client == null) {
+        if (this.context.client == null) {
             return
         }
 
@@ -84,7 +83,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         diagnosticsFutures[uri]?.cancel(true)
 
         diagnosticsFutures[uri] = ApplicationManager.getApplication()
-            .executeOnPooledThread(DiagnosticsThread(file, doc, client!!))
+            .executeOnPooledThread(DiagnosticsThread(file, doc, this.context.client!!))
     }
 
     override fun getTextDocumentService() = myTextDocumentService
@@ -95,7 +94,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     // LSP protocol extensions for IDEA-specific features
 
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), client)
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), this)
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
@@ -119,20 +118,18 @@ fun <T: Any> asInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
-    server: LanguageServer? = null): CompletableFuture<T> =
+    server: MyLanguageServer): CompletableFuture<T> =
      CompletableFuture.supplyAsync {
-        executeAndGetResult(project, uri, command, client, server)
+        executeAndGetResult(project, uri, command, server.context, server)
     }
 
 fun <T: Any> asCancellableInvokeAndWaitFuture(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
-    server: LanguageServer? = null): CompletableFuture<T> =
+    server: MyLanguageServer): CompletableFuture<T> =
     CompletableFutures.computeAsync { cancelToken ->
-        executeAndGetResult(project, uri, command, client, server, cancelToken)
+        executeAndGetResult(project, uri, command, server.context, server, cancelToken)
     }
 
 private val LOG = Logger.getInstance(MyLanguageServer::class.java)
@@ -141,15 +138,16 @@ private fun <T : Any> executeAndGetResult(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
+    context: Context = Context(),
     server: LanguageServer? = null,
     cancelToken: CancelChecker? = null): T {
     return invokeAndWaitIfNeeded(Computable<T> {
-        val file = ensurePsiFromUri(project, uri, client)
-        val profiler = if (client != null) startProfiler(client) else DUMMY
+        val tempDir = context.config["temporaryDirectory"]
+        val file = ensurePsiFromUri(project, uri, tempDir)
+        val profiler = if (context.client != null) startProfiler(context.client!!) else DUMMY
         profiler.mark("Start ${command.javaClass.canonicalName}")
-        val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
-        val result = command.execute(context)
+        val executionContext = ExecutionContext(project, file, context.client, server, profiler, cancelToken)
+        val result = command.execute(executionContext)
         command.dispose()
         profiler.finish("Done ${command.javaClass.canonicalName}")
         result

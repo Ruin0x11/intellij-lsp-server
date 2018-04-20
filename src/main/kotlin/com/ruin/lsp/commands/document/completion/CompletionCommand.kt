@@ -2,8 +2,10 @@ package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
+import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
@@ -45,7 +47,12 @@ class CompletionCommand(val position: Position,
             })
 
             val sorted: Ref<List<LookupElement>> = Ref(listOf())
-            sorted.set(arranger.arrangeItems(lookup, false).first)
+
+            // can't be run on dispatch thread
+            ProgressManager.getInstance().runProcess({
+                sorted.set(arranger.arrangeItems(lookup, false).first)
+            }, DaemonProgressIndicator())
+
             sortedLookupElements = sorted.get()
             ctx.profiler?.mark("Finish sorting")
         }

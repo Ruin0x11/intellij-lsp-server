@@ -2,11 +2,13 @@ package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
+import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Pair
@@ -68,12 +70,7 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
 
         classifier!!.addElement(item.lookupElement, context)
 
-        // can't be run on dispatch thread
-        ApplicationManager.getApplication().executeOnPooledThread {
-            ReadAction.run<Exception> {
-                StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
-            }
-        }.get()
+        StatisticsWeigher.getBaseStatisticsInfo(item.lookupElement, location)
 
         super.addElement(item.lookupElement, presentation)
     }
