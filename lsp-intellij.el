@@ -174,7 +174,7 @@ Return the file path if found, nil otherwise."
   (let* ((impls (lsp--send-request (lsp--make-request
                                     "idea/implementations"
                                     (lsp--text-document-position-params))))
-         (items (lsp-intellij--locations-to-xref-items impls)))
+         (items (lsp--locations-to-xref-items impls)))
     (if items
         (xref--show-xrefs items nil)
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
@@ -267,7 +267,7 @@ TCP, even if it isn't the one being communicated with.")
   "Set the temporary directory for extracted jar files."
   (lsp-intellij-set-config "temporaryDirectory" dir))
 
-(lsp-intellij-set-temporary-directory temporary-file-directory)
+(lsp-intellij-set-temporary-directory (lsp--path-to-uri temporary-file-directory))
 
 (provide 'lsp-intellij)
 ;;; lsp-intellij.el ends here

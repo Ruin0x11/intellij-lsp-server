@@ -74,8 +74,9 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
             return
         }
 
-        val (doc, file) = invokeAndWaitIfNeeded( Computable<Pair<Document, PsiFile>?> {
-            val file = resolvePsiFromUri(context.rootProject!!, uri) ?: return@Computable null
+        val (doc, file) = invokeAndWaitIfNeeded( Computable {
+            val tempDir = context.config["temporaryDirectory"]
+            val file = resolvePsiFromUri(context.rootProject!!, uri, tempDir) ?: return@Computable null
             val doc = getDocument(file) ?: return@Computable null
             Pair(doc, file)
         }) ?: return
