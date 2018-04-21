@@ -94,43 +94,43 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     // LSP protocol extensions for IDEA-specific features
 
     override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), this)
+        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
 
     override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
         asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, ToggleFrameVisibilityCommand())
+
+
+    fun <T: Any> asInvokeAndWaitFuture(
+        project: Project,
+        uri: DocumentUri,
+        command: ProjectCommand<T>): CompletableFuture<T> =
+        CompletableFuture.supplyAsync {
+            synchronized(this) {
+                invokeAndWaitIfNeeded(Computable<T> {
+                    command.execute(project)
+                })
+            }
+        }
+
+    fun <T: Any> asInvokeAndWaitFuture(
+        project: Project,
+        uri: DocumentUri,
+        command: DocumentCommand<T>): CompletableFuture<T> =
+        CompletableFuture.supplyAsync {
+            executeAndGetResult(project, uri, command, this.context, this)
+        }
+
+    fun <T: Any> asCancellableInvokeAndWaitFuture(
+        project: Project,
+        uri: DocumentUri,
+        command: DocumentCommand<T>): CompletableFuture<T> =
+        CompletableFutures.computeAsync { cancelToken ->
+            executeAndGetResult(project, uri, command, this.context, this, cancelToken)
+        }
 }
-
-
-fun <T: Any> asInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: ProjectCommand<T>): CompletableFuture<T> =
-    CompletableFuture.supplyAsync {
-        invokeAndWaitIfNeeded(Computable<T> {
-            command.execute(project)
-        })
-    }
-
-fun <T: Any> asInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: DocumentCommand<T>,
-    server: MyLanguageServer): CompletableFuture<T> =
-     CompletableFuture.supplyAsync {
-        executeAndGetResult(project, uri, command, server.context, server)
-    }
-
-fun <T: Any> asCancellableInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: DocumentCommand<T>,
-    server: MyLanguageServer): CompletableFuture<T> =
-    CompletableFutures.computeAsync { cancelToken ->
-        executeAndGetResult(project, uri, command, server.context, server, cancelToken)
-    }
 
 private val LOG = Logger.getInstance(MyLanguageServer::class.java)
 
@@ -139,19 +139,21 @@ private fun <T : Any> executeAndGetResult(
     uri: DocumentUri,
     command: DocumentCommand<T>,
     context: Context = Context(),
-    server: LanguageServer? = null,
+    server: LanguageServer,
     cancelToken: CancelChecker? = null): T {
-    return invokeAndWaitIfNeeded(Computable<T> {
-        val tempDir = context.config["temporaryDirectory"]
-        val file = ensurePsiFromUri(project, uri, tempDir)
-        val profiler = if (context.client != null) startProfiler(context.client!!) else DUMMY
-        profiler.mark("Start ${command.javaClass.canonicalName}")
-        val executionContext = ExecutionContext(project, file, context.client, server, profiler, cancelToken)
-        val result = command.execute(executionContext)
-        command.dispose()
-        profiler.finish("Done ${command.javaClass.canonicalName}")
-        result
-    })
+    return synchronized(server) {
+        invokeAndWaitIfNeeded(Computable<T> {
+            val tempDir = context.config["temporaryDirectory"]
+            val file = ensurePsiFromUri(project, uri, tempDir)
+            val profiler = if (context.client != null) startProfiler(context.client!!) else DUMMY
+            profiler.mark("Start ${command.javaClass.canonicalName}")
+            val executionContext = ExecutionContext(project, file, context.client, server, profiler, cancelToken)
+            val result = command.execute(executionContext)
+            command.dispose()
+            profiler.finish("Done ${command.javaClass.canonicalName}")
+            result
+        })
+    }
 }
 
 fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,

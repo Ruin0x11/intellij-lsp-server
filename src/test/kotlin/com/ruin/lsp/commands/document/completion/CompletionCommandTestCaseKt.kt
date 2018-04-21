@@ -69,5 +69,5 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
             "withClosureAndArg(${'$'}${'{'}1:str${'}'}) { ${'$'}${'{'}2:counter${'}'}, ${'$'}${'{'}3:i${'}'} -> ${'$'}0 }")
 
     fun `test completion inside function call`() =
-        checkContainsCompletion(Position(13, 20), false,"org.lsp.javaproject.Dummy", "Dummy")
+        checkContainsCompletion(Position(13, 20), false,"fluid() : Dummy", "fluid()")
 }

@@ -18,7 +18,7 @@ class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
         val settings = params.settings as JsonObject
-        val intellij = settings.get("intellij").asJsonObject
+        val intellij = settings.get("intellij")?.asJsonObject ?: return
         val options = intellij.entrySet().map {
             Pair(it.key, it.value.asString)
         }
@@ -28,6 +28,6 @@ class MyWorkspaceService(val server: MyLanguageServer) : WorkspaceService {
     override fun symbol(params: WorkspaceSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> {
         val cachedProjectPath = sProjectCache.keys.firstOrNull()
             ?: return CompletableFuture.supplyAsync { mutableListOf<SymbolInformation>() }
-        return asInvokeAndWaitFuture(server.context.rootProject!!, getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
+        return server.asInvokeAndWaitFuture(server.context.rootProject!!, getURIForFile(File(cachedProjectPath)), WorkspaceSymbolCommand(params.query))
     }
 }

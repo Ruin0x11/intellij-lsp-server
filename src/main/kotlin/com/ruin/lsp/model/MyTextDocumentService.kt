@@ -21,7 +21,7 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         val cache = PreviousCompletionCacheService.getInstance()
         val uri = cache.lastUri()
         val command = CompletionItemResolveCommand(unresolved)
-        return asInvokeAndWaitFuture(server.context.rootProject!!, uri, command, server)
+        return server.asInvokeAndWaitFuture(server.context.rootProject!!, uri, command)
     }
 
     override fun codeAction(params: CodeActionParams): CompletableFuture<MutableList<out Command>> {
@@ -29,19 +29,19 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
     }
 
     override fun hover(position: TextDocumentPositionParams): CompletableFuture<Hover> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, HoverCommand(position.position), server)
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, HoverCommand(position.position))
 
     override fun documentHighlight(position: TextDocumentPositionParams): CompletableFuture<MutableList<out DocumentHighlight>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, DocumentHighlightCommand(position.position), server)
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, DocumentHighlightCommand(position.position))
 
     override fun definition(position: TextDocumentPositionParams): CompletableFuture<MutableList<out Location>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, FindDefinitionCommand(position.position), server)
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, FindDefinitionCommand(position.position))
 
     override fun formatting(params: DocumentFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options), server)
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options))
 
     override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
-        asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options, params.range), server)
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options, params.range))
 
     override fun onTypeFormatting(params: DocumentOnTypeFormattingParams): CompletableFuture<MutableList<out TextEdit>> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -56,18 +56,18 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
     }
 
     override fun completion(position: TextDocumentPositionParams): CompletableFuture<Either<MutableList<CompletionItem>, CompletionList>> =
-        asCancellableInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, CompletionCommand(position.position,
-            server.context.clientCapabilities?.textDocument?.completion?.completionItem?.snippetSupport ?: false), server)
+        server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, CompletionCommand(position.position,
+            server.context.clientCapabilities?.textDocument?.completion?.completionItem?.snippetSupport ?: false))
 
     override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> =
-        asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentSymbolCommand(params.textDocument), server)
+        server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentSymbolCommand(params.textDocument))
 
     override fun signatureHelp(position: TextDocumentPositionParams): CompletableFuture<SignatureHelp> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun references(params: ReferenceParams): CompletableFuture<MutableList<out Location>> =
-        asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, FindUsagesCommand(params.position), server)
+        server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, FindUsagesCommand(params.position))
 
     override fun resolveCodeLens(unresolved: CodeLens): CompletableFuture<CodeLens> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
