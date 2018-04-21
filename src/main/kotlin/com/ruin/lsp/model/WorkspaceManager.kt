@@ -42,12 +42,12 @@ class WorkspaceManager {
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
-            val doc = getDocument(project, textDocument.uri) ?: return@Computable false
+            val tempDir = server?.context?.config?.get("temporaryDirectory")
+            val psi = resolvePsiFromUri(project, textDocument.uri, tempDir) ?: return@Computable false
+            val doc = getDocument(psi) ?: return@Computable false
             reloadDocument(doc, project)
             if (client != null) {
-                if (server != null) {
-                    registerIndexNotifier(project, client, server)
-                }
+                server?.let { registerIndexNotifier(project, client, it) }
                 val projectSdk = ProjectRootManager.getInstance(project).projectSdk
                 if (projectSdk == null) {
                     client.showMessage(MessageParams(MessageType.Warning,

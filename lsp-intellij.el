@@ -37,6 +37,8 @@
 (require 'lsp-mode)
 (require 'cl)
 
+(defvar lsp-intellij--config-options (make-hash-table))
+
 (defvar lsp-intellij-use-topmost-maven-root t
   "If non-nil, `lsp-intellij' will attempt to locate the topmost
 Maven project in a nested hierarchy if a Maven subproject is opened
@@ -172,7 +174,7 @@ Return the file path if found, nil otherwise."
   (let* ((impls (lsp--send-request (lsp--make-request
                                     "idea/implementations"
                                     (lsp--text-document-position-params))))
-         (items (lsp-intellij--locations-to-xref-items impls)))
+         (items (lsp--locations-to-xref-items impls)))
     (if items
         (xref--show-xrefs items nil)
       (message "No implementations found for: %s" (thing-at-point 'symbol t)))))
@@ -338,6 +340,21 @@ TCP, even if it isn't the one being communicated with.")
 (lsp-define-tcp-client lsp-intellij "intellij" #'lsp-intellij--get-root lsp-intellij-dummy-executable
                        "127.0.0.1" 8080
                        :initialize #'lsp-intellij--initialize-client)
+
+(defun lsp-intellij--set-configuration ()
+  (lsp--set-configuration `(:intellij ,lsp-intellij--config-options)))
+
+(add-hook 'lsp-after-initialize-hook 'lsp-intellij--set-configuration)
+
+(defun lsp-intellij-set-config (name option)
+  "Set a config option in the intellij lsp server."
+  (puthash name option lsp-intellij--config-options))
+
+(defun lsp-intellij-set-temporary-directory (dir)
+  "Set the temporary directory for extracted jar files."
+  (lsp-intellij-set-config "temporaryDirectory" dir))
+
+(lsp-intellij-set-temporary-directory (lsp--path-to-uri temporary-file-directory))
 
 (provide 'lsp-intellij)
 ;;; lsp-intellij.el ends here
