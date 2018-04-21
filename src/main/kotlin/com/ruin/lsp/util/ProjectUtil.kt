@@ -45,15 +45,14 @@ private val LOG = Logger.getInstance("#com.ruin.lsp.util.ProjectUtil")
 
 private val POSSIBLE_SOURCE_EXTENSIONS = listOf(".java", ".kt", ".scala")
 
-fun ensurePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null) = resolvePsiFromUri(project, uri, client)
+fun ensurePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? = null) = resolvePsiFromUri(project, uri, tempDir)
     ?: throw IllegalArgumentException("Unable to resolve file at $uri")
 
-fun resolvePsiFromUri(project: Project, uri: DocumentUri, client: MyLanguageClient? = null): PsiFile? {
-    if (client != null) {
-        val tempDirectory = client.temporaryDirectory().get().directory
-        val prefix = tempDirectory.uriCommonPrefixWith(uri)
-        if (prefix == tempDirectory) {
-            return resolveJarUri(uri, tempDirectory)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
+fun resolvePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? = null): PsiFile? {
+    if (tempDir != null) {
+        val prefix = tempDir.uriCommonPrefixWith(uri)
+        if (prefix == tempDir) {
+            return resolveJarUri(uri, tempDir)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
         }
     }
     val filePath = projectRelativeFilePath(project, uri) ?: return null

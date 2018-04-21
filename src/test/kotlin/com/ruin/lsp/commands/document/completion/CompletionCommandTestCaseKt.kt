@@ -67,4 +67,7 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         checkContainsCompletion(Position(80, 11), true,
             "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
             "withClosureAndArg(${'$'}${'{'}1:str${'}'}) { ${'$'}${'{'}2:counter${'}'}, ${'$'}${'{'}3:i${'}'} -> ${'$'}0 }")
+
+    fun `test completion inside function call`() =
+        checkContainsCompletion(Position(13, 20), false,"fluid() : Dummy", "fluid()")
 }
