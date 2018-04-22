@@ -32,6 +32,7 @@ class CodeLensCommand : DocumentCommand<MutableList<CodeLens>> {
     override fun execute(ctx: ExecutionContext): MutableList<CodeLens> {
         val doc = getDocument(ctx.file) ?: return mutableListOf()
 
+
         val markers = LineMarkersPass.queryLineMarkers(ctx.file, doc)
         val lineMarkers = markers.mapNotNull { it.codeLens(ctx.project, doc) }
 

@@ -1,22 +1,20 @@
 package com.ruin.lsp.commands.document.lens
 
-import com.intellij.openapi.project.DumbService
-import com.ruin.lsp.*
-import com.ruin.lsp.commands.document.hover.HoverCommand
 import com.ruin.lsp.model.invokeCommandAndWait
-import org.eclipse.lsp4j.Position
-import org.intellivim.FileEditingTestCase
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
+import com.ruin.lsp.util.getDocument
+import org.eclipse.lsp4j.CodeLens
+import com.intellij.codeInsight.daemon.GutterMark
 
-abstract class CodeLensCommandTestBase : FileEditingTestCase() {
-    override val projectName: String
-        get() = TESTABLE_PROJECT
 
-    override val filePath: String
-        get() = TESTABLE_FILE_PATH
 
-    protected fun checkRuns() {
+
+abstract class CodeLensCommandTestBase : LightCodeInsightFixtureTestCase() {
+    protected fun doTest(name: String, code: String, expected: List<CodeLens>) {
+        myFixture.configureByText(name, code)
         val command = CodeLensCommand()
-        val result = invokeCommandAndWait(command, project, psiFile)
-        assert(result.isNotEmpty())
+        val result = invokeCommandAndWait(command, project, myFixture.file)
+
+        assertEquals(expected, result.toList())
     }
 }
