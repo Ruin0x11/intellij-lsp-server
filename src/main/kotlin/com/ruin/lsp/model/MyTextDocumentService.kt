@@ -73,6 +73,21 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun documentLink(params: DocumentLinkParams?): CompletableFuture<MutableList<DocumentLink>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun documentLinkResolve(params: DocumentLink?): CompletableFuture<DocumentLink> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun willSaveWaitUntil(params: WillSaveTextDocumentParams?): CompletableFuture<MutableList<TextEdit>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun willSave(params: WillSaveTextDocumentParams?) {}
+
+
     override fun didOpen(params: DidOpenTextDocumentParams) {
         workspace.onTextDocumentOpened(params, server.context.rootProject!!, server.context.client, server)
         server.computeDiagnostics(params.textDocument.uri)

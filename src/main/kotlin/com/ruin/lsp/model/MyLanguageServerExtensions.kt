@@ -45,23 +45,6 @@ interface MyLanguageServerExtensions {
      */
     @JsonRequest
     fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine>
-
-    /**
-     * The idea/openProjectStructure request is sent from the client to the server to
-     * open IDEA's Project Structure dialog.
-     */
-    @JsonRequest
-    fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean>
-
-    /**
-     * The idea/toggleFrameVisibility request is sent from the client to the server to
-     * open or close the IDEA project frame for the current project.
-     *
-     * Note that modifying text inside the IDEA project frame while the LSP server is running
-     * is currently unsupported.
-     */
-    @JsonRequest
-    fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean>
 }
 
 data class RunConfigurationDescription(val id: String, val name: String, val configType: String)

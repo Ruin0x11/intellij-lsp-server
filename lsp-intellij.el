@@ -256,18 +256,20 @@ Return the file path if found, nil otherwise."
 
 (defun lsp-intellij--on-build-messages (workspace params)
   (message "Got messages!")
-  (let ((buffer (get-buffer-create "*lsp-intellij-build-output*"))
-        (messages (gethash "messages" params)))
+  (let ((buffer (get-buffer-create "*lsp-intellij-build-output*")))
     (with-current-buffer buffer
-      (compilation-mode)
-      (mapc (lambda (mes)
-              (let ((path (lsp--uri-to-path (gethash "uri" mes)))
-                    (diags (gethash "diagnostics" mes)))
-                (lsp-intellij--insert-build-messages path diags)))
-            messages))))
+      (let ((buffer-read-only nil))
+        (mapc (lambda (mes)
+                (let ((path (if (string-blank-p (gethash "uri" mes))
+                                "<unknown>"
+                              (lsp--uri-to-path (gethash "uri" mes))))
+                      (diags (gethash "diagnostics" mes)))
+                  (lsp-intellij--insert-build-messages path diags)))
+              params))
+      (compilation-shell-minor-mode t))))
 
 (defun lsp-intellij--insert-build-messages (path diags)
-  (mapc (lambda (d) (lsp-intellij--insert-build-message path (lsp--make-diag d)))))
+  (mapc (lambda (d) (lsp-intellij--insert-build-message path (lsp--make-diag d))) diags))
 
 (defun lsp-intellij--insert-build-message (path diag)
   (let ((line (lsp-diagnostic-line diag))
@@ -278,18 +280,24 @@ Return the file path if found, nil otherwise."
            (2 'warning)
            (_ 'info)))
         (message (lsp-diagnostic-message diag))
-        (source (lsp-diagnostic-source diag))))
-  (goto-char (point-max))
-  ;; use GCC's line format
-  (insert (format "%s:%s:%s: %s: %s: %s" path line column severity source message)))
+        (source (lsp-diagnostic-source diag)))
+    (goto-char (point-max))
+    ;; use GCC's line format
+    (insert (format "%s:%s:%s: %s: %s\n" path line column severity message))))
 
 (defun lsp-intellij--on-build-finished (workspace params)
   (let ((errors (gethash "errors" params))
         (warnings (gethash "warnings" params))
         (is-aborted (gethash "isAborted" params)))
     (cond
-     ((> errors 0) (message "Build failed with %s errors and %s warnings." errors warnings))
+     ((> errors 0)
+      (progn
+        (message "Build failed with %s errors and %s warnings." errors warnings)
+        (pop-to-buffer (get-buffer-create "*lsp-intellij-build-output*") 'other-window)
+        (goto-char (point-min))))
+
      (is-aborted (message "Build was aborted."))
+
      (t (progn
           (message "Build finished with %s warnings." warnings)
           (when-let ((command lsp-intellij--run-after-build-command))
@@ -301,21 +309,19 @@ Return the file path if found, nil otherwise."
   "Open the Project Structure dialog for the current project."
   (interactive)
   (lsp--cur-workspace-check)
-  (lsp--send-request
-   (lsp--make-request
-    "idea/openProjectStructure"
-    (lsp--text-document-position-params))
-   t))
+  (lsp--send-execute-command "openProjectStructure" nil)))
+
+(defun lsp-intellij-open-run-configurations ()
+  "Open the Run/Debug Configurations dialog for the current project."
+  (interactive)
+  (lsp--cur-workspace-check)
+  (lsp--send-execute-command "openRunConfigurations" nil))
 
 (defun lsp-intellij-toggle-frame-visibility ()
   "Toggle visibility of the current project's frame."
   (interactive)
   (lsp--cur-workspace-check)
-  (lsp--send-request
-   (lsp--make-request
-    "idea/toggleFrameVisibility"
-    (lsp--text-document-position-params))
-   t))
+  (lsp--send-execute-command "toggleFrameVisibility" nil))
 
 (defun lsp-intellij--render-string (str mode)
   (condition-case nil

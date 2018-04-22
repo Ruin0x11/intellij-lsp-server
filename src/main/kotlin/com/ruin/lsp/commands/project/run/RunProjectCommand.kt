@@ -11,6 +11,8 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.compiler.CompilerManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
 import com.intellij.psi.PsiDocumentManager
@@ -27,6 +29,11 @@ private val LOG = LoggerFactory.getLogger(RunProjectCommand::class.java)
 
 class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectCommandLine> {
     override fun execute(ctx: Project): RunProjectCommandLine {
+        if (ProjectRootManager.getInstance(ctx).projectSdk == null) {
+            // TODO: show an error here
+            return RunProjectCommandLine(true)
+        }
+
         val runManager = RunManager.getInstance(ctx) as RunManagerImpl
         val setting = runManager.getConfigurationById(id) ?: return RunProjectCommandLine(true)
         val config = setting.configuration

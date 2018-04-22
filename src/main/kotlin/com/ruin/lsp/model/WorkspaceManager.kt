@@ -135,6 +135,14 @@ class WorkspaceManager {
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
+        ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
+            val psi = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
+            val doc = getDocument(psi) ?: return@Runnable
+            PsiDocumentManager.getInstance(project).commitDocument(doc)
+            FileDocumentManager.getInstance().saveDocument(doc)
+            //VirtualFileManager.getInstance().syncRefresh()
+        }))
+
         if (text != null) {
             assert(managedTextDoc.contents == text, {
                 val change = Diff.buildChanges(managedTextDoc.contents, text)
@@ -144,9 +152,9 @@ class WorkspaceManager {
         }
     }
 
-        @Synchronized
+    @Synchronized
 
-        fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
+    fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
         LOG.debug("Handling workspace/applyEdit")
         LOG.debug("label: $label")
         LOG.debug("edit: $edit")

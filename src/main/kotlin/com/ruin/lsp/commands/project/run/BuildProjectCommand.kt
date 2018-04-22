@@ -14,6 +14,7 @@ import com.intellij.openapi.compiler.CompilerMessage
 import com.intellij.openapi.compiler.CompilerMessageCategory
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskNotification
@@ -34,6 +35,11 @@ class BuildProjectCommand(private val id: String,
                           private val ignoreErrors: Boolean,
                           private val client: MyLanguageClient) : ProjectCommand<BuildProjectResult> {
     override fun execute(ctx: Project): BuildProjectResult {
+        if (ProjectRootManager.getInstance(ctx).projectSdk == null) {
+            // TODO: show an error here
+            return BuildProjectResult(false)
+        }
+
         val runManager = RunManager.getInstance(ctx) as RunManagerImpl
         val setting = runManager.getConfigurationById(id) ?: return BuildProjectResult(false)
         val config = setting.configuration
@@ -99,9 +105,9 @@ private fun CompileContext.buildMessages(): List<BuildMessages> {
         messages.addAll(forCategory)
     }
 
-    return messages.groupBy { getURIForFile(it.virtualFile) }
+    return messages.groupBy { it.virtualFile?.let { fi -> getURIForFile(fi) } }
         .map { (uri, messages) ->
-            BuildMessages(uri, messages.map { mes -> (mes as CompilerMessageImpl).diagnostic() })
+            BuildMessages(uri ?: "", messages.map { mes -> (mes as CompilerMessageImpl).diagnostic() })
         }
 }
 

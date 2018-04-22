@@ -24,7 +24,7 @@ class MyProjectTaskManager(val project: Project, val callback: CompileStatusNoti
     override fun run(context: ProjectTaskContext, projectTask: ProjectTask, callback: ProjectTaskNotification?) {
         val toRun = SmartList<Pair<ProjectTaskRunner, Collection<ProjectTask>>>()
 
-        val taskClassifier = Consumer { tasks: Collection<ProjectTask>->
+        val taskClassifier = Consumer { tasks: Collection<ProjectTask> ->
             val toBuild = tasks.stream().collect(Collectors.groupingBy<ProjectTask, ProjectTaskRunner> { aTask ->
                 for (runner in getTaskRunners()) {
                     // TODO: find a way to send CompileContext with custom runners
