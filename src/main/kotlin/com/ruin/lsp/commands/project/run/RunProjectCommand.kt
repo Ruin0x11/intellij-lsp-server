@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.*
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.DefaultJavaProgramRunner
 import com.intellij.execution.impl.RunManagerImpl
+import com.intellij.execution.junit.JUnitConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.application.TransactionGuard
@@ -46,7 +47,7 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
         val runner = DefaultJavaProgramRunner.getInstance() as DefaultJavaProgramRunner
 
         when(config) {
-            is ApplicationConfiguration, is KotlinRunConfiguration -> {
+            is ApplicationConfiguration, is KotlinRunConfiguration, is JUnitConfiguration -> {
                 val env = ExecutionEnvironmentBuilder.create(config.project, executor, config).build()
                 val state = config.getState(executor, env) ?: return RunProjectCommandLine(true)
                 when (state) {

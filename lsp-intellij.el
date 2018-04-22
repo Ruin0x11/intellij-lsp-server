@@ -38,6 +38,7 @@
 (require 'cl)
 
 (defvar lsp-intellij--config-options (make-hash-table))
+(defvar lsp-intellij--progress-state (make-hash-table))
 
 (defvar lsp-intellij-use-topmost-maven-root t
   "If non-nil, `lsp-intellij' will attempt to locate the topmost
@@ -258,7 +259,9 @@ Return the file path if found, nil otherwise."
       (erase-buffer))
     (if (not (gethash "started" command))
         (error "Build failed to start")
-      (message "Build started."))))
+      (progn
+        (lsp-intellij--set-progress-state "building" t)
+        (message "Build started.")))))
 
 (defun lsp-intellij-run-at-point ()
   "Run the item (main class, unit test) at point."
@@ -295,6 +298,15 @@ This will run all tests if the class is a test class."
                 (if (> (funcall f min) (funcall f this)) this min))
             coll)))
 
+(defun lsp-intellij--code-lenses-at-point ()
+  "Gets the code lenses under the current point."
+  (seq-filter (lambda (lens)
+                (let* ((range (gethash "range" lens))
+                       (start (lsp--position-to-point (gethash "start" range)))
+                       (end (lsp--position-to-point (gethash "end" range))))
+                  (lsp--point-is-within-bounds-p start end)))
+              lsp-code-lenses))
+
 (defun lsp-intellij--most-local-code-lens ()
   "Finds the code lens with the smallest range at point."
   (lsp-intellij--min-by (lambda (lens)
@@ -302,7 +314,7 @@ This will run all tests if the class is a test class."
                     (start (lsp--position-to-point (gethash "start" range)))
                     (end (lsp--position-to-point (gethash "end" range))))
                (- end start)))
-                        lsp-code-lenses))
+                        (lsp-intellij--code-lenses-at-point)))
 
 (defvar lsp-intellij--code-lens-overlays (make-hash-table :test 'eq))
 
@@ -327,19 +339,10 @@ This will run all tests if the class is a test class."
     (with-current-buffer buf
       (lsp-intellij--remove-cur-code-lens-overlays)
       (when (and lenses (/= (length lenses) 0))
-        (let* ((windows-on-buffer (get-buffer-window-list nil nil 'visible))
-               (overlays lsp-intellij--code-lens-overlays)
-               (buf-overlays (gethash (current-buffer) overlays))
-               wins-visible-pos)
+        (let* ((overlays lsp-intellij--code-lens-overlays)
+               (buf-overlays (gethash (current-buffer) overlays)))
           (save-restriction
             (widen)
-            ;; Save visible portions of the buffer
-            (dolist (win windows-on-buffer)
-              (let* ((win-start (window-start win))
-                     (win-end (window-end win)))
-                (push (cons (1- (line-number-at-pos win-start))
-                            (1+ (line-number-at-pos win-end)))
-                      wins-visible-pos)))
             (dolist (lens lenses)
               (let* ((range (gethash "range" lens nil))
                      (data (gethash "data" lens))
@@ -348,21 +351,14 @@ This will run all tests if the class is a test class."
                      (end (gethash "end" range))
                      overlay)
                 (when (not (= state 1)) ;; not RunClass
-                  (dolist (win wins-visible-pos)
-                    (let* ((start-window (car win))
-                           (end-window (cdr win)))
-                      ;; Make the overlay only if the reference is visible
-                      (when (and (> (1+ (gethash "line" start)) start-window)
-                                 (< (1+ (gethash "line" end)) end-window))
-                        (setq overlay (make-overlay (lsp--position-to-point start)
-                                                    (lsp--position-to-point end)))
-                        (overlay-put overlay 'face
-                                     (cdr (assq state lsp-intellij--code-lens-kind-face)))
-                        (push overlay buf-overlays)
-                        (puthash (current-buffer) buf-overlays overlays)))))))))))))
+                  (setq overlay (make-overlay (lsp--position-to-point start)
+                                              (lsp--position-to-point end)))
+                  (overlay-put overlay 'face
+                               (cdr (assq state lsp-intellij--code-lens-kind-face)))
+                  (push overlay buf-overlays)
+                  (puthash (current-buffer) buf-overlays overlays))))))))))
 
 (defun lsp-intellij--on-build-messages (workspace params)
-  (message "Got messages!")
   (let ((buffer (get-buffer-create "*lsp-intellij-build-output*")))
     (with-current-buffer buffer
       (let ((buffer-read-only nil))
@@ -393,6 +389,7 @@ This will run all tests if the class is a test class."
     (insert (format "%s:%s:%s: %s: %s\n" path line column severity message))))
 
 (defun lsp-intellij--on-build-finished (workspace params)
+  (lsp-intellij--set-progress-state "building" nil)
   (let ((errors (gethash "errors" params))
         (warnings (gethash "warnings" params))
         (is-aborted (gethash "isAborted" params))
@@ -452,17 +449,28 @@ TCP, even if it isn't the one being communicated with.")
   '(("idea/indexStarted" .
      (lambda (_w _p)
        (message "Indexing started.")
-       (setq lsp-status "(indexing)")))
+       (lsp-intellij--set-progress-state "indexing" t)))
     ("idea/indexFinished" .
      (lambda (_w _p)
        (message "Indexing finished.")
-       (setq lsp-status nil)))
+       (lsp-intellij--set-progress-state "indexing" nil)))
     ("idea/buildFinished" .
      (lambda (w p)
        (lsp-intellij--on-build-finished w p)))
     ("idea/buildMessages" .
      (lambda (w p)
        (lsp-intellij--on-build-messages w p)))))
+
+(defun lsp-intellij--set-progress-state (key value)
+  (if value
+      (puthash key value lsp-intellij--progress-state)
+    (remhash key lsp-intellij--progress-state))
+  (let ((result))
+    (maphash
+     (lambda (k v)
+       (setq result (if result (concat result " " k) k)))
+     lsp-intellij--progress-state)
+    (setq lsp-status (format "(%s)" result))))
 
 (defconst lsp-intellij--request-handlers
   '(("idea/temporaryDirectory" .
@@ -526,21 +534,21 @@ TCP, even if it isn't the one being communicated with.")
 ;;;###autoload
 (defface lsp-intellij-face-code-lens-test-pass
   '((((background dark))  :background "sea green")
-     (((background light)) :background "green"))
+    (((background light)) :background "green"))
   "Face used for areas with a passing test configuration."
   :group 'lsp-intellij-faces)
 
 ;;;###autoload
 (defface lsp-intellij-face-code-lens-test-fail
   '((((background dark))  :background "firebrick")
-     (((background light)) :background "red"))
+    (((background light)) :background "red"))
   "Face used for areas with a failing test configuration."
   :group 'lsp-intellij-faces)
 
 ;;;###autoload
 (defface lsp-intellij-face-code-lens-test-unknown
   '((((background dark))  :background "saddle brown")
-     (((background light)) :background "yellow"))
+    (((background light)) :background "yellow"))
   "Face used for areas with a test configuration an with unknown state."
   :group 'lsp-intellij-faces)
 

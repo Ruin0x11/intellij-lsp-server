@@ -2,6 +2,7 @@ package com.ruin.lsp.commands.document.lens
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.impl.LineMarkersPass
+import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerRegistry
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
@@ -12,6 +13,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.DocumentCommand
@@ -31,14 +33,14 @@ class CodeLensCommand : DocumentCommand<MutableList<CodeLens>> {
         val doc = getDocument(ctx.file) ?: return mutableListOf()
 
         val markers = LineMarkersPass.queryLineMarkers(ctx.file, doc)
-        val lineMarkers = markers.mapNotNull { it.codeLens(ctx.file, doc) }
+        val lineMarkers = markers.mapNotNull { it.codeLens(ctx.project, doc) }
 
         return lineMarkers.toMutableList()
     }
 }
 
 /* copied from RunLineMarkerProvider but modified so actions aren't wrapped (they would become private) */
-private fun LineMarkerInfo<PsiElement>.codeLens(file: PsiFile, doc: Document): CodeLens? {
+private fun LineMarkerInfo<PsiElement>.codeLens(project: Project, doc: Document): CodeLens? {
     val actions = (this.createGutterRenderer()?.popupMenuActions as? DefaultActionGroup)?.childActionsOrStubs
         ?.filter { a -> a is LineMarkerActionWrapper }
     if(actions == null || actions.isEmpty()) {
@@ -65,6 +67,11 @@ private fun LineMarkerInfo<PsiElement>.codeLens(file: PsiFile, doc: Document): C
 
     val data = RunConfigurationData(desc, state)
 
+    val runManager = RunManager.getInstance(project)
+    if(!runManager.hasSettings(context)) {
+        runManager.addConfiguration(context)
+    }
+
     return CodeLens().apply {
         this.range = eltRange
         this.command = Command("Run Project", "runProject")
@@ -81,7 +88,6 @@ private fun Icon.runConfigurationState() =
         AllIcons.RunConfigurations.TestState.Yellow2 -> RunConfigurationState.TestUnknown
         else -> RunConfigurationState.Run
     }
-
 
 
 // items copied from BaseRunConfigurationAction
