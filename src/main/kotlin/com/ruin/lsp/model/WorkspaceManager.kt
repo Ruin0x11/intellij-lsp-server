@@ -5,10 +5,12 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
@@ -41,11 +43,21 @@ class WorkspaceManager {
         }
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
+        val normalizedText = textDocument.text.replace("\r\n", "\n")
+
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
             val tempDir = server?.context?.config?.get("temporaryDirectory")
             val psi = resolvePsiFromUri(project, textDocument.uri, tempDir) ?: return@Computable false
             val doc = getDocument(psi) ?: return@Computable false
-            reloadDocument(doc, project)
+
+            if (doc.isWritable) {
+                // set IDEA's copy of the document to have the text with potential unsaved in-memory changes from the client
+                doc.setText(normalizedText)
+                PsiDocumentManager.getInstance(project).commitDocument(doc)
+
+                assert(doc.text == normalizedText)
+            }
+
             if (client != null) {
                 server?.let { registerIndexNotifier(project, client, it) }
                 val projectSdk = ProjectRootManager.getInstance(project).projectSdk
@@ -68,7 +80,7 @@ class WorkspaceManager {
                     uri = textDocument.uri
                     version = textDocument.version
                 },
-                textDocument.text.replace("\r\n", "\n")
+                normalizedText
             )
     }
 
@@ -123,17 +135,10 @@ class WorkspaceManager {
 
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
-        ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
-            val file = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
-            val document = getDocument(file) ?: return@Runnable
-            reloadDocument(document, project)
-            LOG.debug("Reloaded document at ${textDocument.uri}")
-        }))
-
         if (text != null) {
             assert(managedTextDoc.contents == text, {
                 val change = Diff.buildChanges(managedTextDoc.contents, text)
-                LOG.debug("Difference: $change")
+                LOG.warn("Difference: $change")
                 "Ground truth differed upon save!"
             })
         }
@@ -237,8 +242,7 @@ class WorkspaceManager {
                 if (doc != null) {
                     if(managedTextDoc.contents != doc.text) {
                         val change = Diff.buildChanges(managedTextDoc.contents, doc.text)
-                        LOG.debug("Difference: $change")
-                        LOG.warn("Ground truth differed upon change!")
+                        LOG.error("Ground truth differed upon change! Old: \n${managedTextDoc.contents}\nNew: \n${doc.text}")
                         return@Runnable
                     }
                     LOG.debug("Doc before:\n\n${doc.text}\n\n")

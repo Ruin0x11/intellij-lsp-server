@@ -1,8 +1,5 @@
 package com.ruin.lsp.commands.project.run
 
-import com.android.tools.idea.gradle.project.build.JpsBuildContext
-import com.android.tools.idea.gradle.project.build.PostProjectBuildTasksExecutor
-import com.android.tools.idea.project.AndroidProjectBuildNotifications
 import com.intellij.compiler.CompilerMessageImpl
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfigurationBase
@@ -11,12 +8,16 @@ import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.TransactionGuard
-import com.intellij.openapi.compiler.*
+import com.intellij.openapi.compiler.CompileContext
+import com.intellij.openapi.compiler.CompileStatusNotification
+import com.intellij.openapi.compiler.CompilerMessage
+import com.intellij.openapi.compiler.CompilerMessageCategory
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
-import com.intellij.task.*
-import com.intellij.util.concurrency.Semaphore
+import com.intellij.task.ProjectTaskContext
+import com.intellij.task.ProjectTaskNotification
+import com.intellij.task.ProjectTaskResult
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.model.*
 import com.ruin.lsp.util.getURIForFile
@@ -25,8 +26,6 @@ import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
-import org.slf4j.LoggerFactory
-import java.lang.Compiler
 
 private val LOG = Logger.getInstance(LanguageServerRunner::class.java)
 
@@ -75,7 +74,7 @@ class BuildProjectCommand(private val id: String,
             //done.waitFor()
         } catch (e: Exception) {
             val writer = LogPrintWriter(LOG, Level.ERROR)
-            e.printStackTrace(LogPrintWriter(LOG, Level.ERROR))
+            e.printStackTrace(writer)
             writer.flush()
             return BuildProjectResult(false)
         }

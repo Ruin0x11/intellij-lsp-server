@@ -105,13 +105,14 @@ fun PsiElement.sourceLocationIfPossible(): Location {
         if (newFilePair != null) return@forEach
     }
 
-    if (newFilePair == null || newFilePair?.first == null || newFilePair?.second == null) {
+    if (newFilePair == null || newFilePair?.first == null) {
         return location
     }
 
     val sourcePsiFile = getPsiFile(this.project, newFilePair!!.first) ?: return location
     val sourceDoc = getDocument(sourcePsiFile) ?: return location
-    location.range = Range(offsetToPosition(sourceDoc, newFilePair!!.second), offsetToPosition(sourceDoc, newFilePair!!.second))
+    val offset = newFilePair!!.second ?: 0
+    location.range = Range(offsetToPosition(sourceDoc, offset), offsetToPosition(sourceDoc, offset))
 
     return location
 }

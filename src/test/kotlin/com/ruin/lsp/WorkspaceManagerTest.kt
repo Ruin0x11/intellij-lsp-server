@@ -105,4 +105,14 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         )
         assert("dood" != manager.managedTextDocuments[file.url]!!.contents)
     }
+
+    fun `test updates on open with client unsaved changes`() {
+        val manager = WorkspaceManager()
+
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0).apply { text = "dood" }), project)
+
+        assertPsiContentsChanged()
+        assertVirtualFileContentsUnchanged()
+        assert("dood" == manager.managedTextDocuments[file.url]!!.contents)
+    }
 }
