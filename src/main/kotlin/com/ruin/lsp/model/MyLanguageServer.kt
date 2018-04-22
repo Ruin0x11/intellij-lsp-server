@@ -3,7 +3,6 @@ package com.ruin.lsp.model
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiFile
@@ -14,6 +13,9 @@ import com.ruin.lsp.commands.document.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.document.find.FindImplementationCommand
 import com.ruin.lsp.commands.project.dialog.OpenProjectStructureCommand
 import com.ruin.lsp.commands.project.dialog.ToggleFrameVisibilityCommand
+import com.ruin.lsp.commands.project.run.BuildProjectCommand
+import com.ruin.lsp.commands.project.run.RunConfigurationsCommand
+import com.ruin.lsp.commands.project.run.RunProjectCommand
 import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
@@ -35,7 +37,6 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     var myTextDocumentService = MyTextDocumentService(this)
     var myWorkspaceService = MyWorkspaceService(this)
 
-    var client: MyLanguageClient? = null
     var diagnosticsFutures: HashMap<DocumentUri, Future<*>> = HashMap()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
@@ -102,20 +103,19 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
         asInvokeAndWaitFuture(context.rootProject!!, RunConfigurationsCommand())
 
     override fun buildProject(params: BuildProjectParams): CompletableFuture<BuildProjectResult> =
-        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors, client!!))
+        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors, this.context.client!!))
 
     override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
         asInvokeAndWaitFuture(context.rootProject!!, RunProjectCommand(params.id))
 
     override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, OpenProjectStructureCommand())
 
     override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, ToggleFrameVisibilityCommand())
+        asInvokeAndWaitFuture(context.rootProject!!, ToggleFrameVisibilityCommand())
 
     fun <T: Any> asInvokeAndWaitFuture(
         project: Project,
-        uri: DocumentUri,
         command: ProjectCommand<T>): CompletableFuture<T> =
         CompletableFuture.supplyAsync {
             synchronized(this) {

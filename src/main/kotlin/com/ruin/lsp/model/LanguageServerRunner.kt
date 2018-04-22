@@ -8,6 +8,7 @@ package com.ruin.lsp.model
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import org.apache.log4j.Level
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import java.io.IOException
 import java.net.InetAddress
@@ -107,7 +108,7 @@ open class LanguageServerService {
         LOG.info("Starting the LSP server.")
 
         return ApplicationManager.getApplication().executeOnPooledThread {
-            val trace = LogPrintWriter(LOG)
+            val trace = LogPrintWriter(LOG, Level.DEBUG)
             val launcher = Launcher.createLauncher(languageServer, MyLanguageClient::class.java,
                 connection.getInputStream(), connection.getOutputStream(), false, trace)
             val client = launcher.remoteProxy

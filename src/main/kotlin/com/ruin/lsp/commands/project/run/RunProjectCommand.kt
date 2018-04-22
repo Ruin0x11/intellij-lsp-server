@@ -12,6 +12,8 @@ import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.compiler.CompilerManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.task.ModuleBuildTask
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskManager
@@ -26,36 +28,37 @@ private val LOG = LoggerFactory.getLogger(RunProjectCommand::class.java)
 class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectCommandLine> {
     override fun execute(ctx: Project): RunProjectCommandLine {
         val runManager = RunManager.getInstance(ctx) as RunManagerImpl
-        val setting = runManager.getConfigurationById(id) ?: return RunProjectCommandLine(false)
+        val setting = runManager.getConfigurationById(id) ?: return RunProjectCommandLine(true)
         val config = setting.configuration
 
-        // CompileStepBeforeRun.doMake
-        // CompilerManagerImpl.isUpToDate
-        val needsRebuild = needsRebuild(ctx, config)
+        PsiDocumentManager.getInstance(ctx).commitAllDocuments()
+        VirtualFileManagerImpl.getInstance().syncRefresh()
+
+        val isUpToDate = isUpToDate(ctx, config)
         val executor = DefaultRunExecutor.getRunExecutorInstance()
         val runner = DefaultJavaProgramRunner.getInstance() as DefaultJavaProgramRunner
 
         when(config) {
             is ApplicationConfiguration, is KotlinRunConfiguration -> {
                 val env = ExecutionEnvironmentBuilder.create(config.project, executor, config).build()
-                val state = config.getState(executor, env) ?: return RunProjectCommandLine(false)
+                val state = config.getState(executor, env) ?: return RunProjectCommandLine(true)
                 when (state) {
                     is JavaCommandLine -> {
                         runner.patch(state.javaParameters, env.runnerSettings, env.runProfile, true)
                         val classpath = state.javaParameters.classPath.pathsString
                         state.javaParameters.classPath.clear()
                         val line = state.javaParameters.toCommandLine()
-                        return RunProjectCommandLine(needsRebuild, line.preparedCommandLine, line.workDirectory.absolutePath, classpath)
+                        return RunProjectCommandLine(isUpToDate, line.preparedCommandLine, line.workDirectory.absolutePath, classpath)
                     }
                 }
             }
         }
 
-        return RunProjectCommandLine(false)
+        return RunProjectCommandLine(true)
     }
 }
 
-fun needsRebuild(project: Project, config: RunConfiguration): Boolean {
+fun isUpToDate(project: Project, config: RunConfiguration): Boolean {
     if (config !is RunProfileWithCompileBeforeLaunchOption) {
         return false
     }
@@ -73,7 +76,8 @@ fun needsRebuild(project: Project, config: RunConfiguration): Boolean {
             .let { compilerManager.isUpToDate(
                 compilerManager.createModulesCompileScope(it, true)) }
     } else {
-        compilerManager.isUpToDate(compilerManager.createModuleCompileScope((task as ModuleBuildTask).module, true))
+        val scope = compilerManager.createModuleCompileScope((task as ModuleBuildTask).module, true)
+        compilerManager.isUpToDate(scope)
     }
 }
 

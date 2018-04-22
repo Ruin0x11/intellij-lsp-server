@@ -200,6 +200,7 @@ Return the file path if found, nil otherwise."
 (defun lsp-intellij-run-project ()
   "Run a project using an IntelliJ run configuration."
   (interactive)
+  (save-some-buffers t nil)
   (if-let ((config (lsp-intellij--choose-run-configuration)))
        (let ((command (lsp--send-request
                        (lsp--make-request
@@ -211,7 +212,7 @@ Return the file path if found, nil otherwise."
           ((not (gethash "command" command))
            (error "Run configuration unsupported: %s" (gethash "name" config)))
 
-          ((gethash "needsRebuild" command)
+          ((not (gethash "isUpToDate" command))
            (progn
              (setq lsp-intellij--run-after-build-command command)
              (lsp-intellij--do-build-project config)))
@@ -233,21 +234,54 @@ Return the file path if found, nil otherwise."
 (defun lsp-intellij-build-project ()
   "Start building a project using an IntelliJ run configuration."
   (interactive)
+  (save-some-buffers t nil)
   (if-let ((config (lsp-intellij--choose-run-configuration)))
       (lsp-intellij--do-build-project config)
     (message "No run configurations were found.")))
 
 (defun lsp-intellij--do-build-project (config)
-  (let ((command (lsp--send-request
+  (let ((buffer (get-buffer-create "*lsp-intellij-build-output*"))
+        (command (lsp--send-request
                   (lsp--make-request
                    "idea/buildProject"
                    (list :textDocument (lsp-text-document-identifier)
                          :id (gethash "id" config)
                          :forceMakeProject nil
                          :ignoreErrors nil)))))
+    (with-current-buffer buffer
+      (erase-buffer))
     (if (not (gethash "started" command))
         (error "Build failed to start")
       (message "Build started."))))
+
+(defun lsp-intellij--on-build-messages (workspace params)
+  (message "Got messages!")
+  (let ((buffer (get-buffer-create "*lsp-intellij-build-output*"))
+        (messages (gethash "messages" params)))
+    (with-current-buffer buffer
+      (compilation-mode)
+      (mapc (lambda (mes)
+              (let ((path (lsp--uri-to-path (gethash "uri" mes)))
+                    (diags (gethash "diagnostics" mes)))
+                (lsp-intellij--insert-build-messages path diags)))
+            messages))))
+
+(defun lsp-intellij--insert-build-messages (path diags)
+  (mapc (lambda (d) (lsp-intellij--insert-build-message path (lsp--make-diag d)))))
+
+(defun lsp-intellij--insert-build-message (path diag)
+  (let ((line (lsp-diagnostic-line diag))
+        (column (lsp-diagnostic-column diag))
+        (severity
+         (pcase (lsp-diagnostic-severity diag)
+           (1 'error)
+           (2 'warning)
+           (_ 'info)))
+        (message (lsp-diagnostic-message diag))
+        (source (lsp-diagnostic-source diag))))
+  (goto-char (point-max))
+  ;; use GCC's line format
+  (insert (format "%s:%s:%s: %s: %s: %s" path line column severity source message)))
 
 (defun lsp-intellij--on-build-finished (workspace params)
   (let ((errors (gethash "errors" params))
@@ -312,7 +346,10 @@ TCP, even if it isn't the one being communicated with.")
        (setq lsp-status nil)))
     ("idea/buildFinished" .
      (lambda (w p)
-       (lsp-intellij--on-build-finished w p)))))
+       (lsp-intellij--on-build-finished w p)))
+    ("idea/buildMessages" .
+     (lambda (w p)
+       (lsp-intellij--on-build-messages w p)))))
 
 (defconst lsp-intellij--request-handlers
   '(("idea/temporaryDirectory" .

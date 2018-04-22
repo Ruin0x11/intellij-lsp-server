@@ -1,5 +1,9 @@
 package com.ruin.lsp.commands.project.run
 
+import com.android.tools.idea.gradle.project.build.JpsBuildContext
+import com.android.tools.idea.gradle.project.build.PostProjectBuildTasksExecutor
+import com.android.tools.idea.project.AndroidProjectBuildNotifications
+import com.intellij.compiler.CompilerMessageImpl
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption
@@ -7,17 +11,24 @@ import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.TransactionGuard
+import com.intellij.openapi.compiler.*
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.VirtualFileManagerImpl
 import com.intellij.task.*
 import com.intellij.util.concurrency.Semaphore
 import com.ruin.lsp.commands.ProjectCommand
-import com.ruin.lsp.model.BuildProjectResult
-import com.ruin.lsp.model.BuildResult
-import com.ruin.lsp.model.MyLanguageClient
+import com.ruin.lsp.model.*
+import com.ruin.lsp.util.getURIForFile
+import org.apache.log4j.Level
+import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.DiagnosticSeverity
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.slf4j.LoggerFactory
+import java.lang.Compiler
 
-private val LOG = LoggerFactory.getLogger(BuildProjectCommand::class.java)
+private val LOG = Logger.getInstance(LanguageServerRunner::class.java)
 
 class BuildProjectCommand(private val id: String,
                           private val forceMakeProject: Boolean,
@@ -48,34 +59,63 @@ class BuildProjectCommand(private val id: String,
         try {
             //val done = Semaphore()
             //done.down()
-            val callback = notifyBuildFinished(client)
-
             TransactionGuard.submitTransaction(ctx, Runnable {
                 val sessionId = ExecutionManagerImpl.EXECUTION_SESSION_ID_KEY.get(env)
-                val projectTaskManager = ProjectTaskManager.getInstance(ctx)
+                val projectTaskManager = MyProjectTaskManager(ctx, compileStatusNotification(client))
                 if (!ctx.isDisposed) {
-                    projectTaskManager.run(ProjectTaskContext(sessionId, config), projectTask, callback)
+                    projectTaskManager.run(ProjectTaskContext(sessionId, config), projectTask, ProjectTaskNotification {
+                        client.notifyBuildFinished(it.buildResult())
+                    })
                 } else {
-                   //done.up()
+                    //done.up()
                 }
             })
             // can't wait here, as CompileDriver will try to run the callback that releases the semaphore on the EDT
             // after the compile finishes, which causes a deadlock as we're already on the EDT.
             //done.waitFor()
         } catch (e: Exception) {
+            val writer = LogPrintWriter(LOG, Level.ERROR)
+            e.printStackTrace(LogPrintWriter(LOG, Level.ERROR))
+            writer.flush()
             return BuildProjectResult(false)
         }
 
         return BuildProjectResult(true)
     }
 
-    private fun notifyBuildFinished(client: MyLanguageClient): ProjectTaskNotification {
-        return ProjectTaskNotification { executionResult ->
-            // TODO: somehow get a CompileContextImpl and send the actual error messages/locations
-            client.notifyBuildFinished(executionResult.buildResult())
+    private fun compileStatusNotification(client: MyLanguageClient): CompileStatusNotification {
+        return CompileStatusNotification { _, _, _, compileContext ->
+            client.notifyBuildMessages(compileContext.buildMessages())
         }
     }
-
-    private fun ProjectTaskResult.buildResult() =
-        BuildResult(errors, warnings, isAborted)
 }
+
+private fun ProjectTaskResult.buildResult() =
+    BuildResult(errors, warnings, isAborted)
+
+private fun CompileContext.buildMessages(): List<BuildMessages> {
+    val messages = mutableListOf<CompilerMessage>()
+    CompilerMessageCategory.values().forEach { category ->
+        val forCategory = this.getMessages(category)
+        messages.addAll(forCategory)
+    }
+
+    return messages.groupBy { getURIForFile(it.virtualFile) }
+        .map { (uri, messages) ->
+            BuildMessages(uri, messages.map { mes -> (mes as CompilerMessageImpl).diagnostic() })
+        }
+}
+
+private fun CompilerMessageCategory.diagnosticSeverity() =
+    when (this) {
+        CompilerMessageCategory.STATISTICS -> DiagnosticSeverity.Hint
+        CompilerMessageCategory.INFORMATION -> DiagnosticSeverity.Information
+        CompilerMessageCategory.WARNING -> DiagnosticSeverity.Warning
+        CompilerMessageCategory.ERROR -> DiagnosticSeverity.Error
+    }
+
+private fun CompilerMessageImpl.position() = Position(line, column)
+
+private fun CompilerMessageImpl.diagnostic() =
+    Diagnostic(Range(position(), position()), message, category.diagnosticSeverity(), exportTextPrefix)
+
