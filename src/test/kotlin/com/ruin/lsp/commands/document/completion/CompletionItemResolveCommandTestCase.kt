@@ -1,9 +1,12 @@
 package com.ruin.lsp.commands.document.completion
 
+import com.ruin.lsp.range
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.TextEdit
 
-/**
- * Hangs for some reason when all tests are run, but not when run individually
- */
+
+// Crashes for some reason when all tests are run, but not when run individually
+
 //class CompletionItemResolveCommandTestCase : CompletionItemResolveCommandTestBase() {
 //    fun `test resolves autoimport directive`() =
 //        checkHasAdditionalEdits(Position(54, 11), "java.util.LinkedHashMap",

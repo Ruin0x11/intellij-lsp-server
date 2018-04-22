@@ -21,25 +21,9 @@ abstract class CompletionItemResolveCommandTestBase : UsableSdkTestCase() {
      val filePath: String
         get() = DUMMY_FILE_PATH
 
-    override fun setUp() {
-        super.setUp()
-    }
-
     override fun initApplication() {
         super.initApplication()
         JavaTestUtil.setupTestJDK(testRootDisposable)
-    }
-
-    override fun tearDown() {
-        ApplicationManager.getApplication().runWriteAction {
-            val table =   ProjectJdkTable.getInstance()
-
-            table.allJdks.forEach { jdk ->
-                jdk.sdkModificator.removeAllRoots()
-                table.removeJdk(jdk)
-            }
-        }
-        super.tearDown()
     }
 
     private fun runCommand(pos: Position, selectedItem: String): CompletionItem {

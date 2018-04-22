@@ -38,7 +38,7 @@
 (require 'cl)
 
 (defvar lsp-intellij--config-options (make-hash-table))
-(defvar lsp-intellij--progress-state (make-hash-table))
+(defvar-local lsp-intellij--progress-state (make-hash-table :test 'equal))
 
 (defvar lsp-intellij-use-topmost-maven-root t
   "If non-nil, `lsp-intellij' will attempt to locate the topmost
@@ -453,7 +453,8 @@ TCP, even if it isn't the one being communicated with.")
     ("idea/indexFinished" .
      (lambda (_w _p)
        (message "Indexing finished.")
-       (lsp-intellij--set-progress-state "indexing" nil)))
+       (lsp-intellij--set-progress-state "indexing" nil)
+       (lsp--update-code-lenses 'lsp-intellij--render-code-lenses)))
     ("idea/buildFinished" .
      (lambda (w p)
        (lsp-intellij--on-build-finished w p)))
@@ -461,16 +462,20 @@ TCP, even if it isn't the one being communicated with.")
      (lambda (w p)
        (lsp-intellij--on-build-messages w p)))))
 
+(defun lsp-intellij--refresh-status (status)
+  (if (hash-table-empty-p status)
+      (setq lsp-status "")
+    (let ((result))
+      (maphash
+       (lambda (k v)
+         (when v
+           (setq result (if result (concat result " " k) k))))
+       status)
+      (setq lsp-status (format "(%s)" result)))))
+
 (defun lsp-intellij--set-progress-state (key value)
-  (if value
-      (puthash key value lsp-intellij--progress-state)
-    (remhash key lsp-intellij--progress-state))
-  (let ((result))
-    (maphash
-     (lambda (k v)
-       (setq result (if result (concat result " " k) k)))
-     lsp-intellij--progress-state)
-    (setq lsp-status (format "(%s)" result))))
+  (puthash key value lsp-intellij--progress-state)
+  (lsp-intellij--refresh-status lsp-intellij--progress-state))
 
 (defconst lsp-intellij--request-handlers
   '(("idea/temporaryDirectory" .

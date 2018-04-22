@@ -6,11 +6,13 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.NewVirtualFileSystem
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
@@ -23,9 +25,9 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 /**
  * Manages files opened by LSP clients.
  *
- * The idea is that we want to deal withProfiler PSI files as little as possible due to threading constraints and the fact that
+ * The idea is that we want to deal with PSI files as little as possible due to threading constraints and the fact that
  * they constantly go invalid. Instead, this class keeps a separate ground truth, and when document changes come in, it
- * is possible to reload the corresponding PSI file withProfiler the changed contents.
+ * is possible to reload the corresponding PSI file with the changed contents.
  */
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
@@ -138,9 +140,10 @@ class WorkspaceManager {
         ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
             val psi = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
             val doc = getDocument(psi) ?: return@Runnable
-            PsiDocumentManager.getInstance(project).commitDocument(doc)
-            FileDocumentManager.getInstance().saveDocument(doc)
-            //VirtualFileManager.getInstance().syncRefresh()
+
+            FileDocumentManager.getInstance().saveDocumentAsIs(doc)
+            PsiDocumentManager.getInstance(project).commitAllDocuments()
+            VirtualFileManager.getInstance().syncRefresh()
         }))
 
         if (text != null) {
