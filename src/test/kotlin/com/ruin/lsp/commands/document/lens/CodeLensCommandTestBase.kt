@@ -17,6 +17,6 @@ abstract class CodeLensCommandTestBase : FileEditingTestCase() {
     protected fun checkRuns() {
         val command = CodeLensCommand()
         val result = invokeCommandAndWait(command, project, psiFile)
-        print("dood")
+        assert(result.isNotEmpty())
     }
 }

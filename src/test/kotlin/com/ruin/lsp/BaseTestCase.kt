@@ -25,6 +25,7 @@ val PROBLEMATIC_FILE_PATH = "src/org/lsp/javaproject/Problematic.java"
 val PROBLEMATIC_TWICE_FILE_PATH = "src/org/lsp/javaproject/ProblematicTwice.java"
 val CONSTANTS_FILE_PATH = "src/org/lsp/javaproject/Constants.java"
 val ENUM_TYPE_FILE_PATH = "src/org/lsp/javaproject/EnumType.java"
+val RUNNABLE_FILE_PATH = "src/org/lsp/runnable/RunnableMain.java"
 
 val OBJECT_FILE_PATH = "src/org/lsp/kotlinproject/MyObject.kt"
 

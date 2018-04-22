@@ -86,7 +86,7 @@ of matched directories.  Nil otherwise."
                                           (when (directory-name-p parent)
                                             (directory-files parent nil ".*.iml"))))))
       (when (not file)
-        (error "No root found."))
+        (error "No root found"))
       (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
              (has-pom (> (length pom) 0))
              (root (if (and has-pom lsp-intellij-use-topmost-maven-root)
@@ -309,7 +309,7 @@ Return the file path if found, nil otherwise."
   "Open the Project Structure dialog for the current project."
   (interactive)
   (lsp--cur-workspace-check)
-  (lsp--send-execute-command "openProjectStructure" nil)))
+  (lsp--send-execute-command "openProjectStructure" nil))
 
 (defun lsp-intellij-open-run-configurations ()
   "Open the Run/Debug Configurations dialog for the current project."

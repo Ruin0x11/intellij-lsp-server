@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.progress.DumbProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
@@ -103,3 +104,5 @@ fun textEditFromDocs(oldDoc: Document, newDoc: Document): List<TextEdit> {
     LOG.debug("=== Diff:\n${changes.joinToString("\n") { it.toString() }}")
     return changes.map { it.toTextEdit(oldDoc, newDoc) }
 }
+
+fun LogicalPosition.position() = Position(line, column)

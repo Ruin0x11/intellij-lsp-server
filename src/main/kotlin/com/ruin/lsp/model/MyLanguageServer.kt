@@ -108,13 +108,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
         asInvokeAndWaitFuture(context.rootProject!!, RunProjectCommand(params.id))
 
-    override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, OpenProjectStructureCommand())
-
-    override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, ToggleFrameVisibilityCommand())
-
-    fun <T: Any> asInvokeAndWaitFuture(
+    fun <T: Any?> asInvokeAndWaitFuture(
         project: Project,
         command: ProjectCommand<T>): CompletableFuture<T> =
         CompletableFuture.supplyAsync {
@@ -125,7 +119,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
             }
         }
 
-    fun <T: Any> asInvokeAndWaitFuture(
+    fun <T: Any?> asInvokeAndWaitFuture(
         project: Project,
         uri: DocumentUri,
         command: DocumentCommand<T>): CompletableFuture<T> =
@@ -133,7 +127,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
             executeAndGetResult(project, uri, command, this.context, this)
         }
 
-    fun <T: Any> asCancellableInvokeAndWaitFuture(
+    fun <T: Any?> asCancellableInvokeAndWaitFuture(
         project: Project,
         uri: DocumentUri,
         command: DocumentCommand<T>): CompletableFuture<T> =
@@ -144,7 +138,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 
 private val LOG = Logger.getInstance(MyLanguageServer::class.java)
 
-private fun <T : Any> executeAndGetResult(
+private fun <T : Any?> executeAndGetResult(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
@@ -166,7 +160,7 @@ private fun <T : Any> executeAndGetResult(
     }
 }
 
-fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
+fun <T: Any?> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
                                   project: Project,
                                   file: PsiFile,
                                   client: LanguageClient? = null): T {
@@ -180,7 +174,7 @@ fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand
     return result
 }
 
-fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<T>,
+fun <T: Any?> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<T>,
                                   project: Project): T {
     val result = invokeAndWaitIfNeeded(Computable {
         command.execute(project)
