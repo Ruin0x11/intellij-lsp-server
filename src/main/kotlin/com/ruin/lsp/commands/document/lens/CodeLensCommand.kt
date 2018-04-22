@@ -48,9 +48,6 @@ private fun LineMarkerInfo<PsiElement>.codeLens(project: Project, doc: Document)
         return null
     }
 
-    // ApplicationRunLineMarkerProvider
-    // ExecutorAction wraps RunContextAction
-
     // By this point we know the run action happens for this element, so we should be able to create a
     // ConfigurationContext from it.
     val configContext = ConfigurationContext(this.element)
