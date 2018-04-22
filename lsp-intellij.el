@@ -202,14 +202,21 @@ Return the file path if found, nil otherwise."
   (interactive)
   (save-some-buffers t nil)
   (if-let ((config (lsp-intellij--choose-run-configuration)))
-       (let ((command (lsp--send-request
-                       (lsp--make-request
-                        "idea/runProject"
-                        (list :textDocument (lsp-text-document-identifier)
-                              :id (gethash "id" config))))))
+      (lsp-intellij--do-run-project config)
+     (message "No run configurations were found.")))
 
+(defun lsp-intellij--get-run-command (config)
+  "Gets the run command for a given RunConfigurationDescription."
+  (lsp--send-request
+   (lsp--make-request
+    "idea/runProject"
+    (list :textDocument (lsp-text-document-identifier)
+          :id (gethash "id" config)))))
+
+(defun lsp-intellij--do-run-project (config)
+  (let ((command (lsp-intellij--get-run-command config)))
          (cond
-          ((not (gethash "command" command))
+          ((or (not command) (not (gethash "command" command)))
            (error "Run configuration unsupported: %s" (gethash "name" config)))
 
           ((not (gethash "isUpToDate" command))
@@ -217,10 +224,9 @@ Return the file path if found, nil otherwise."
              (setq lsp-intellij--run-after-build-command command)
              (lsp-intellij--do-build-project config)))
 
-          (t (lsp-intellij--do-run-project command))))
-     (message "No run configurations were found.")))
-
-(defun lsp-intellij--do-run-project (command)
+          (t (lsp-intellij--run-project-command command))))
+  )
+(defun lsp-intellij--run-project-command (command)
   (let ((default-directory (gethash "workingDirectory" command))
         (command-str (replace-regexp-in-string "\n" " "
                                                (gethash "command" command))))
@@ -253,6 +259,107 @@ Return the file path if found, nil otherwise."
     (if (not (gethash "started" command))
         (error "Build failed to start")
       (message "Build started."))))
+
+(defun lsp-intellij-run-at-point ()
+  "Run the item (main class, unit test) at point."
+  (interactive)
+  (unless (lsp-intellij--run-project-from-code-lens
+           (lsp-intellij--most-local-code-lens))
+    (user-error "No configurations at point")))
+
+(defun lsp-intellij-run-buffer-class ()
+  "Run the configuration for the buffer's class.
+
+This will run all tests if the class is a test class."
+  (interactive)
+  (unless (lsp-intellij--run-project-from-code-lens
+           (lsp-intellij--run-buffer-lens))
+    (user-error "No configurations for running buffer")))
+
+(defun lsp-intellij--run-project-from-code-lens (lens)
+  (when lens
+    (let* ((data (gethash "data" lens))
+           (config (gethash "configuration" data)))
+      (lsp-intellij--do-run-project config))))
+
+(defun lsp-intellij--run-buffer-lens ()
+  (cl-find-if (lambda (lens)
+             (let* ((data (gethash "data" lens))
+                    (state (gethash "state" data)))
+               (= state 1))) ;; RunClass
+           lsp-code-lenses))
+
+(defun lsp-intellij--min-by (f coll)
+  (when (listp coll)
+    (cl-reduce (lambda (min this)
+                (if (> (funcall f min) (funcall f this)) this min))
+            coll)))
+
+(defun lsp-intellij--most-local-code-lens ()
+  "Finds the code lens with the smallest range at point."
+  (lsp-intellij--min-by (lambda (lens)
+             (let* ((range (gethash "range" lens))
+                    (start (lsp--position-to-point (gethash "start" range)))
+                    (end (lsp--position-to-point (gethash "end" range))))
+               (- end start)))
+                        lsp-code-lenses))
+
+(defvar lsp-intellij--code-lens-overlays (make-hash-table :test 'eq))
+
+(defun lsp-intellij--remove-cur-code-lens-overlays ()
+  (let ((overlays lsp-intellij--code-lens-overlays)
+        (buf (current-buffer)))
+    (dolist (overlay (gethash buf overlays))
+      (delete-overlay overlay))
+    (remhash buf overlays)))
+
+(defconst lsp-intellij--code-lens-kind-face
+  '((0 . lsp-intellij-face-code-lens-run)
+    (2 . lsp-intellij-face-code-lens-test)
+    (3 . lsp-intellij-face-code-lens-test-pass)
+    (4 . lsp-intellij-face-code-lens-test-fail)
+    (5 . lsp-intellij-face-code-lens-test-unknown)))
+
+(defun lsp-intellij--render-code-lenses (lenses)
+  "Create a callback to process a code lenses response LENSES."
+  (let ((buf (current-buffer)))
+    (cl-check-type buf buffer)
+    (with-current-buffer buf
+      (lsp-intellij--remove-cur-code-lens-overlays)
+      (when (and lenses (/= (length lenses) 0))
+        (let* ((windows-on-buffer (get-buffer-window-list nil nil 'visible))
+               (overlays lsp-intellij--code-lens-overlays)
+               (buf-overlays (gethash (current-buffer) overlays))
+               wins-visible-pos)
+          (save-restriction
+            (widen)
+            ;; Save visible portions of the buffer
+            (dolist (win windows-on-buffer)
+              (let* ((win-start (window-start win))
+                     (win-end (window-end win)))
+                (push (cons (1- (line-number-at-pos win-start))
+                            (1+ (line-number-at-pos win-end)))
+                      wins-visible-pos)))
+            (dolist (lens lenses)
+              (let* ((range (gethash "range" lens nil))
+                     (data (gethash "data" lens))
+                     (state (gethash "state" data 0))
+                     (start (gethash "start" range))
+                     (end (gethash "end" range))
+                     overlay)
+                (when (not (= state 1)) ;; not RunClass
+                  (dolist (win wins-visible-pos)
+                    (let* ((start-window (car win))
+                           (end-window (cdr win)))
+                      ;; Make the overlay only if the reference is visible
+                      (when (and (> (1+ (gethash "line" start)) start-window)
+                                 (< (1+ (gethash "line" end)) end-window))
+                        (setq overlay (make-overlay (lsp--position-to-point start)
+                                                    (lsp--position-to-point end)))
+                        (overlay-put overlay 'face
+                                     (cdr (assq state lsp-intellij--code-lens-kind-face)))
+                        (push overlay buf-overlays)
+                        (puthash (current-buffer) buf-overlays overlays)))))))))))))
 
 (defun lsp-intellij--on-build-messages (workspace params)
   (message "Got messages!")
@@ -288,7 +395,9 @@ Return the file path if found, nil otherwise."
 (defun lsp-intellij--on-build-finished (workspace params)
   (let ((errors (gethash "errors" params))
         (warnings (gethash "warnings" params))
-        (is-aborted (gethash "isAborted" params)))
+        (is-aborted (gethash "isAborted" params))
+        (command lsp-intellij--run-after-build-command))
+    (setq lsp-intellij--run-after-build-command nil)
     (cond
      ((> errors 0)
       (progn
@@ -300,10 +409,8 @@ Return the file path if found, nil otherwise."
 
      (t (progn
           (message "Build finished with %s warnings." warnings)
-          (when-let ((command lsp-intellij--run-after-build-command))
-            (lsp-intellij--do-run-project command)
-            (setq lsp-intellij--run-after-build-command nil))))
-     )))
+          (when command
+            (lsp-intellij--run-project-command command)))))))
 
 (defun lsp-intellij-open-project-structure ()
   "Open the Project Structure dialog for the current project."
@@ -389,6 +496,9 @@ TCP, even if it isn't the one being communicated with.")
 
 (add-hook 'lsp-after-initialize-hook 'lsp-intellij--set-configuration)
 
+(add-hook 'lsp-after-diagnostics-hook (lambda () (lsp--update-code-lenses 'lsp-intellij--render-code-lenses)))
+
+
 (defun lsp-intellij-set-config (name option)
   "Set a config option in the intellij lsp server."
   (puthash name option lsp-intellij--config-options))
@@ -398,6 +508,41 @@ TCP, even if it isn't the one being communicated with.")
   (lsp-intellij-set-config "temporaryDirectory" dir))
 
 (lsp-intellij-set-temporary-directory (lsp--path-to-uri temporary-file-directory))
+
+;;;###autoload
+(defface lsp-intellij-face-code-lens-run
+  '((((background dark))  :background "dark green")
+    (((background light)) :background "green"))
+  "Face used for areas with a run configuration."
+  :group 'lsp-intellij-faces)
+
+;;;###autoload
+(defface lsp-intellij-face-code-lens-test
+  '((((background dark))  :background "saddle brown")
+    (((background light)) :background "yellow"))
+  "Face used for areas with a test configuration."
+  :group 'lsp-intellij-faces)
+
+;;;###autoload
+(defface lsp-intellij-face-code-lens-test-pass
+  '((((background dark))  :background "sea green")
+     (((background light)) :background "green"))
+  "Face used for areas with a passing test configuration."
+  :group 'lsp-intellij-faces)
+
+;;;###autoload
+(defface lsp-intellij-face-code-lens-test-fail
+  '((((background dark))  :background "firebrick")
+     (((background light)) :background "red"))
+  "Face used for areas with a failing test configuration."
+  :group 'lsp-intellij-faces)
+
+;;;###autoload
+(defface lsp-intellij-face-code-lens-test-unknown
+  '((((background dark))  :background "saddle brown")
+     (((background light)) :background "yellow"))
+  "Face used for areas with a test configuration an with unknown state."
+  :group 'lsp-intellij-faces)
 
 (provide 'lsp-intellij)
 ;;; lsp-intellij.el ends here

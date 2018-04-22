@@ -47,13 +47,31 @@ interface MyLanguageServerExtensions {
     fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine>
 }
 
+/**
+ * A run configuration from IntelliJ. Contains user-displayable information and the ID used to run it.
+ */
 data class RunConfigurationDescription(val id: String, val name: String, val configType: String)
+
+/**
+ * The state of a run configuration. For example, it can display whether or not a test has passed. It also
+ * allows determining which configuration runs the whole class rather than an individual item.
+ */
+enum class RunConfigurationState(val ord: Int) {
+    Run(1),
+    RunClass(2),
+    Test(3),
+    TestPass(4),
+    TestFail(5),
+    TestUnknown(6)
+}
+data class RunConfigurationData(val configuration: RunConfigurationDescription, val state: RunConfigurationState)
 
 data class BuildProjectParams(val textDocument: TextDocumentIdentifier,
                               val id: String,
                               val forceMakeProject: Boolean,
                               val ignoreErrors: Boolean)
 data class BuildProjectResult(val started: Boolean)
+
 data class RunProjectParams(val textDocument: TextDocumentIdentifier, val id: String)
 data class RunProjectCommandLine(val isUpToDate: Boolean,
                                  val command: String? = null,

@@ -76,17 +76,19 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
             return
         }
 
-        val (doc, file) = invokeAndWaitIfNeeded( Computable {
-            val tempDir = context.config["temporaryDirectory"]
-            val file = resolvePsiFromUri(context.rootProject!!, uri, tempDir) ?: return@Computable null
-            val doc = getDocument(file) ?: return@Computable null
-            Pair(doc, file)
-        }) ?: return
+        synchronized(this) {
+            val (doc, file) = invokeAndWaitIfNeeded( Computable {
+                val tempDir = context.config["temporaryDirectory"]
+                val file = resolvePsiFromUri(context.rootProject!!, uri, tempDir) ?: return@Computable null
+                val doc = getDocument(file) ?: return@Computable null
+                Pair(doc, file)
+            }) ?: return
 
-        diagnosticsFutures[uri]?.cancel(true)
+            diagnosticsFutures[uri]?.cancel(true)
 
-        diagnosticsFutures[uri] = ApplicationManager.getApplication()
-            .executeOnPooledThread(DiagnosticsThread(file, doc, this.context.client!!))
+            diagnosticsFutures[uri] = ApplicationManager.getApplication()
+                .executeOnPooledThread(DiagnosticsThread(file, doc, this.context.client!!))
+        }
     }
 
     override fun getTextDocumentService() = myTextDocumentService

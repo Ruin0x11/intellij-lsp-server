@@ -1,36 +1,30 @@
 package com.ruin.lsp.commands.document.lens
 
-import com.intellij.codeInsight.TestFrameworks
 import com.intellij.codeInsight.daemon.LineMarkerInfo
-import com.intellij.codeInsight.daemon.impl.Divider
 import com.intellij.codeInsight.daemon.impl.LineMarkersPass
-import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.RunnerRegistry
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.LineMarkerActionWrapper
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.*
-import com.intellij.psi.util.ClassUtil
-import com.intellij.psi.util.PsiMethodUtil
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.containers.mapSmart
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.ruin.lsp.commands.DocumentCommand
 import com.ruin.lsp.commands.ExecutionContext
 import com.ruin.lsp.commands.project.run.description
-import com.ruin.lsp.model.RunConfigurationDescription
+import com.ruin.lsp.model.RunConfigurationData
+import com.ruin.lsp.model.RunConfigurationState
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.toRange
 import org.eclipse.lsp4j.CodeLens
 import org.eclipse.lsp4j.Command
-import java.util.ArrayList
+import java.util.*
+import javax.swing.Icon
 
 class CodeLensCommand : DocumentCommand<MutableList<CodeLens>> {
     override fun execute(ctx: ExecutionContext): MutableList<CodeLens> {
@@ -65,15 +59,30 @@ private fun LineMarkerInfo<PsiElement>.codeLens(file: PsiFile, doc: Document): C
         context = configs.firstOrNull()?.configurationSettings ?: return null
     }
 
+    val state = this.createGutterRenderer()?.icon?.runConfigurationState() ?: RunConfigurationState.Run
     val eltRange = this.element?.parent?.textRange?.toRange(doc) ?: return null
     val desc = context.description()
 
+    val data = RunConfigurationData(desc, state)
+
     return CodeLens().apply {
         this.range = eltRange
-        this.command = Command("Run Line", "runLine")
-        this.data = desc
+        this.command = Command("Run Project", "runProject")
+        this.data = data
     }
 }
+
+private fun Icon.runConfigurationState() =
+    when (this) {
+        AllIcons.RunConfigurations.TestState.Run -> RunConfigurationState.Run
+        AllIcons.RunConfigurations.TestState.Run_run -> RunConfigurationState.RunClass
+        AllIcons.RunConfigurations.TestState.Green2 -> RunConfigurationState.TestPass
+        AllIcons.RunConfigurations.TestState.Red2 -> RunConfigurationState.TestFail
+        AllIcons.RunConfigurations.TestState.Yellow2 -> RunConfigurationState.TestUnknown
+        else -> RunConfigurationState.Run
+    }
+
+
 
 // items copied from BaseRunConfigurationAction
 
