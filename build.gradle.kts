@@ -70,7 +70,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
-        setPlugins("properties", "maven", "junit", "kotlin", "android", "gradle", "groovy")
+        setPlugins("properties", "maven", "junit", "Kotlin", "android", "gradle", "Groovy")
     }
 
     tasks.withType<KotlinCompile> {
