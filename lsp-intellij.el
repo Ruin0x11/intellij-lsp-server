@@ -85,7 +85,7 @@ of matched directories.  Nil otherwise."
     (let ((file (locate-dominating-file (buffer-file-name)
                                         (lambda (parent)
                                           (when (directory-name-p parent)
-                                            (directory-files parent nil ".*.iml"))))))
+                                            (directory-files parent nil ".*.idea"))))))
       (when (not file)
         (error "No root found"))
       (let* ((pom (directory-files (file-name-directory file) nil "pom.xml"))
