@@ -29,7 +29,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Name                        | Method                            |                    | Emacs function                                         |
 | ----                        | -----------------------------     | ------------------ | -----------------------------------                    |
 | Workspace Symbols           | `workspace/symbol`                | :heavy_check_mark: | `xref-find-apropos`                                    |
-| Execute Command             | `workspace/executeCommand`        | :x:                |                                                        |
+| Execute Command             | `workspace/executeCommand`        | :heavy_check_mark: |                                                        |
 | Diagnostics                 | `textDocument/publishDiagnostics` | :heavy_check_mark: | Used by [lsp-ui](https://github.com/emacs-lsp/lsp-ui). |
 | Completion                  | `textDocument/completion`         | :heavy_check_mark: | `complete-symbol`                                      |
 | Hover                       | `textDocument/hover`              | :heavy_check_mark: |                                                        |
@@ -57,6 +57,14 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                 |                                                       |
 | Build Messages                     | `idea/buildMessages`          | :arrow_left:                 |                                                       |
 | Build Finished                     | `idea/buildFinished`          | :arrow_left:                 |                                                       |
+
+### Commands
+| Name                          | Command                 | Emacs function                         |
+| ----------------------------- | ----------------------- | -------------------------------------- |
+| Open Project Structure        | `openProjectStructure`  | `lsp-intellij-open-project-structure`  |
+| Open Run/Debug Configurations | `openRunConfigurations` | `lsp-intellij-open-run-configurations` |
+| Toggle IDEA Editor Window     | `toggleFrameVisibility` | `lsp-intellij-toggle-frame-visibility` |
+
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
 
