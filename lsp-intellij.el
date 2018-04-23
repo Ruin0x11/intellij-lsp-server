@@ -369,7 +369,8 @@ This will run all tests if the class is a test class."
                       (diags (gethash "diagnostics" mes)))
                   (lsp-intellij--insert-build-messages path diags)))
               params))
-      (compilation-shell-minor-mode t))))
+      (fundamental-mode)
+      (compilation-shell-minor-mode))))
 
 (defun lsp-intellij--insert-build-messages (path diags)
   (mapc (lambda (d) (lsp-intellij--insert-build-message path (lsp--make-diag d))) diags))
