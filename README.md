@@ -39,7 +39,7 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Find References             | `textDocument/references`         | :heavy_check_mark: | `xref-find-references`                                 |
 | Document Highlights         | `textDocument/documentHighlight`  | :heavy_check_mark: |                                                        |
 | Document Symbols            | `textDocument/documentSymbol`     | :heavy_check_mark: | `imenu` (with `lsp-imenu`)                             |
-| Code Action                 | `textDocument/codeAction`         | :x:                |                                                        |
+| Code Action                 | `textDocument/codeAction`         | :heavy_check_mark: | `lsp-intellij-run-at-point`                             |
 | Code Lens                   | `textDocument/codeLens`           | :x:                |                                                        |
 | Document Formatting         | `textDocument/formatting`         | :heavy_check_mark: | `lsp-format-buffer`                                    |
 | Document Range Formatting   | `textDocument/rangeFormatting`    | :heavy_check_mark: | `indent-region`                                        |
