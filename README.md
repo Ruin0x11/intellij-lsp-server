@@ -50,9 +50,13 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Name                               | Method                        |                             | Emacs function                         |
 | ---------------------------------- | ----------------------------- | ---------------------------- | -----------------------------------    |
 | Find Implementations               | `idea/implementations`        | :leftwards_arrow_with_hook:  | `lsp-intellij-find-implementations`    |
+| Get Run Configurations             | `idea/runConfigurations`      | :leftwards_arrow_with_hook:  |                                                       |
+| Build Project                      | `idea/buildProject`           | :leftwards_arrow_with_hook:  | `lsp-intellij-build-project`                           |
+| Run Project                        | `idea/runProject`             | :leftwards_arrow_with_hook:  | `lsp-intellij-run-project`                             |
 | Indexing Started                   | `idea/indexStarted`           | :arrow_left:                 |                                                       |
 | Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                 |                                                       |
-
+| Build Messages                     | `idea/buildMessages`          | :arrow_left:                 |                                                       |
+| Build Finished                     | `idea/buildFinished`          | :arrow_left:                 |                                                       |
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
 
