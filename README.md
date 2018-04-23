@@ -52,9 +52,6 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 | Find Implementations               | `idea/implementations`        | :leftwards_arrow_with_hook:  | `lsp-intellij-find-implementations`    |
 | Indexing Started                   | `idea/indexStarted`           | :arrow_left:                 |                                                       |
 | Indexing Ended                     | `idea/indexEnded`             | :arrow_left:                 |                                                       |
-| Toggle IDEA window                 | `idea/toggleFrameVisibility`  | :leftwards_arrow_with_hook:  | `lsp-intellij-toggle-frame-visibility`         |
-| Show IDEA Project Structure window | `idea/openProjectStructure`   | :leftwards_arrow_with_hook:  | `lsp-intellij-open-project-structure`          |
-| Get client's temporary directory   | `idea/temporaryDirectory`     | :arrow_right_hook:           | Used when opening source files in JARs.               |
 
 ## Usage
 Run `gradle runIde` in the repo root to open a testing instance of IDEA. Alternatively, if you're feeling brave, you can run `gradle buildPlugin` or download a release and install it in your copy of IDEA. The server will start automatically on TCP port 8080 when the IDE is loaded. Be sure the project SDK and any build infrastructure is setup inside IDEA before editing the project over LSP, otherwise things like references and definitions will break.
