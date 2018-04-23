@@ -20,6 +20,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.psi.util.PsiModificationTracker
+import com.ruin.lsp.util.assertCorrectOriginalFile
 import com.ruin.lsp.util.createFileCopy
 import java.lang.reflect.Constructor
 import java.util.*
@@ -95,7 +96,7 @@ private fun insertDummyIdentifier(initContext: CompletionInitializationContext):
 
     val hostCopy = createFileCopy(topLevelOffsets.file)
     val copyDocument = hostCopy.viewProvider.document ?: error("no document")
-    val copyOffsets = topLevelOffsets.toFileCopy(hostCopy)
+    val copyOffsets = topLevelOffsets.myToFileCopy(hostCopy)
     val translator = OffsetTranslator(hostEditor.document, initContext.file, copyDocument)
 
     //CompletionAssertions.checkEditorValid(initContext.editor)
@@ -117,6 +118,23 @@ private fun insertDummyIdentifier(initContext: CompletionInitializationContext):
 
     return Pair(translator, copyOffsets)
 }
+
+
+// workaround to support 2018.1.1
+fun OffsetsInFile.myToFileCopy(copyFile: PsiFile): OffsetsInFile {
+    assertCorrectOriginalFile("Given ", file, copyFile)
+    assert(copyFile.viewProvider.document!!.textLength == file.viewProvider.document!!.textLength)
+    return mapOffsets(copyFile) { it }
+}
+
+private fun OffsetsInFile.mapOffsets(newFile: PsiFile, offsetFun: (Int) -> Int): OffsetsInFile {
+    val map = OffsetMap(newFile.viewProvider.document!!)
+    for (key in offsets.allOffsets) {
+        map.addOffset(key, offsetFun(offsets.getOffset(key)))
+    }
+    return OffsetsInFile(newFile, map)
+}
+
 
 private fun isAnythingInvalidatedAfterCommit(initContext: CompletionInitializationContext, hostCopy: PsiFile): Boolean {
     return !initContext.file.isValid || !hostCopy.isValid

@@ -86,7 +86,7 @@ private fun syncAcceptSlashR(originalDocument: Document?, documentCopy: Document
 }
 
 /** From CompletionAssertions  */
-private fun assertCorrectOriginalFile(prefix: String, file: PsiFile, copy: PsiFile) {
+fun assertCorrectOriginalFile(prefix: String, file: PsiFile, copy: PsiFile) {
     if (copy.originalFile !== file) {
         throw AssertionError(prefix + " copied file doesn't have correct original: noOriginal=" + (copy.originalFile === copy) +
             "\n file " + fileInfo(file) +
