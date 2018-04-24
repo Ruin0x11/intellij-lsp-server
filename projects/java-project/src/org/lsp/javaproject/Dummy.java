@@ -50,12 +50,4 @@ public class Dummy {
     static int answerQuestion(String question) {
         return 42;
     }
-
-    static int autoImportTestMethod() {
-        Lin // java.util.LinkedHashMap
-    }
-
-    static int autoImportTestMethod2() {
-        Arr // java.util.ArrayList
-    }
 }
