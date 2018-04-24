@@ -48,9 +48,14 @@ interface MyLanguageServerExtensions {
 }
 
 /**
- * A run configuration from IntelliJ. Contains user-displayable information and the ID used to run it.
+ * A run configuration ID taken from IDEA's list of run configurations.
  */
-data class RunConfigurationDescription(val id: String, val name: String, val configType: String)
+typealias ConfigId = String
+
+/**
+ * A run configuration from IDEA. Contains user-displayable information and the ID used to run it.
+ */
+data class RunConfigurationDescription(val id: ConfigId, val name: String, val configType: String)
 
 /**
  * The state of a run configuration. For example, it can display whether or not a test has passed. It also
@@ -64,15 +69,39 @@ enum class RunConfigurationState(val ord: Int) {
     TestFail(5),
     TestUnknown(6)
 }
+
+/**
+ * A combination of a run configuration's description and last run state. Used with code lenses for generating
+ * contextual information about a run configuration in a file.
+ */
 data class RunConfigurationData(val configuration: RunConfigurationDescription, val state: RunConfigurationState)
 
+/**
+ * A set of parameters for building a project with IDEA. Uses a configuration ID taken from an idea/runConfigurations
+ * request.
+ */
 data class BuildProjectParams(val textDocument: TextDocumentIdentifier,
-                              val id: String,
+                              val id: ConfigId,
                               val forceMakeProject: Boolean,
                               val ignoreErrors: Boolean)
+
+// TODO: Add build id.
+/**
+ * The result of a build operation. Allows the client to see if the build started successfully.
+ */
 data class BuildProjectResult(val started: Boolean)
 
-data class RunProjectParams(val textDocument: TextDocumentIdentifier, val id: String)
+/**
+ * A set of parameters for getting a project's command line for running. Uses a configuration ID taken from an
+ * idea/runConfigurations request.
+ */
+data class RunProjectParams(val textDocument: TextDocumentIdentifier, val id: ConfigId)
+
+/**
+ * A command line suitable for running the project from the client. If the flag isUpToDate is false, an
+ * idea/buildProject request should be sent first with the configuration ID that was passed to the idea/runProject
+ * command used to obtain the command line, then the client should run the command line only if the build succeeds.
+ */
 data class RunProjectCommandLine(val isUpToDate: Boolean,
                                  val command: String? = null,
                                  val workingDirectory: String? = null,
