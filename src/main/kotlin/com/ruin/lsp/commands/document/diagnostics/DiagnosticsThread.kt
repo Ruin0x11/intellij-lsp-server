@@ -21,32 +21,29 @@ import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.services.LanguageClient
+import org.eclipse.lsp4j.services.LanguageServer
 
 /**
  * Runnable for computing and publishing diagnostics.
  *
  * Unlike the other commands, this has to be run using executeOnPooledThread instead of on the EDT.
  */
-class DiagnosticsThread(val file: PsiFile, val document: Document, val client: LanguageClient?) : Runnable {
+class DiagnosticsThread(val file: PsiFile, val document: Document, val server: LanguageServer?, val client: LanguageClient?) : Runnable {
     var diags: List<Diagnostic>? = null
 
     override fun run() {
-        startProfiler(this)
         // Wait in case the user is updating a lot of text at once
         try {
             Thread.sleep(1000)
         } catch (e: InterruptedException) {
-            withProfiler(this).finish("interrupt")
             return
         }
 
-        withProfiler(this).mark("after wait")
-        val infos = getHighlights(file, document)
-        withProfiler(this).mark("highlight")
-        diags = infos.mapNotNull { it.toDiagnostic(document) }
-        withProfiler(this).mark("to diagnostic")
-        client?.publishDiagnostics(PublishDiagnosticsParams(getURIForFile(file), diags))
-        withProfiler(this).finish("publish")
+        synchronized(server ?: this) {
+            val infos = getHighlights(file, document)
+            diags = infos.mapNotNull { it.toDiagnostic(document) }
+            client?.publishDiagnostics(PublishDiagnosticsParams(getURIForFile(file), diags))
+        }
     }
 }
 
