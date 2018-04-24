@@ -36,7 +36,7 @@ private fun autoImportIfNeededEdits(elt: PsiElement, file: PsiFile): List<TextEd
     return differenceFromAction(file) { _, copy ->
         if (elt is PsiClass && copy is PsiJavaFile) {
             val manager = PsiDocumentManager.getInstance(copy.project)
-            manager.commitDocument(copy.viewProvider.document!!)
+            //manager.commitDocument(copy.viewProvider.document!!)
             copy.importClass(elt)
             ApplicationManager.getApplication().runWriteAction {
                 val codeStyleManager = CodeStyleManager.getInstance(copy.project)

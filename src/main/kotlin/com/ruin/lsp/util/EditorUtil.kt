@@ -79,7 +79,8 @@ fun withEditor(context: Disposable, file: PsiFile, offset: Int, callback: (Edito
  * @param callback function run on the copied file and an editor for the copy
  */
 fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): List<TextEdit>? {
-    val copy = createFileCopy(file)
+    val copy = obtainFileCopy(file)
+    assert(copy.text == file.text)
     withEditor(Disposer.newDisposable(), copy, Position(0, 0)) { editor ->
         callback(editor, copy)
     }
