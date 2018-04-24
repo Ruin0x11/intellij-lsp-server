@@ -21,6 +21,7 @@ import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.psi.util.PsiModificationTracker
 import com.ruin.lsp.util.createFileCopy
+import com.ruin.lsp.util.toFileCopy
 import java.lang.reflect.Constructor
 import java.util.*
 
@@ -39,7 +40,7 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = CompletionParameters::class.java.getDeclaredConstructor(
                 PsiElement::class.java /* position */, PsiFile::class.java /* originalFile */,
                 CompletionType::class.java, Int::class.javaPrimitiveType /* offset */, Int::class.javaPrimitiveType /* invocationCount */,
-                Editor::class.java
+                Editor::class.java, CompletionProcess::class.java
             )
             ctor.isAccessible = true
             sConstructor = ctor
@@ -47,12 +48,16 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
             ctor = cached
         }
 
-        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor)
+        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor, VoidCompletionProcess())
     } catch (e: Throwable) {
         e.printStackTrace()
     }
 
     return null
+}
+
+internal class VoidCompletionProcess : CompletionProcess {
+    override fun isAutopopupCompletion() = false
 }
 
 fun makeCompletionParameters(editor: Editor, psiFile: PsiFile): CompletionParameters? {

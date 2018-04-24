@@ -1,5 +1,7 @@
 package com.ruin.lsp.util
 
+import com.intellij.codeInsight.completion.OffsetMap
+import com.intellij.codeInsight.completion.OffsetsInFile
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.impl.DocumentImpl
@@ -99,4 +101,19 @@ private fun fileInfo(file: PsiFile): String {
     return file.toString() + " of " + file.javaClass +
         " in " + file.viewProvider + ", languages=" + file.viewProvider.languages +
         ", physical=" + file.isPhysical
+}
+
+
+fun OffsetsInFile.toFileCopy(copyFile: PsiFile): OffsetsInFile {
+    assertCorrectOriginalFile("Given ", file, copyFile)
+    assert(copyFile.viewProvider.document!!.textLength == file.viewProvider.document!!.textLength)
+    return mapOffsets(copyFile) { it }
+}
+
+private fun OffsetsInFile.mapOffsets(newFile: PsiFile, offsetFun: (Int) -> Int): OffsetsInFile {
+    val map = OffsetMap(newFile.viewProvider.document!!)
+    for (key in offsets.allOffsets) {
+        map.addOffset(key, offsetFun(offsets.getOffset(key)))
+    }
+    return OffsetsInFile(newFile, map)
 }
