@@ -1,7 +1,12 @@
 package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
+import com.intellij.diagnostic.LogEventException
+import com.intellij.injected.editor.DocumentWindow
+import com.intellij.injected.editor.EditorWindow
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.Attachment
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Document
@@ -9,45 +14,51 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.impl.event.DocumentEventImpl
+import com.intellij.openapi.progress.util.AbstractProgressIndicatorExBase
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.DebugUtil
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.psi.util.PsiUtilCore
 import com.ruin.lsp.util.createFileCopy
+import org.jetbrains.annotations.Contract
 import java.lang.reflect.Constructor
 import java.util.*
+import java.util.function.Supplier
 
 private val LOG = Logger.getInstance("#com.ruin.lsp.commands.completion.CompletionParametersUtil")
-private var sConstructor: Constructor<CompletionParameters>? = null
+private var completionParametersCtor: Constructor<CompletionParameters>? = null
+private var offsetTranslatorCtor: Constructor<OffsetTranslator>? = null
 
-fun newInstance(position: PsiElement?, originalFile: PsiFile,
-                completionType: CompletionType, offset: Int, invocationCount: Int, editor: Editor): CompletionParameters? {
+fun newCompletionParametersInstance(position: PsiElement?, originalFile: PsiFile,
+                                    completionType: CompletionType, offset: Int, invocationCount: Int, editor: Editor,
+                                    indicator: CompletionProcess): CompletionParameters? {
 
     try {
 
-        val cached = sConstructor
+        val cached = completionParametersCtor
 
         val ctor: Constructor<CompletionParameters>
         if (cached == null) {
             ctor = CompletionParameters::class.java.getDeclaredConstructor(
                 PsiElement::class.java /* position */, PsiFile::class.java /* originalFile */,
                 CompletionType::class.java, Int::class.javaPrimitiveType /* offset */, Int::class.javaPrimitiveType /* invocationCount */,
-                Editor::class.java
+                Editor::class.java, CompletionProcess::class.java
             )
             ctor.isAccessible = true
-            sConstructor = ctor
+            completionParametersCtor = ctor
         } else {
             ctor = cached
         }
 
-        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor)
+        return ctor.newInstance(position, originalFile, completionType, offset, invocationCount, editor, indicator)
     } catch (e: Throwable) {
         e.printStackTrace()
     }
@@ -55,11 +66,34 @@ fun newInstance(position: PsiElement?, originalFile: PsiFile,
     return null
 }
 
+internal class VoidCompletionProcess : AbstractProgressIndicatorExBase(), Disposable, CompletionProcess {
+    override fun isAutopopupCompletion() = false
+    private val myLock = "VoidCompletionProcess"
+
+    override fun dispose() {}
+
+    fun registerChildDisposable(child: Supplier<Disposable>) {
+        synchronized(myLock) {
+            // avoid registering stuff on an indicator being disposed concurrently
+            checkCanceled()
+            Disposer.register(this, child.get())
+        }
+    }
+}
+
 fun makeCompletionParameters(editor: Editor, psiFile: PsiFile): CompletionParameters? {
+    val process = VoidCompletionProcess()
     val initContext = makeInitContext(editor, psiFile, editor.caretModel.currentCaret)
-    val (translator, hostCopyOffsets) = insertDummyIdentifier(initContext) ?: return null
+    val topLevelOffsets = OffsetsInFile(initContext.file, initContext.offsetMap).toTopLevelFile()
+
+    val hostCopyOffsets = insertDummyIdentifier(initContext, process, topLevelOffsets) ?: return null
+
+    process.registerChildDisposable(Supplier { hostCopyOffsets.offsets })
+    val finalOffsets = toInjectedIfAny(initContext.file, hostCopyOffsets)
+    process.registerChildDisposable(Supplier { finalOffsets.offsets })
+
     val newContext = createCompletionContext(psiFile, hostCopyOffsets)
-    return makeCompletionParametersInternal(editor, 0, newContext)
+    return makeCompletionParametersInternal(editor, 0, newContext, process, finalOffsets)
 }
 
 private fun makeInitContext(editor: Editor, psiFile: PsiFile, caret: Caret): CompletionInitializationContext {
@@ -82,68 +116,76 @@ private fun makeInitContext(editor: Editor, psiFile: PsiFile, caret: Caret): Com
     for (contributor in filteredContributors) {
         current.set(contributor)
         contributor.beforeCompletion(context)
-        //CompletionAssertions.checkEditorValid(editor)
+        checkEditorValid(editor)
         assert(!PsiDocumentManager.getInstance(project).isUncommited(editor.document)) { "Contributor $contributor left the document uncommitted" }
     }
     return context
 }
 
-private fun insertDummyIdentifier(initContext: CompletionInitializationContext): Pair<OffsetTranslator, OffsetsInFile>? {
+private fun toInjectedIfAny(originalFile: PsiFile, hostCopyOffsets: OffsetsInFile): OffsetsInFile {
+    assertHostInfo(hostCopyOffsets.file, hostCopyOffsets.offsets)
+
+    val hostStartOffset = hostCopyOffsets.offsets.getOffset(CompletionInitializationContext.START_OFFSET)
+    val translatedOffsets = hostCopyOffsets.toInjectedIfAny(hostStartOffset)
+    if (translatedOffsets != hostCopyOffsets) {
+        val injected = translatedOffsets.file
+        if (injected is PsiFileImpl) {
+            injected.originalFile = originalFile
+        }
+        val documentWindow = InjectedLanguageUtil.getDocumentWindow(injected)
+        assertInjectedOffsets(hostStartOffset, injected, documentWindow)
+
+        if (injected.textRange.contains(translatedOffsets.offsets.getOffset(CompletionInitializationContext.START_OFFSET))) {
+            return translatedOffsets
+        }
+    }
+
+    return hostCopyOffsets
+}
+
+private fun insertDummyIdentifier(initContext: CompletionInitializationContext,
+                                  indicator: VoidCompletionProcess,
+                                  topLevelOffsets: OffsetsInFile): OffsetsInFile? {
     val hostEditor = InjectedLanguageUtil.getTopLevelEditor(initContext.editor)
-    val topLevelOffsets = OffsetsInFile(initContext.file, initContext.offsetMap).toTopLevelFile()
     val hostMap = topLevelOffsets.offsets
 
     val hostCopy = createFileCopy(topLevelOffsets.file)
-    val copyDocument = hostCopy.viewProvider.document ?: error("no document")
-    val copyOffsets = topLevelOffsets.toFileCopy(hostCopy)
-    val translator = OffsetTranslator(hostEditor.document, initContext.file, copyDocument)
+    val copyDocument = hostCopy.viewProvider.document!!
 
-    //CompletionAssertions.checkEditorValid(initContext.editor)
     val dummyIdentifier = initContext.dummyIdentifier
-    if (!StringUtil.isEmpty(dummyIdentifier)) {
-        val startOffset = hostMap.getOffset(CompletionInitializationContext.START_OFFSET)
-        val endOffset = hostMap.getOffset(CompletionInitializationContext.SELECTION_END_OFFSET)
-        copyDocument.replaceString(startOffset, endOffset, dummyIdentifier)
-    }
-    //CompletionAssertions.checkEditorValid(initContext.editor)
+    val startOffset = hostMap.getOffset(CompletionInitializationContext.START_OFFSET)
+    val endOffset = hostMap.getOffset(CompletionInitializationContext.SELECTION_END_OFFSET)
 
-    val project = initContext.project
+    indicator.registerChildDisposable(
+        Supplier { OffsetTranslator(hostEditor.document, initContext.file, copyDocument, startOffset, endOffset, dummyIdentifier)!! })
 
-    PsiDocumentManager.getInstance(project).commitDocument(copyDocument)
-    if (isAnythingInvalidatedAfterCommit(initContext, hostCopy)) {
-        Disposer.dispose(translator)
-        return null
-    }
 
-    return Pair(translator, copyOffsets)
+    val copyOffsets = topLevelOffsets.replaceInCopy(hostCopy, startOffset, endOffset, dummyIdentifier)
+    return if (hostCopy.isValid) copyOffsets else null
 }
-
-private fun isAnythingInvalidatedAfterCommit(initContext: CompletionInitializationContext, hostCopy: PsiFile): Boolean {
-    return !initContext.file.isValid || !hostCopy.isValid
-        //|| !CompletionAssertions.isEditorValid(initContext.editor)
-}
-
 
 private fun makeCompletionParametersInternal(editor: Editor,
-                                     invocationCount: Int,
-                                     newContext: CompletionContext): CompletionParameters? {
+                                             invocationCount: Int,
+                                             newContext: CompletionContext,
+                                             indicator: CompletionProcess,
+                                             finalOffsets: OffsetsInFile): CompletionParameters? {
 
     val offset = newContext.startOffset
     val fileCopy = newContext.file
     val originalFile = fileCopy.originalFile
-    val insertedElement = findCompletionPositionLeaf(newContext, offset, fileCopy, originalFile)
+    val insertedElement = findCompletionPositionLeaf(finalOffsets, newContext, offset, fileCopy, originalFile)
     insertedElement.putUserData(CompletionContext.COMPLETION_CONTEXT_KEY, newContext)
-    return newInstance(insertedElement, originalFile, CompletionType.BASIC, offset, invocationCount, editor)
+    return newCompletionParametersInstance(insertedElement, originalFile, CompletionType.BASIC, offset, invocationCount, editor, indicator)
 }
 
-private fun findCompletionPositionLeaf(newContext: CompletionContext, offset: Int, fileCopy: PsiFile, originalFile: PsiFile): PsiElement {
+private fun findCompletionPositionLeaf(offsets: OffsetsInFile, newContext: CompletionContext, offset: Int, fileCopy: PsiFile, originalFile: PsiFile): PsiElement {
     val insertedElement = newContext.file.findElementAt(offset)
-    //CompletionAssertions.assertCompletionPositionPsiConsistent(newContext, offset, fileCopy, originalFile, insertedElement!!)
+    assertCompletionPositionPsiConsistent(offsets, offset, originalFile, insertedElement)
     return insertedElement!!
 }
 
 private fun createCompletionContext(originalFile: PsiFile, hostCopyOffsets: OffsetsInFile): CompletionContext {
-    //CompletionAssertions.assertHostInfo(hostCopyOffsets.file, hostCopyOffsets.offsets)
+    assertHostInfo(hostCopyOffsets.file, hostCopyOffsets.offsets)
 
     val hostStartOffset = hostCopyOffsets.offsets.getOffset(CompletionInitializationContext.START_OFFSET)
     var result = hostCopyOffsets
@@ -154,7 +196,7 @@ private fun createCompletionContext(originalFile: PsiFile, hostCopyOffsets: Offs
             injected.originalFile = originalFile
         }
         val documentWindow = InjectedLanguageUtil.getDocumentWindow(injected)
-        //CompletionAssertions.assertInjectedOffsets(hostStartOffset, injected, documentWindow)
+        assertInjectedOffsets(hostStartOffset, injected, documentWindow)
 
         if (injected.textRange.contains(translatedOffsets.offsets.getOffset(CompletionInitializationContext.START_OFFSET))) {
             result = translatedOffsets
@@ -164,15 +206,16 @@ private fun createCompletionContext(originalFile: PsiFile, hostCopyOffsets: Offs
     return CompletionContext(result.file, result.offsets)
 }
 
-internal class OffsetTranslator(originalDocument: Document, private val myOriginalFile: PsiFile, private val myCopyDocument: Document) : Disposable {
+// copied since it's internal, unfortunately.
+internal class OffsetTranslator(originalDocument: Document, private val myOriginalFile: PsiFile, private val myCopyDocument: Document, start: Int, end: Int, replacement: String) : Disposable {
     private val myTranslation = LinkedList<DocumentEvent>()
 
     private val isUpToDate: Boolean
-        get() =
-            this === myCopyDocument.getUserData(RANGE_TRANSLATION) && myOriginalFile.isValid
+        get() = this === myCopyDocument.getUserData(RANGE_TRANSLATION) && myOriginalFile.isValid
 
     init {
         myCopyDocument.putUserData(RANGE_TRANSLATION, this)
+        myTranslation.addFirst(DocumentEventImpl(myCopyDocument, start, originalDocument.immutableCharSequence.subSequence(start, end), replacement, 0, false))
         Disposer.register(myOriginalFile.project, this)
 
         val sinceCommit = LinkedList<DocumentEvent>()
@@ -185,18 +228,10 @@ internal class OffsetTranslator(originalDocument: Document, private val myOrigin
             }
         }, this)
 
-        myCopyDocument.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(e: DocumentEvent?) {
-                if (isUpToDate) {
-                    myTranslation.addFirst(e)
-                }
-            }
-        }, this)
-
-        myOriginalFile.project.messageBus.connect(this).subscribe<PsiModificationTracker.Listener>(PsiModificationTracker.TOPIC, object : PsiModificationTracker.Listener {
-            internal var lastModCount = myOriginalFile.getViewProvider().getModificationStamp()
+        myOriginalFile.project.messageBus.connect(this).subscribe(PsiModificationTracker.TOPIC, object : PsiModificationTracker.Listener {
+            internal var lastModCount = myOriginalFile.viewProvider.modificationStamp
             override fun modificationCountChanged() {
-                if (isUpToDate && lastModCount != myOriginalFile.getViewProvider().getModificationStamp()) {
+                if (isUpToDate && lastModCount != myOriginalFile.viewProvider.modificationStamp) {
                     myTranslation.addAll(sinceCommit)
                     sinceCommit.clear()
                 }
@@ -236,4 +271,69 @@ internal class OffsetTranslator(originalDocument: Document, private val myOrigin
             return if (offset <= event.offset) offset else offset - event.newLength + event.oldLength
         }
     }
+
+}
+
+
+// copied from CompletionAssertions
+
+fun checkEditorValid(editor: Editor) {
+    if (!isEditorValid(editor)) {
+        throw AssertionError()
+    }
+}
+
+fun isEditorValid(editor: Editor): Boolean {
+    return editor !is EditorWindow || editor.isValid
+}
+
+fun assertInjectedOffsets(hostStartOffset: Int, injected: PsiFile, documentWindow: DocumentWindow?) {
+    assert(documentWindow != null) { "no DocumentWindow for an injected fragment" }
+
+    val host = InjectedLanguageManager.getInstance(injected.project).injectedToHost(injected, injected.textRange)
+    assert(hostStartOffset >= host.startOffset) { "startOffset before injected" }
+    assert(hostStartOffset <= host.endOffset) { "startOffset after injected" }
+}
+
+fun assertHostInfo(hostCopy: PsiFile, hostMap: OffsetMap) {
+    PsiUtilCore.ensureValid(hostCopy)
+    if (hostMap.getOffset(CompletionInitializationContext.START_OFFSET) >= hostCopy.textLength) {
+        throw AssertionError("startOffset outside the host file: " + hostMap.getOffset(CompletionInitializationContext.START_OFFSET) + "; " + hostCopy)
+    }
+}
+
+@Contract("_,_,_,null->fail")
+fun assertCompletionPositionPsiConsistent(offsets: OffsetsInFile,
+                                          offset: Int,
+                                          originalFile: PsiFile, insertedElement: PsiElement?) {
+    val fileCopy = offsets.file
+    if (insertedElement == null) {
+        throw LogEventException("No element at insertion offset",
+            "offset=" +
+                offset +
+                "\n" +
+                DebugUtil.currentStackTrace(),
+            createFileTextAttachment(fileCopy, originalFile),
+            createAstAttachment(fileCopy, originalFile))
+    }
+
+    if (fileCopy.findElementAt(offset) !== insertedElement) {
+        throw AssertionError("wrong offset")
+    }
+
+    val range = insertedElement.textRange
+    val fileCopyText = fileCopy.viewProvider.contents
+    if (range.endOffset > fileCopyText.length || fileCopyText.subSequence(range.startOffset, range.endOffset).toString() != insertedElement.text) {
+        throw LogEventException("Inconsistent completion tree", "range=" + range + "\n" + DebugUtil.currentStackTrace(),
+            createFileTextAttachment(fileCopy, originalFile), createAstAttachment(fileCopy, originalFile),
+            Attachment("Element at caret.txt", insertedElement.text))
+    }
+}
+
+private fun createAstAttachment(fileCopy: PsiFile, originalFile: PsiFile): Attachment {
+    return Attachment(originalFile.viewProvider.virtualFile.path + " syntactic tree.txt", DebugUtil.psiToString(fileCopy, false, true))
+}
+
+private fun createFileTextAttachment(fileCopy: PsiFile, originalFile: PsiFile): Attachment {
+    return Attachment(originalFile.viewProvider.virtualFile.path, fileCopy.text)
 }

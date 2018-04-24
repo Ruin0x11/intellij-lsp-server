@@ -1,4 +1,4 @@
-# intellij-lsp-server [![AppVeyor Build Status][appveyor-build-status-svg]][appveyor-build-status]
+# intellij-lsp-server [![AppVeyor Build Status][appveyor-build-status-svg]][appveyor-build-status] [![Travis CI Build Status][travis-build-status-svg]][travis-build-status] 
 A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowing other editors to use IntelliJ's features.
 
 ## Features
@@ -141,3 +141,5 @@ Then you should have a similar structure to the following:
 <!-- Badges -->
 [appveyor-build-status]: https://ci.appveyor.com/project/Ruin0x11/intellij-lsp-server/branch/master
 [appveyor-build-status-svg]: https://ci.appveyor.com/api/projects/status/yvuy70pdmfkhn8aw?svg=true
+[travis-build-status]: https://travis-ci.org/Ruin0x11/intellij-lsp-server?branch=master
+[travis-build-status-svg]: https://travis-ci.org/Ruin0x11/intellij-lsp-server.svg?branch=master

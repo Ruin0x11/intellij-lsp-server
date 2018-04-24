@@ -15,7 +15,7 @@ abstract class DiagnosticsCommandTestBase : BaseTestCase() {
         val psiFile = ensurePsiFromUri(project, file.url)
         val doc = getDocument(project, file.url)!!
 
-        val thread = DiagnosticsThread(psiFile, doc, null)
+        val thread = DiagnosticsThread(psiFile, doc, null, null)
         ApplicationManager.getApplication().executeOnPooledThread(thread).get()
 
         assert(thread.diags != null)

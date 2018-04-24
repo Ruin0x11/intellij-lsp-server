@@ -65,6 +65,7 @@ private fun LineMarkerInfo<PsiElement>.codeLens(project: Project, doc: Document)
 
     val data = RunConfigurationData(desc, state)
 
+    // TODO: Prevent creating a bunch of configs, instead cache the PSI elements and create configs on-demand
     val runManager = RunManager.getInstance(project)
     if(!runManager.hasSettings(context)) {
         runManager.addConfiguration(context)
