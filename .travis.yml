@@ -1,0 +1,27 @@
+branches:
+  only:
+    - master
+
+language: java
+
+jdk: oraclejdk8
+
+install: true
+
+before_script:
+  - ./gradlew :resolveDependencies -Pkotlin.incremental=false --no-daemon
+  - ./gradlew assemble testClasses -Pkotlin.incremental=false --no-daemon
+
+script:
+  - ./gradlew check -Pkotlin.incremental=false --no-daemon
+
+# https://docs.travis-ci.com/user/languages/java/#Caching
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
