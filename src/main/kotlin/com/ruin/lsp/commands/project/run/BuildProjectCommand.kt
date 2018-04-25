@@ -22,6 +22,7 @@ import com.intellij.task.ProjectTaskResult
 import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.model.*
 import com.ruin.lsp.util.getURIForFile
+import com.ruin.lsp.util.warnNoJdk
 import org.apache.log4j.Level
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
@@ -36,7 +37,8 @@ class BuildProjectCommand(private val id: String,
                           private val client: MyLanguageClient) : ProjectCommand<BuildProjectResult> {
     override fun execute(ctx: Project): BuildProjectResult {
         if (ProjectRootManager.getInstance(ctx).projectSdk == null) {
-            // TODO: show an error here
+            // TODO: throw an LSP error instead
+            warnNoJdk(client)
             return BuildProjectResult(false)
         }
 
