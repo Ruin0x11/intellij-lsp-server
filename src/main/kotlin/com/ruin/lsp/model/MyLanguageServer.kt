@@ -207,6 +207,6 @@ fun defaultServerCapabilities() =
         documentOnTypeFormattingProvider = null
         renameProvider = false
         documentLinkProvider = null
-        executeCommandProvider = null
+        executeCommandProvider = ExecuteCommandOptions()
         experimental = null
     }
