@@ -4,13 +4,12 @@ A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowi
 ## Requirements
 - IntelliJ IDEA 2018.1.1
   + Due to the way the plugin interacts with internal APIs, there currently isn't support for other versions of IDEA. If you're trying to use the plugin with Android Studio, note that the exact same Android support also exists in 2018.1.1.
-- `lsp-mode` 4.1 (for Emacs)
-  + If you get errors like `void-function` trying to load the client code (`lsp-intellij.el`), be sure your version of `lsp-mode` is up-to-date.
-- `lsp-ui`, `company-lsp`, `kotlin-mode` (optional, for Emacs)
 
 ## Caveats
 - Alpha-quality, and probably really unstable.
+- Java and Kotlin are currently supported.
 - Editing in both IDEA and the LSP client at the same time isn't supported currently.
+- The server should work across any LSP client, but some nonstandard features (like using IntelliJ to build and run projects) are only implemented in the Emacs client.
 
 ## Features
 ### Code completion with snippet parameters
@@ -86,76 +85,7 @@ Run `./gradlew clean buildPlugin` to create the plugin distribution. In IDEA, go
 ### Usage
 The server will start automatically on TCP port 8080 when the IDE is loaded. You can configure the project SDK inside IDEA before connecting your client or execute the `Open Project Structure` command in the client (`lsp-intellij-open-project-structure` in Emacs) to open the Project Structure window remotely.
 
-To use the server with Emacs, first load `lsp-mode` and the `lsp-intellij.el` file in your config, then put the following hook afterward:
-```emacs-lisp
-(with-eval-after-load 'lsp-mode
-  (require 'lsp-intellij)
-  (add-hook 'java-mode-hook #'lsp-intellij-enable))
-```
-Then visit a `.java` file tracked by a project you've opened in IDEA. You can do the same for Kotlin by installing `kotlin-mode`, then adding another hook for `lsp-intellij-enable` in `kotlin-mode-hook`.
-
-For the extra features shown in the demonstration, `lsp-ui` and `company-lsp` are required. Here are the respective config options for each.
-```emacs-lisp
-(require 'lsp-ui)
-(add-hook 'lsp-after-open-hook #'lsp-ui-mode)
-
-(require 'company-lsp)
-(setq company-lsp-enable-snippet t
-      company-lsp-cache-candidates t)
-(push 'company-lsp company-backends)
-(push 'java-mode company-global-modes)
-(push 'kotlin-mode company-global-modes) ;; if using Kotlin
-```
-
-### Spacemacs
-For Spacemacs you can put the configuration into the private layer (recommended as it's still in the early stages). Minimal required configuration to do so:
-
-* Copy `lsp-intellij.el` into `~/.emacs.d/private/lsp-intellij/local/lsp-intellij/`
-* Create `packages.el` in `~/.emacs.d/private/lsp-intellij/` with following content as bare minimum:
-
-```emacs-lisp
-(defconst lsp-intellij-packages
-  '(
-    lsp-mode
-    (lsp-intellij :location local)
-    ))
-
-(defun lsp-intellij/init-lsp-mode ()
-  (use-package lsp-mode))
-
-(defun lsp-intellij/init-lsp-intellij ()
-  (with-eval-after-load 'lsp-mode
-    (use-package lsp-intellij)
-    (add-hook 'java-mode-hook #'lsp-intellij-enable)))
-
-```
-
-Then you should have a similar structure to the following:
-
-
-```
-➜  ~ git:(master) ✗ tree ~/.emacs.d/private/lsp-intellij
-/home/user/.emacs.d/private/lsp-intellij
-├── local
-│   └── lsp-intellij
-│       └── lsp-intellij.el
-└── packages.el
-
-```
-
-Finally, add the `lsp-intellij` layer to `dotspacemacs-configuration-layers` in your `.spacemacs`:
-```emacs-lisp
-
-(defun dotspacemacs/layers ()
-  (setq-default
-   ;; ...
-   dotspacemacs-configuration-layers
-   '(
-        ;; ...
-        lsp-intellij
-        )))
-
-```
+To use the server with Emacs/Spacemacs, see the [lsp-intellij](https://www.github.com/Ruin0x11/lsp-intellij) repository.
 
 ## Rationale
 - I didn't like the latency of `eclim`. `eclim-mode` in emacs has to start a new process to get results from the `eclim` daemon, which takes about 5 seconds per command on my Windows system.
