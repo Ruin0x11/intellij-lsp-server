@@ -50,7 +50,9 @@ class MyCompletionLookupArranger(val params: CompletionParameters, val location:
 
     fun addElement(item: CompletionResult) {
         val presentation = LookupElementPresentation()
-        item.lookupElement.renderElement(presentation)
+        ReadAction.run<Exception> {
+            item.lookupElement.renderElement(presentation)
+        }
 
         StatisticsWeigher.clearBaseStatisticsInfo(item.lookupElement)
 

@@ -33,7 +33,10 @@ import com.intellij.util.io.URLUtil
 import com.ruin.lsp.model.MyLanguageClient
 import com.ruin.lsp.model.MyLanguageServer
 import com.ruin.lsp.values.DocumentUri
+import org.eclipse.lsp4j.MessageParams
+import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.services.LanguageClient
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
@@ -419,4 +422,9 @@ fun toggleProjectFrame(project: Project) {
     if (null != existing) {
         existing.isVisible = !existing.isVisible
     }
+}
+
+fun warnNoJdk(client: LanguageClient) {
+    client.showMessage(MessageParams(MessageType.Warning,
+        "Project SDK is not defined. Execute the command \"showProjectStructure\" to set it up."))
 }

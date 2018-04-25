@@ -6,6 +6,7 @@ import com.intellij.injected.editor.DocumentWindow
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.Attachment
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Caret
@@ -14,20 +15,25 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.impl.event.DocumentEventImpl
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.util.AbstractProgressIndicatorExBase
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.DebugUtil
+import com.intellij.psi.impl.PsiFileEx
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.psi.util.PsiUtilBase
 import com.intellij.psi.util.PsiUtilCore
-import com.ruin.lsp.util.createFileCopy
+import com.ruin.lsp.util.obtainFileCopy
 import org.jetbrains.annotations.Contract
 import java.lang.reflect.Constructor
 import java.util.*
@@ -81,7 +87,19 @@ internal class VoidCompletionProcess : AbstractProgressIndicatorExBase(), Dispos
     }
 }
 
-fun makeCompletionParameters(editor: Editor, psiFile: PsiFile): CompletionParameters? {
+fun makeCompletionParameters(editor: Editor, project: Project): CompletionParameters? {
+    val ref = Ref<PsiFile?>()
+    CommandProcessor.getInstance().runUndoTransparentAction {
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
+        checkEditorValid(editor)
+
+        val psiFile = PsiUtilBase.getPsiFileInEditor(editor.caretModel.currentCaret, project)
+            ?: error("no PSI file: " + FileDocumentManager.getInstance().getFile(editor.document)!!)
+        psiFile.putUserData(PsiFileEx.BATCH_REFERENCE_PROCESSING, java.lang.Boolean.TRUE)
+        assertCommitSuccessful(editor, psiFile!!)
+        ref.set(psiFile)
+    }
+    val psiFile = ref.get() ?: return null
     val process = VoidCompletionProcess()
     val initContext = makeInitContext(editor, psiFile, editor.caretModel.currentCaret)
     val topLevelOffsets = OffsetsInFile(initContext.file, initContext.offsetMap).toTopLevelFile()
@@ -110,10 +128,9 @@ private fun makeInitContext(editor: Editor, psiFile: PsiFile, caret: Caret): Com
             dummyIdentifierChanger = current.get()
         }
     }
-    val contributors = CompletionContributor.forLanguage(context.positionLanguage)
     val project = psiFile.project
-    val filteredContributors = DumbService.getInstance(project).filterByDumbAwareness(contributors)
-    for (contributor in filteredContributors) {
+    val contributors = CompletionContributor.forLanguageHonorDumbness(context.positionLanguage, project)
+    for (contributor in contributors) {
         current.set(contributor)
         contributor.beforeCompletion(context)
         checkEditorValid(editor)
@@ -149,7 +166,7 @@ private fun insertDummyIdentifier(initContext: CompletionInitializationContext,
     val hostEditor = InjectedLanguageUtil.getTopLevelEditor(initContext.editor)
     val hostMap = topLevelOffsets.offsets
 
-    val hostCopy = createFileCopy(topLevelOffsets.file)
+    val hostCopy = obtainFileCopy(topLevelOffsets.file)
     val copyDocument = hostCopy.viewProvider.document!!
 
     val dummyIdentifier = initContext.dummyIdentifier
@@ -158,7 +175,6 @@ private fun insertDummyIdentifier(initContext: CompletionInitializationContext,
 
     indicator.registerChildDisposable(
         Supplier { OffsetTranslator(hostEditor.document, initContext.file, copyDocument, startOffset, endOffset, dummyIdentifier)!! })
-
 
     val copyOffsets = topLevelOffsets.replaceInCopy(hostCopy, startOffset, endOffset, dummyIdentifier)
     return if (hostCopy.isValid) copyOffsets else null
@@ -276,6 +292,52 @@ internal class OffsetTranslator(originalDocument: Document, private val myOrigin
 
 
 // copied from CompletionAssertions
+
+fun assertCommitSuccessful(editor: Editor, psiFile: PsiFile) {
+    val document = editor.document
+    val docLength = document.textLength
+    val psiLength = psiFile.textLength
+    val manager = PsiDocumentManager.getInstance(psiFile.project)
+    val committed = !manager.isUncommited(document)
+    if (docLength == psiLength && committed) {
+        return
+    }
+
+    val viewProvider = psiFile.viewProvider
+
+    var message = "unsuccessful commit:"
+    message += "\nmatching=" + (psiFile === manager.getPsiFile(document))
+    message += "\ninjectedEditor=" + (editor is EditorWindow)
+    message += "\ninjectedFile=" + InjectedLanguageManager.getInstance(psiFile.project).isInjectedFragment(psiFile)
+    message += "\ncommitted=$committed"
+    message += "\nfile=" + psiFile.name
+    message += "\nfile class=" + psiFile.javaClass
+    message += "\nfile.valid=" + psiFile.isValid
+    message += "\nfile.physical=" + psiFile.isPhysical
+    message += "\nfile.eventSystemEnabled=" + viewProvider.isEventSystemEnabled
+    message += "\nlanguage=" + psiFile.language
+    message += "\ndoc.length=$docLength"
+    message += "\npsiFile.length=$psiLength"
+    val fileText = psiFile.text
+    if (fileText != null) {
+        message += "\npsiFile.text.length=" + fileText.length
+    }
+    val node = psiFile.node
+    if (node != null) {
+        message += "\nnode.length=" + node.textLength
+        val nodeText = node.text
+        message += "\nnode.text.length=" + nodeText.length
+    }
+    val virtualFile = viewProvider.virtualFile
+    message += "\nvirtualFile=$virtualFile"
+    message += "\nvirtualFile.class=" + virtualFile.javaClass
+    message += "\n" + DebugUtil.currentStackTrace()
+
+    throw LogEventException("Commit unsuccessful", message,
+        Attachment(virtualFile.path + "_file.txt", StringUtil.notNullize(fileText)),
+        createAstAttachment(psiFile, psiFile),
+        Attachment("docText.txt", document.text))
+}
 
 fun checkEditorValid(editor: Editor) {
     if (!isEditorValid(editor)) {
