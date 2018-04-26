@@ -71,7 +71,7 @@ class GotoFileInsideJarTest : PlatformTestCase() {
     }
 
     fun `test resolves jar URI on Windows`() {
-        val expected = "jar://C:/Java/rt.jar!/java/util/ArrayList.class"
+        val expected = "jar://c:/Java/rt.jar!/java/util/ArrayList.class"
         val cases = listOf(
             Pair("file://C:/Java/rt.jar", "/java/util/ArrayList.class"),
             Pair("file://c:/Java/rt.jar", "/java/util/ArrayList.class"),
