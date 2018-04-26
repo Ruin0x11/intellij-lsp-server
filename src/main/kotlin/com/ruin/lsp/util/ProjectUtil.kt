@@ -19,7 +19,10 @@ import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.text.StringUtil
+import com.intellij.openapi.vfs.JarFileSystem.JAR_SEPARATOR
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems.JAR_PROTOCOL
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -42,6 +45,7 @@ import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.net.URL
 import java.net.URLDecoder
 import java.nio.file.Paths
 import java.util.*
@@ -404,12 +408,8 @@ fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: 
 
 fun getJarEntryURI(jarUri: DocumentUri, internalSourceFile: String): String? {
     val realJarFile = File(uriToPath(jarUri))
-    if (!realJarFile.exists()) {
-        return null
-    }
-    //val internalClassFile = internalSourceFile.replace(SOURCE_FILE_TO_CLASS_REGEX, CLASS_FILE_EXTENSION)
-    return URLUtil.getJarEntryURL(realJarFile, internalSourceFile).toString()
-        .replace("""^jar:file:/""".toRegex(), "jar://")
+    val filePath = StringUtil.replace(realJarFile.toString(), "!", "%21")
+    return JAR_PROTOCOL + "://" + filePath + JAR_SEPARATOR + StringUtil.trimLeading(internalSourceFile, '/')
 }
 
 
