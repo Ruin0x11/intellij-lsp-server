@@ -357,10 +357,10 @@ fun normalizeUri(uri: String): String {
 
     // lsp-mode expects paths to match with exact case.
     // This includes the Windows drive letter if the system is Windows.
-    // So, always uppercase the drive letter to avoid any differences.
+    // So, always lowercase the drive letter to avoid any differences.
     val driveLetterRegex = """file:///([a-zA-Z]:)/.*""".toRegex()
     val match = driveLetterRegex.matchEntire(decodedUri)?.groups?.get(1)
-    match?.let { decodedUri = decodedUri.replaceRange(it.range, it.value.toUpperCase()) }
+    match?.let { decodedUri = decodedUri.replaceRange(it.range, it.value.toLowerCase()) }
 
     return decodedUri
 }
