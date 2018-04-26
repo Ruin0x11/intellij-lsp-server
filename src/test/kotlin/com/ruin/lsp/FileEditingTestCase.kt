@@ -79,6 +79,7 @@ abstract class FileEditingTestCase : BaseTestCase() {
 
         if (virtualFileContentsChanged())
             restoreFile()
+        ProjectUtil.closeAndDispose(project)
     }
 
     /*

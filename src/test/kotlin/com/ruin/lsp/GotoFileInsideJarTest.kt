@@ -21,7 +21,6 @@ import java.nio.file.Path
 import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.util.zip.ZipFile
 
 
 class GotoFileInsideJarTest : PlatformTestCase() {
@@ -38,7 +37,6 @@ class GotoFileInsideJarTest : PlatformTestCase() {
     }
 
     override fun tearDown() {
-        ProjectManagerEx.getInstanceEx().closeTestProject(project)
         super.tearDown()
     }
 
