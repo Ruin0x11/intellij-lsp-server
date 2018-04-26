@@ -30,7 +30,7 @@ class ProjectUtilTest : BaseTestCase() {
     }
 
     fun `test normalizes URIs`() {
-        val expected = "file:///e:/Program Files/test.txt"
+        val expected = "file:///E:/Program Files/test.txt"
         val cases = listOf(
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
@@ -41,14 +41,12 @@ class ProjectUtilTest : BaseTestCase() {
         ).map(::normalizeUri)
 
         cases.forEach {
-            assert(expected.equals(it, true), {
-            "Expected: $expected\n" +
-                "Got: $it"
-        }) }
+            assertEquals(expected, it)
+        }
     }
 
     fun `test converts URI to path`() {
-        val expected = "e:/Program Files/test.txt"
+        val expected = "E:/Program Files/test.txt"
         val cases = listOf(
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
@@ -58,10 +56,8 @@ class ProjectUtilTest : BaseTestCase() {
         ).map(::uriToPath)
 
         cases.forEach {
-            assert(expected.equals(it, true), {
-                "Expected: $expected\n" +
-                    "Got: $it"
-            }) }
+            assertEquals(expected, it)
+        }
     }
 
     fun `test converts unix URI to path`() {
@@ -73,20 +69,33 @@ class ProjectUtilTest : BaseTestCase() {
         ).map(::uriToPath)
 
         cases.forEach {
-            assert(expected.equals(it, true), {
-                "Expected: $expected\n" +
-                    "Got: $it"
-            }) }
+            assertEquals(expected, it)
+        }
     }
 
 
     fun `test converts file extracted from jar to internal source dir`() {
-        val tempDir = "file:///tmp/"
+        val tempDir = "file:///tmp"
         val expected: Pair<String, DocumentUri> = Pair("org/ruin/stuff/MyClass.class", "file:///tmp/lsp-intellij/my-library/jarpath")
 
         val cases = listOf(
             "file:///tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class",
             "file://tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class"
+        ).map { jarExtractedFileToJarpathFile(it, tempDir) }
+
+        cases.forEach {
+            assertEquals(expected, it)
+        }
+    }
+
+
+    fun `test converts file extracted from jar to internal source dir on windows`() {
+        val tempDir = "file:///E:/temp"
+        val expected: Pair<String, DocumentUri> = Pair("org/ruin/stuff/MyClass.class", "file:///E:/temp/lsp-intellij/my-library/jarpath")
+
+        val cases = listOf(
+            "file:///E:/temp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class",
+            "file://E:/temp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class"
         ).map { jarExtractedFileToJarpathFile(it, tempDir) }
 
         cases.forEach {

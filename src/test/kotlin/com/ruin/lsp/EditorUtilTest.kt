@@ -1,19 +1,12 @@
 package com.ruin.lsp
 
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.runUndoTransparentWriteAction
-import com.intellij.psi.impl.PsiDocumentManagerBase
 import com.ruin.lsp.util.differenceFromAction
-import com.ruin.lsp.util.getDocument
 import org.eclipse.lsp4j.TextEdit
 import org.intellivim.FileEditingTestCase
 
 class EditorUtilTest : FileEditingTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
+    override val projectName = JAVA_PROJECT
+    override val filePath = DUMMY_FILE_PATH
 
     fun `test text edits from document differences`() {
         val edits = differenceFromAction(psiFile) { editor, _ ->

@@ -1,5 +1,8 @@
 package com.ruin.lsp.util
 
+import com.intellij.codeInsight.completion.CodeCompletionHandlerBase
+import com.intellij.codeInsight.completion.CompletionProgressIndicator
+import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
@@ -19,7 +22,10 @@ import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.text.StringUtil
+import com.intellij.openapi.vfs.JarFileSystem.JAR_SEPARATOR
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.StandardFileSystems.JAR_PROTOCOL
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -33,6 +39,7 @@ import com.intellij.util.io.URLUtil
 import com.ruin.lsp.model.MyLanguageClient
 import com.ruin.lsp.model.MyLanguageServer
 import com.ruin.lsp.values.DocumentUri
+import org.apache.commons.lang.SystemUtils
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.Position
@@ -40,6 +47,8 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
+import java.net.URI
+import java.net.URL
 import java.net.URLDecoder
 import java.nio.file.Paths
 import java.util.*
@@ -53,9 +62,10 @@ fun ensurePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? =
 
 fun resolvePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? = null): PsiFile? {
     if (tempDir != null) {
-        val prefix = tempDir.uriCommonPrefixWith(uri)
-        if (prefix == tempDir) {
-            return resolveJarUri(uri, tempDir)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
+        val normalizedTempDir = normalizeUri(tempDir)
+        val prefix = normalizedTempDir.uriCommonPrefixWith(uri)
+        if (prefix == normalizedTempDir) {
+            return resolveJarUri(uri, normalizedTempDir)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
         }
     }
     val filePath = projectRelativeFilePath(project, uri) ?: return null
@@ -343,7 +353,16 @@ fun normalizeUri(uri: String): String {
     var decodedUri = URLDecoder.decode(uri, "UTF-8")
     decodedUri = trailingSlashRegex.replace(decodedUri, "")
     decodedUri = protocolRegex.replace(decodedUri, "file:///")
-    return decodedUri.replace("\\", "/")
+    decodedUri = decodedUri.replace("\\", "/")
+
+    // lsp-mode expects paths to match with exact case.
+    // This includes the Windows drive letter if the system is Windows.
+    // So, always uppercase the drive letter to avoid any differences.
+    val driveLetterRegex = """file:///([a-zA-Z]:)/.*""".toRegex()
+    val match = driveLetterRegex.matchEntire(decodedUri)?.groups?.get(1)
+    match?.let { decodedUri = decodedUri.replaceRange(it.range, it.value.toUpperCase()) }
+
+    return decodedUri
 }
 
 /** Converts a URI to a path.
@@ -365,7 +384,6 @@ fun uriToPath(uri: String): String {
     }
 }
 
-
 fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
     val pair = jarExtractedFileToJarpathFile(uri, tempDirectory) ?: return null
     val (internalSourceFile, jarpathFileUri) = pair
@@ -377,23 +395,24 @@ fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
 }
 
 fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: DocumentUri): Pair<String, DocumentUri>? {
-    val split = extractedFileUri.substring(tempDirectory.length).split("/", limit = 3)
+    val normalizedUri = normalizeUri(extractedFileUri)
+    val split = normalizedUri.substring(tempDirectory.length + "/".length)
+        .split("/", limit = 3)
     if (split.size != 3) {
         return null
     }
-    val (_ /* "lsp-intellij" */, jarName, internalSourceFile) = split
-    val jarpathFileUri = tempDirectory.plus("lsp-intellij/$jarName/jarpath")
+    val (prefix /* "lsp-intellij" */, jarName, internalSourceFile) = split
+    if (prefix != "lsp-intellij") {
+        return null
+    }
+    val jarpathFileUri = "$tempDirectory/lsp-intellij/$jarName/jarpath"
     return Pair(internalSourceFile, jarpathFileUri)
 }
 
 fun getJarEntryURI(jarUri: DocumentUri, internalSourceFile: String): String? {
     val realJarFile = File(uriToPath(jarUri))
-    if (!realJarFile.exists()) {
-        return null
-    }
-    //val internalClassFile = internalSourceFile.replace(SOURCE_FILE_TO_CLASS_REGEX, CLASS_FILE_EXTENSION)
-    return URLUtil.getJarEntryURL(realJarFile, internalSourceFile).toString()
-        .replace("""^jar:file:/""".toRegex(), "jar://")
+    val filePath = StringUtil.replace(realJarFile.toString().replace("\\", "/"), "!", "%21")
+    return JAR_PROTOCOL + "://" + filePath + JAR_SEPARATOR + StringUtil.trimLeading(internalSourceFile, '/')
 }
 
 
@@ -426,5 +445,5 @@ fun toggleProjectFrame(project: Project) {
 
 fun warnNoJdk(client: LanguageClient) {
     client.showMessage(MessageParams(MessageType.Warning,
-        "Project SDK is not defined. Execute the command \"showProjectStructure\" to set it up."))
+        "Project SDK is not defined. Execute the command \"openProjectStructure\" to set it up."))
 }
