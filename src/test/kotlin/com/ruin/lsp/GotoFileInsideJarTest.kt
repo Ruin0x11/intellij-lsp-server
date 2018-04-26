@@ -14,11 +14,13 @@ import com.ruin.lsp.util.resolvePsiFromUri
 import com.ruin.lsp.values.DocumentUri
 import junit.framework.TestCase
 import org.apache.commons.io.FileUtils
+import org.apache.log4j.Logger
 import java.io.File
 import java.nio.file.Path
 import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.util.zip.ZipFile
 
 
 class GotoFileInsideJarTest : PlatformTestCase() {
@@ -91,8 +93,13 @@ private class MockClient {
     }
 }
 
+val LOG = Logger.getLogger(GotoFileInsideJarTest::class.java)
+
 @Throws(IOException::class)
 fun extractFile(zipFile: Path, fileName: String, outputFile: Path) {
+    ZipFile(zipFile.toString()).entries().iterator().forEachRemaining {
+        LOG.error(it.name)
+    }
     FileSystems.newFileSystem(zipFile, null).use({ fileSystem ->
         val fileToExtract = fileSystem.getPath(fileName)
         Files.copy(fileToExtract, outputFile)
