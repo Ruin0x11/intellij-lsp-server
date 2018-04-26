@@ -1,5 +1,8 @@
 package com.ruin.lsp.util
 
+import com.intellij.codeInsight.completion.CodeCompletionHandlerBase
+import com.intellij.codeInsight.completion.CompletionProgressIndicator
+import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
@@ -408,7 +411,7 @@ fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: 
 
 fun getJarEntryURI(jarUri: DocumentUri, internalSourceFile: String): String? {
     val realJarFile = File(uriToPath(jarUri))
-    val filePath = StringUtil.replace(realJarFile.toString(), "!", "%21")
+    val filePath = StringUtil.replace(realJarFile.toString().replace("\\", "/"), "!", "%21")
     return JAR_PROTOCOL + "://" + filePath + JAR_SEPARATOR + StringUtil.trimLeading(internalSourceFile, '/')
 }
 
