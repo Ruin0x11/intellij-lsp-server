@@ -81,12 +81,27 @@ class ProjectUtilTest : BaseTestCase() {
 
 
     fun `test converts file extracted from jar to internal source dir`() {
-        val tempDir = "file:///tmp/"
+        val tempDir = "file:///tmp"
         val expected: Pair<String, DocumentUri> = Pair("org/ruin/stuff/MyClass.class", "file:///tmp/lsp-intellij/my-library/jarpath")
 
         val cases = listOf(
             "file:///tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class",
             "file://tmp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class"
+        ).map { jarExtractedFileToJarpathFile(it, tempDir) }
+
+        cases.forEach {
+            assertEquals(expected, it)
+        }
+    }
+
+
+    fun `test converts file extracted from jar to internal source dir on windows`() {
+        val tempDir = "file:///E:/temp"
+        val expected: Pair<String, DocumentUri> = Pair("org/ruin/stuff/MyClass.class", "file:///E:/temp/lsp-intellij/my-library/jarpath")
+
+        val cases = listOf(
+            "file:///E:/temp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class",
+            "file://E:/temp/lsp-intellij/my-library/org/ruin/stuff/MyClass.class"
         ).map { jarExtractedFileToJarpathFile(it, tempDir) }
 
         cases.forEach {

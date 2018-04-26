@@ -54,9 +54,10 @@ fun ensurePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? =
 
 fun resolvePsiFromUri(project: Project, uri: DocumentUri, tempDir: DocumentUri? = null): PsiFile? {
     if (tempDir != null) {
-        val prefix = tempDir.uriCommonPrefixWith(uri)
-        if (prefix == tempDir) {
-            return resolveJarUri(uri, tempDir)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
+        val normalizedTempDir = normalizeUri(tempDir)
+        val prefix = normalizedTempDir.uriCommonPrefixWith(uri)
+        if (prefix == normalizedTempDir) {
+            return resolveJarUri(uri, normalizedTempDir)?.let { getJarVirtualFile(it) }?.let { getPsiFile(project, it) }
         }
     }
     val filePath = projectRelativeFilePath(project, uri) ?: return null
@@ -366,8 +367,6 @@ fun uriToPath(uri: String): String {
     }
 }
 
-fun DocumentUri.file() = File(URI(this))
-
 fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
     val pair = jarExtractedFileToJarpathFile(uri, tempDirectory) ?: return null
     val (internalSourceFile, jarpathFileUri) = pair
@@ -379,17 +378,17 @@ fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
 }
 
 fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: DocumentUri): Pair<String, DocumentUri>? {
-    val split = extractedFileUri.substring(tempDirectory.length)
-        .replace("""^/""".toRegex(), "") // remove leading slash, in case temp directory doesn't end with one
+    val normalizedUri = normalizeUri(extractedFileUri)
+    val split = normalizedUri.substring(tempDirectory.length + "/".length)
         .split("/", limit = 3)
     if (split.size != 3) {
         return null
     }
-    val (lspIntellij /* "lsp-intellij" */, jarName, internalSourceFile) = split
-    if (lspIntellij != "lsp-intellij") {
+    val (prefix /* "lsp-intellij" */, jarName, internalSourceFile) = split
+    if (prefix != "lsp-intellij") {
         return null
     }
-    val jarpathFileUri = File(tempDirectory.file(), "lsp-intellij/$jarName/jarpath").let { getURIForFile(it) }
+    val jarpathFileUri = "$tempDirectory/lsp-intellij/$jarName/jarpath"
     return Pair(internalSourceFile, jarpathFileUri)
 }
 
