@@ -30,7 +30,7 @@ class ProjectUtilTest : BaseTestCase() {
     }
 
     fun `test normalizes URIs`() {
-        val expected = "file:///E:/Program Files/test.txt"
+        val expected = "file:///e:/Program Files/test.txt"
         val cases = listOf(
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
@@ -46,7 +46,7 @@ class ProjectUtilTest : BaseTestCase() {
     }
 
     fun `test converts URI to path`() {
-        val expected = "E:/Program Files/test.txt"
+        val expected = "e:/Program Files/test.txt"
         val cases = listOf(
             "file:/e:/Program Files/test.txt",
             "file://e:/Program Files/test.txt",
