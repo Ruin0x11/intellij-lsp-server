@@ -66,7 +66,6 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         // not currently opened
         val otherId = makeVersionedTextDocumentIdentifier(SUBCLASS_FILE_PATH, 0)
 
-
         val firstRange = Range(Position(11, 28), Position(11, 30))
         val firstChanges = listOf(TextEdit(firstRange, "dood"))
         val firstEdit = TextDocumentEdit(makeVersionedTextDocumentIdentifier(1), firstChanges)

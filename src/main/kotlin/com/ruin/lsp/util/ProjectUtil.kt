@@ -33,6 +33,7 @@ import com.intellij.util.io.URLUtil
 import com.ruin.lsp.model.MyLanguageClient
 import com.ruin.lsp.model.MyLanguageServer
 import com.ruin.lsp.values.DocumentUri
+import org.apache.commons.lang.SystemUtils
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.Position
@@ -345,7 +346,16 @@ fun normalizeUri(uri: String): String {
     var decodedUri = URLDecoder.decode(uri, "UTF-8")
     decodedUri = trailingSlashRegex.replace(decodedUri, "")
     decodedUri = protocolRegex.replace(decodedUri, "file:///")
-    return decodedUri.replace("\\", "/")
+    decodedUri = decodedUri.replace("\\", "/")
+    if (SystemUtils.IS_OS_WINDOWS) {
+        // lsp-mode expects paths to match with exact case.
+        // This includes the Windows drive letter if the system is Windows.
+        // So, always uppercase the drive letter to avoid any differences.
+        val driveLetterRegex = """file:///([a-zA-Z]:)/.*""".toRegex()
+        val match = driveLetterRegex.matchEntire(decodedUri)?.groups?.get(1)
+        match?.let { decodedUri = decodedUri.replaceRange(it.range, it.value.toUpperCase()) }
+    }
+    return decodedUri
 }
 
 /** Converts a URI to a path.

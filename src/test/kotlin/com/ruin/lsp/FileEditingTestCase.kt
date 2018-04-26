@@ -1,11 +1,19 @@
 package org.intellivim
 
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.idea.IdeaTestApplication
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.ex.ProjectManagerEx
+import com.intellij.openapi.project.impl.ProjectManagerImpl
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.RunAll
 import com.ruin.lsp.BaseTestCase
 import com.ruin.lsp.util.getDocument
 import com.ruin.lsp.util.getPsiFile

@@ -2,6 +2,9 @@ package com.ruin.lsp
 
 import com.intellij.JavaTestUtil
 import com.intellij.JavaTestUtil.getTestJdk
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.psi.impl.compiled.ClsFileImpl
@@ -29,6 +32,11 @@ class GotoFileInsideJarTest : PlatformTestCase() {
     override fun setUp() {
         super.setUp()
         mockClient.setupTempDir()
+    }
+
+    override fun tearDown() {
+        ProjectManagerEx.getInstanceEx().closeTestProject(project)
+        super.tearDown()
     }
 
     private fun getJarUri(internalPath: String): DocumentUri {

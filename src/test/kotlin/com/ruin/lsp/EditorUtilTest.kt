@@ -1,21 +1,18 @@
 package com.ruin.lsp
 
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.runUndoTransparentWriteAction
-import com.intellij.psi.impl.PsiDocumentManagerBase
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
 import com.ruin.lsp.util.differenceFromAction
-import com.ruin.lsp.util.getDocument
 import org.eclipse.lsp4j.TextEdit
-import org.intellivim.FileEditingTestCase
+import java.io.File
 
-class EditorUtilTest : FileEditingTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
-
+class EditorUtilTest : LightCodeInsightFixtureTestCase() {
     fun `test text edits from document differences`() {
+        // workaround to avoid opening a project here
+        // otherwise the next test run will complain about the project not being disposed
+        // which doesn't occur when the tests are run individually
+        val path = File((getProjectPath(JAVA_PROJECT) + "/" + DUMMY_FILE_PATH).replace("\\", "/"))
+        val psiFile = myFixture.configureByText("Dummy.java", path.readText())
+
         val edits = differenceFromAction(psiFile) { editor, _ ->
             // insert
             editor.document.insertString(0, "Hey, dood!")
