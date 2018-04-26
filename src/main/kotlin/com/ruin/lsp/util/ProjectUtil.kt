@@ -426,5 +426,5 @@ fun toggleProjectFrame(project: Project) {
 
 fun warnNoJdk(client: LanguageClient) {
     client.showMessage(MessageParams(MessageType.Warning,
-        "Project SDK is not defined. Execute the command \"showProjectStructure\" to set it up."))
+        "Project SDK is not defined. Execute the command \"openProjectStructure\" to set it up."))
 }
