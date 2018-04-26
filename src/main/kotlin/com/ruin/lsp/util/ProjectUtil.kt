@@ -40,6 +40,7 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.jdom.JDOMException
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.net.URLDecoder
 import java.nio.file.Paths
 import java.util.*
@@ -365,6 +366,7 @@ fun uriToPath(uri: String): String {
     }
 }
 
+fun DocumentUri.file() = File(URI(this))
 
 fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
     val pair = jarExtractedFileToJarpathFile(uri, tempDirectory) ?: return null
@@ -377,12 +379,17 @@ fun resolveJarUri(uri: DocumentUri, tempDirectory: DocumentUri): DocumentUri? {
 }
 
 fun jarExtractedFileToJarpathFile(extractedFileUri: DocumentUri, tempDirectory: DocumentUri): Pair<String, DocumentUri>? {
-    val split = extractedFileUri.substring(tempDirectory.length).split("/", limit = 3)
+    val split = extractedFileUri.substring(tempDirectory.length)
+        .replace("""^/""".toRegex(), "") // remove leading slash, in case temp directory doesn't end with one
+        .split("/", limit = 3)
     if (split.size != 3) {
         return null
     }
-    val (_ /* "lsp-intellij" */, jarName, internalSourceFile) = split
-    val jarpathFileUri = tempDirectory.plus("lsp-intellij/$jarName/jarpath")
+    val (lspIntellij /* "lsp-intellij" */, jarName, internalSourceFile) = split
+    if (lspIntellij != "lsp-intellij") {
+        return null
+    }
+    val jarpathFileUri = File(tempDirectory.file(), "lsp-intellij/$jarName/jarpath").let { getURIForFile(it) }
     return Pair(internalSourceFile, jarpathFileUri)
 }
 
