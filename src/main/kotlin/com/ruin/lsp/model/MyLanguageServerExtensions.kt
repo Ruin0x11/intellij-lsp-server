@@ -13,14 +13,6 @@ import java.util.concurrent.CompletableFuture
 @JsonSegment("idea")
 interface MyLanguageServerExtensions {
     /**
-     * The idea/implementations request is sent from the client to the server to
-     * resolve the implementation locations of a symbol at a given text document
-     * position.
-     */
-    @JsonRequest
-    fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>>
-
-    /**
      * The idea/runConfigurations request is sent from the client to the server to
      * obtain the list of IDEA run configurations for the current project.
      */

@@ -77,7 +77,7 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         val workspaceEdit = WorkspaceEdit(changes)
 
         val result = manager.onWorkspaceApplyEdit(null, workspaceEdit, project)
-        assert(result.applied, { "Workspace edit wasn't successful" })
+        assert(result.isApplied, { "Workspace edit wasn't successful" })
 
         // now the file should have opened
         assert(manager.managedTextDocuments.containsKey(otherId.uri), { "File ${otherId.uri} wasn't opened." })

@@ -6,6 +6,7 @@ import com.intellij.psi.*
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.jetbrains.kotlin.builtins.extractParameterNameFromFunctionTypeArgument
 import org.jetbrains.kotlin.builtins.isBuiltinFunctionalType
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
@@ -41,7 +42,7 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
             label = formatLabel()
             kind = kind
             insertText = formatInsertText()
-            documentation = formatDoc()
+            documentation = Either.forLeft(formatDoc())
             insertTextFormat = myInsertTextFormat
         }
 
