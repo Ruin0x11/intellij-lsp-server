@@ -183,7 +183,7 @@ fun <T: Any?> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand
 }
 
 fun defaultServerCapabilities() =
-     ServerCapabilities().apply {
+    ServerCapabilities().apply {
         textDocumentSync = Either.forRight(TextDocumentSyncOptions().apply {
             openClose = true
             this.change = TextDocumentSyncKind.Incremental
@@ -193,6 +193,8 @@ fun defaultServerCapabilities() =
         completionProvider = CompletionOptions(true, listOf(".", "@", "#"))
         signatureHelpProvider = null
         definitionProvider = true
+        typeDefinitionProvider = Either.forLeft(false)
+        implementationProvider = Either.forLeft(true)
         referencesProvider = true
         documentHighlightProvider = true
         documentSymbolProvider = true
