@@ -4,6 +4,8 @@ import com.intellij.openapi.components.ServiceManager
 import com.ruin.lsp.commands.document.completion.CompletionCommand
 import com.ruin.lsp.commands.document.completion.CompletionItemResolveCommand
 import com.ruin.lsp.commands.document.find.FindDefinitionCommand
+import com.ruin.lsp.commands.document.find.FindImplementationCommand
+import com.ruin.lsp.commands.document.find.FindTypeDefinitionCommand
 import com.ruin.lsp.commands.document.find.FindUsagesCommand
 import com.ruin.lsp.commands.document.formatting.DocumentFormattingCommand
 import com.ruin.lsp.commands.document.highlight.DocumentHighlightCommand
@@ -38,6 +40,9 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
     override fun definition(position: TextDocumentPositionParams): CompletableFuture<MutableList<out Location>> =
         server.asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, FindDefinitionCommand(position.position))
 
+    override fun typeDefinition(position: TextDocumentPositionParams): CompletableFuture<MutableList<out Location>> =
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, FindTypeDefinitionCommand(position.position))
+
     override fun formatting(params: DocumentFormattingParams): CompletableFuture<MutableList<out TextEdit>> =
         server.asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, DocumentFormattingCommand(params.options))
 
@@ -55,8 +60,8 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun completion(position: TextDocumentPositionParams): CompletableFuture<Either<MutableList<CompletionItem>, CompletionList>> =
-        server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, position.textDocument.uri, CompletionCommand(position.position,
+    override fun completion(params: CompletionParams): CompletableFuture<Either<MutableList<CompletionItem>, CompletionList>> =
+        server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, CompletionCommand(params.position,
             server.context.clientCapabilities?.textDocument?.completion?.completionItem?.snippetSupport ?: false))
 
     override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<MutableList<out SymbolInformation>> =
@@ -68,6 +73,9 @@ class MyTextDocumentService(val server: MyLanguageServer) : TextDocumentService 
 
     override fun references(params: ReferenceParams): CompletableFuture<MutableList<out Location>> =
         server.asCancellableInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, FindUsagesCommand(params.position))
+
+    override fun implementation(params: TextDocumentPositionParams): CompletableFuture<List<Location>> =
+        server.asInvokeAndWaitFuture(server.context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position))
 
     override fun resolveCodeLens(unresolved: CodeLens): CompletableFuture<CodeLens> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

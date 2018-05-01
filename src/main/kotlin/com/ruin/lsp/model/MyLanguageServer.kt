@@ -97,9 +97,6 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 
     // LSP protocol extensions for IDEA-specific features
 
-    override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position))
-
     override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
         asInvokeAndWaitFuture(context.rootProject!!, RunConfigurationsCommand())
 

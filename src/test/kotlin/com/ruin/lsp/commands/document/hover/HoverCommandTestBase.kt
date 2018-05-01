@@ -14,8 +14,8 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))
             val result = invokeCommandAndWait(command, project, psiFile)
-            UsefulTestCase.assertNotEmpty(result.contents)
-            val value = result.contents.first().right
+            UsefulTestCase.assertNotEmpty(result.contents.left)
+            val value = result.contents.left.first().right
             assertEquals("Expected \"$expected\" but got: \n$value",
                 expected, value)
         }
@@ -25,7 +25,7 @@ abstract class HoverCommandTestBase : FileEditingTestCase() {
         DumbService.getInstance(project).runWhenSmart {
             val command = HoverCommand(Position(line, char))
             val result = invokeCommandAndWait(command, project, psiFile)
-            assertEmpty(result.contents)
+            assertEmpty(result.contents.left)
         }
     }
 }

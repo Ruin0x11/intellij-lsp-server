@@ -25,6 +25,7 @@ import com.ruin.lsp.commands.ProjectCommand
 import com.ruin.lsp.model.RunProjectCommandLine
 import org.jetbrains.kotlin.idea.run.KotlinRunConfiguration
 import org.slf4j.LoggerFactory
+import java.nio.file.Path
 
 private val LOG = LoggerFactory.getLogger(RunProjectCommand::class.java)
 
@@ -55,7 +56,10 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
                         runner.patch(state.javaParameters, env.runnerSettings, env.runProfile, true)
                         val classpath = state.javaParameters.classPath.pathsString
                         state.javaParameters.classPath.clear()
-                        val line = state.javaParameters.toCommandLine()
+
+                        val line = state.javaParameters.toCommandLine() // this sets up the classpath jar if any
+                        // CommandLineWrapperUtil.createClasspathJarFile(Manifest(), state.javaParameters.classPath.pathList)
+
                         return RunProjectCommandLine(isUpToDate, line.preparedCommandLine, line.workDirectory.absolutePath, classpath)
                     }
                 }
@@ -64,6 +68,10 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
 
         return RunProjectCommandLine(true)
     }
+}
+
+fun writeClasspathJar(dest: Path) {
+
 }
 
 fun isUpToDate(project: Project, config: RunConfiguration): Boolean {
