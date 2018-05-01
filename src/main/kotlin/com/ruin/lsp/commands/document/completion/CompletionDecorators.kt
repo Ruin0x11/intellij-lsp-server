@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.idea.completion.KeywordLookupObject
 import org.jetbrains.kotlin.idea.completion.LambdaSignatureTemplates
 import org.jetbrains.kotlin.idea.core.KotlinNameSuggester
 import org.jetbrains.kotlin.idea.core.completion.DeclarationLookupObject
-import org.jetbrains.kotlin.idea.core.quoteIfNeeded
 import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaMethodDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaPropertyDescriptor
@@ -28,8 +27,7 @@ import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
 import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
-import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPropertyDescriptor
-import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.*
 import org.jetbrains.kotlin.synthetic.SamAdapterExtensionFunctionDescriptor
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
@@ -145,7 +143,8 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                 }
                 is org.jetbrains.kotlin.descriptors.TypeAliasDescriptor -> {
                     val kType = descriptor.expandedType
-                    KtTypeAliasCompletionDecorator(lookup, psi as KtTypeAlias, kType)
+                    val name = (psi as KtTypeAlias).nameAsSafeName
+                    KtTypeAliasCompletionDecorator(lookup, name, kType)
                 }
                 else -> null
             }
@@ -169,6 +168,23 @@ abstract class CompletionDecorator<out T : Any>(val lookup: LookupElement, val e
                         val args = descriptor.valueParameters
                         val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
                         KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
+                    }
+                    is DeserializedClassConstructorDescriptor -> {
+                        val name = descriptor.name
+                        val kType = descriptor.returnType
+                        val args = descriptor.valueParameters
+                        val hasSynthesizedParameterNames = descriptor.hasSynthesizedParameterNames()
+                        KtFunctionCompletionDecorator(lookup, name, kType, args, hasSynthesizedParameterNames)
+                    }
+                    is DeserializedClassDescriptor -> {
+                        val name = descriptor.name
+                        val fqName = descriptor.fqNameSafe
+                        KtClassCompletionDecorator(lookup, name, fqName)
+                    }
+                    is DeserializedTypeAliasDescriptor -> {
+                        val name = descriptor.name
+                        val kType = descriptor.expandedType
+                        KtTypeAliasCompletionDecorator(lookup, name, kType)
                     }
                     // forEach
                     is SamAdapterExtensionFunctionDescriptor -> {
@@ -322,17 +338,17 @@ class KtFunctionCompletionDecorator(lookup: LookupElement,
         }
 }
 
-class KtTypeAliasCompletionDecorator(lookup: LookupElement, val typeAlias: KtTypeAlias, val type: SimpleType)
-    : CompletionDecorator<KtTypeAlias>(lookup, typeAlias) {
+class KtTypeAliasCompletionDecorator(lookup: LookupElement, val name: Name, val type: SimpleType)
+    : CompletionDecorator<Name>(lookup, name) {
     override val kind = CompletionItemKind.Class
 
-    override fun formatLabel() = "${typeAlias.name} : $type"
+    override fun formatLabel() = "$name : $type"
 }
 
 class KtValueParameterCompletionDecorator(lookup: LookupElement, val valueParameter: KtParameter)
     : CompletionDecorator<KtParameter>(lookup, valueParameter) {
     override val kind = CompletionItemKind.Field
-    private val type = valueParameter.typeReference?.typeElement?.text!!
+    private val type = valueParameter.typeReference?.typeElement?.text ?: "<unknown>"
 
     override fun formatLabel() = "${valueParameter.name} : $type"
 }
