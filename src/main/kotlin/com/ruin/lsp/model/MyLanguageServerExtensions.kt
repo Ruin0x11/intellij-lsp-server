@@ -97,4 +97,10 @@ data class RunProjectParams(val textDocument: TextDocumentIdentifier, val id: Co
 data class RunProjectCommandLine(val isUpToDate: Boolean,
                                  val command: String? = null,
                                  val workingDirectory: String? = null,
-                                 val classpath: String? = null)
+                                 val classpath: String? = null,
+                                 val environment: List<EnvironmentVariable> = listOf())
+
+/**
+ * A single environment variable.
+ */
+data class EnvironmentVariable(val name: String,  val value: String)

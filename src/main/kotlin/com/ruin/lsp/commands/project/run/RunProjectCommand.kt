@@ -22,6 +22,7 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskManager
 import com.intellij.task.impl.ProjectTaskList
 import com.ruin.lsp.commands.ProjectCommand
+import com.ruin.lsp.model.EnvironmentVariable
 import com.ruin.lsp.model.RunProjectCommandLine
 import org.jetbrains.kotlin.idea.run.KotlinRunConfiguration
 import org.slf4j.LoggerFactory
@@ -57,10 +58,14 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
                         val classpath = state.javaParameters.classPath.pathsString
                         state.javaParameters.classPath.clear()
 
-                        val line = state.javaParameters.toCommandLine() // this sets up the classpath jar if any
-                        // CommandLineWrapperUtil.createClasspathJarFile(Manifest(), state.javaParameters.classPath.pathList)
+                        val line = state.javaParameters.toCommandLine()
+                        val environmentVariables = line.environment.map { EnvironmentVariable(it.key, it.value) }
 
-                        return RunProjectCommandLine(isUpToDate, line.preparedCommandLine, line.workDirectory.absolutePath, classpath)
+                        return RunProjectCommandLine(isUpToDate,
+                            line.preparedCommandLine,
+                            line.workDirectory.absolutePath,
+                            classpath,
+                            environmentVariables)
                     }
                 }
             }
@@ -68,10 +73,6 @@ class RunProjectCommand(private val id: String) : ProjectCommand<RunProjectComma
 
         return RunProjectCommandLine(true)
     }
-}
-
-fun writeClasspathJar(dest: Path) {
-
 }
 
 fun isUpToDate(project: Project, config: RunConfiguration): Boolean {
@@ -126,9 +127,4 @@ fun modulesBuildTask(project: Project, runConfiguration: RunProfileWithCompileBe
     })
 
     return result.get()
-}
-
-class CommandLineCollectingCommandLineState<T: ApplicationConfiguration>(config: T, env: ExecutionEnvironment)
-    : ApplicationConfiguration.JavaApplicationCommandLineState<T>(config, env) {
-    fun commandLine() = createCommandLine()
 }
