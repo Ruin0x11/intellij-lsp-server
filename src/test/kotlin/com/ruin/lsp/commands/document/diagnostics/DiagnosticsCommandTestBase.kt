@@ -10,12 +10,10 @@ import org.eclipse.lsp4j.Diagnostic
 
 
 abstract class DiagnosticsCommandTestBase : BaseTestCase() {
-    protected fun checkDiagnosticsFound(filePath: String, expected: List<Diagnostic>) {
-        val file = getVirtualFile(project, filePath)
-        val psiFile = ensurePsiFromUri(project, file.url)
-        val doc = getDocument(project, file.url)!!
+    protected fun checkDiagnosticsFound(expected: List<Diagnostic>) {
+        val doc = getDocument(myFixture.file)!!
 
-        val thread = DiagnosticsThread(psiFile, doc, null)
+        val thread = DiagnosticsThread(myFixture.file, doc, null, null)
         ApplicationManager.getApplication().executeOnPooledThread(thread).get()
 
         assert(thread.diags != null)

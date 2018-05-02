@@ -66,7 +66,6 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         // not currently opened
         val otherId = makeVersionedTextDocumentIdentifier(SUBCLASS_FILE_PATH, 0)
 
-
         val firstRange = Range(Position(11, 28), Position(11, 30))
         val firstChanges = listOf(TextEdit(firstRange, "dood"))
         val firstEdit = TextDocumentEdit(makeVersionedTextDocumentIdentifier(1), firstChanges)
@@ -78,7 +77,7 @@ class WorkspaceManagerTest : FileEditingTestCase() {
         val workspaceEdit = WorkspaceEdit(changes)
 
         val result = manager.onWorkspaceApplyEdit(null, workspaceEdit, project)
-        assert(result.applied, { "Workspace edit wasn't successful" })
+        assert(result.isApplied, { "Workspace edit wasn't successful" })
 
         // now the file should have opened
         assert(manager.managedTextDocuments.containsKey(otherId.uri), { "File ${otherId.uri} wasn't opened." })
@@ -104,5 +103,15 @@ class WorkspaceManagerTest : FileEditingTestCase() {
             DidOpenTextDocumentParams(makeTextDocumentItem(0)), project
         )
         assert("dood" != manager.managedTextDocuments[file.url]!!.contents)
+    }
+
+    fun `test updates on open with client unsaved changes`() {
+        val manager = WorkspaceManager()
+
+        manager.onTextDocumentOpened(DidOpenTextDocumentParams(makeTextDocumentItem(0).apply { text = "dood" }), project)
+
+        assertPsiContentsChanged()
+        assertVirtualFileContentsUnchanged()
+        assert("dood" == manager.managedTextDocuments[file.url]!!.contents)
     }
 }

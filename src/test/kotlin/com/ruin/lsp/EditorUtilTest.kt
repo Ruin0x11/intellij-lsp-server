@@ -5,11 +5,8 @@ import org.eclipse.lsp4j.TextEdit
 import org.intellivim.FileEditingTestCase
 
 class EditorUtilTest : FileEditingTestCase() {
-    override val projectName: String
-        get() = JAVA_PROJECT
-
-    override val filePath: String
-        get() = DUMMY_FILE_PATH
+    override val projectName = JAVA_PROJECT
+    override val filePath = DUMMY_FILE_PATH
 
     fun `test text edits from document differences`() {
         val edits = differenceFromAction(psiFile) { editor, _ ->
@@ -28,4 +25,19 @@ class EditorUtilTest : FileEditingTestCase() {
             TextEdit(range(2, 25, 4, 1), "blah")
         ))
     }
+// fails due to issue #39
+//    fun `test text edits after document change`() {
+//        val doc = getDocument(psiFile)!!
+//        runUndoTransparentWriteAction {
+//            doc.insertString(0, "Cowabunga!")
+//        }
+//        val edits = differenceFromAction(psiFile) { editor, _ ->
+//            editor.document.insertString(0, "Hey, dood!")
+//        }
+//        assertNotNull(edits)
+//        assertSameElements(edits!!.toList(), listOf(
+//            TextEdit(range(0, 1, 0, 0), "Hey, d"),
+//            TextEdit(range(0, 2, 0, 9), "od")
+//        ))
+//    }
 }

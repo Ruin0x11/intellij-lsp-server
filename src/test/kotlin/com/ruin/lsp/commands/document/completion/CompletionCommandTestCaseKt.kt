@@ -97,4 +97,8 @@ class CompletionCommandTestCaseKt : CompletionCommandTestBase() {
         doTestWithSnippet("functions.kt", "fun withClosureAndArg(str: String, closure: (counter: Int, Int) -> Unit) {}", "withC<caret>",
             "withClosureAndArg(str: String) { counter, Int -> ... } : Unit",
             "withClosureAndArg(${'$'}${'{'}1:str${'}'}) { ${'$'}${'{'}2:counter${'}'}, ${'$'}${'{'}3:i${'}'} -> ${'$'}0 }")
+
+    fun `test completion inside function call`() =
+        doTest("variables.kt", "pub val string = \"asdf\"", "arrayOf(st<caret>)",
+            "string : String", "string")
 }

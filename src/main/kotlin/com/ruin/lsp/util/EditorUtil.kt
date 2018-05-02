@@ -9,12 +9,15 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.DumbProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.PsiDocumentManagerBase
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextEdit
@@ -78,7 +81,8 @@ fun withEditor(context: Disposable, file: PsiFile, offset: Int, callback: (Edito
  * @param callback function run on the copied file and an editor for the copy
  */
 fun differenceFromAction(file: PsiFile, callback: (Editor, PsiFile) -> Unit): List<TextEdit>? {
-    val copy = createFileCopy(file)
+    val copy = file.copy() as PsiFile
+    assert(file.text == copy.text)
     withEditor(Disposer.newDisposable(), copy, Position(0, 0)) { editor ->
         callback(editor, copy)
     }
@@ -98,8 +102,15 @@ fun DiffFragment.toTextEdit(oldDoc: Document, newDoc: Document): TextEdit {
 }
 
 fun textEditFromDocs(oldDoc: Document, newDoc: Document): List<TextEdit> {
-    val indicator = ProgressManager.getInstance().progressIndicator ?: DumbProgressIndicator.INSTANCE
-    val changes = ComparisonManager.getInstance().compareChars(oldDoc.text, newDoc.text, ComparisonPolicy.DEFAULT, indicator)
-    LOG.debug("=== Diff:\n${changes.joinToString("\n") { it.toString() }}")
+    val changes = diff(oldDoc.text, newDoc.text)
     return changes.map { it.toTextEdit(oldDoc, newDoc) }
 }
+
+fun diff(old: String, new: String): MutableList<DiffFragment> {
+    val indicator = ProgressManager.getInstance().progressIndicator ?: DumbProgressIndicator.INSTANCE
+    val changes = ComparisonManager.getInstance().compareChars(old, new, ComparisonPolicy.DEFAULT, indicator)
+    LOG.debug("=== Diff:\n${changes.joinToString("\n") { it.toString() }}")
+    return changes
+}
+
+fun LogicalPosition.position() = Position(line, column)

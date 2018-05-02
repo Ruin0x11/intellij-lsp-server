@@ -70,7 +70,7 @@ allprojects {
         updateSinceUntilBuild = false
         instrumentCode = false
         ideaDependencyCachePath = file("deps").absolutePath
-        setPlugins("properties", "maven", "junit", "kotlin", "android", "gradle", "groovy")
+        setPlugins("properties", "maven", "junit", "Kotlin", "android", "gradle", "Groovy", "smali")
     }
 
     tasks.withType<KotlinCompile> {
@@ -94,14 +94,14 @@ allprojects {
 val versionSuffix = if (channel.isBlank()) "" else "-$channel"
 
 project(":") {
-    version = "0.1"
+    version = "0.2"
     intellij {
         pluginName = "intellij-lsp-server"
     }
 
     dependencies {
         compile("org.jetbrains.kotlin:kotlin-reflect:1.2.31")
-        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0.M6")
+        compile("org.eclipse.lsp4j:org.eclipse.lsp4j:0.4.0")
         testCompile("org.jetbrains.kotlin:kotlin-test:1.2.31")
     }
 

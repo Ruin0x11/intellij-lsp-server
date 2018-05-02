@@ -86,7 +86,7 @@ private fun getClasses(project: Project, pattern: String, max: Int, includeLibs:
             val element = o as? PsiClass
             val virtualFile = SearchEverywhereClassifier.EP_Manager.getVirtualFile(o)
             val isElementWithoutFile = element != null && element.containingFile == null
-            val isFileInScope = virtualFile != null && (includeLibs || scope?.accept(virtualFile))
+            val isFileInScope = virtualFile != null && (includeLibs || scope.accept(virtualFile))
             if (isElementWithoutFile || isFileInScope) {
                 classes.add(o)
             }
@@ -116,7 +116,7 @@ private fun getSymbols(project: Project, pattern: String, max: Int, includeLibs:
             val virtualFile = SearchEverywhereClassifier.EP_Manager.getVirtualFile(o)
             //some elements are non-physical like DB columns
             val isElementWithoutFile = element != null && element.containingFile == null
-            val isFileInScope = virtualFile != null && (includeLibs || scope?.accept(virtualFile) == true)
+            val isFileInScope = virtualFile != null && (includeLibs || scope.accept(virtualFile))
             val isSpecialElement = element == null && virtualFile == null //all Rider elements don't have any psi elements within
             if (isElementWithoutFile || isFileInScope || isSpecialElement) {
                 symbols.add(o)

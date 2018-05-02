@@ -10,11 +10,22 @@ class DiagnosticsCommandTestCase : DiagnosticsCommandTestBase() {
     override val projectName: String
         get() = JAVA_PROJECT
 
-    fun `test finds missing imports`() = checkDiagnosticsFound(PROBLEMATIC_FILE_PATH,
-        listOf(
-            Diagnostic(range(8, 8, 8, 19),
-                "Cannot resolve symbol 'NotImported'", DiagnosticSeverity.Error, "intellij"),
-            Diagnostic(range(9, 8, 9, 23),
-                "Cannot resolve symbol 'AlsoNotImported'", DiagnosticSeverity.Error, "intellij")
+    fun `test finds missing imports`() {
+        myFixture.addFileToProject("NotImported.java", "public class NotImported {}")
+        myFixture.addFileToProject("AlsoNotImported.java", "public class AlsoNotImported {}")
+        myFixture.configureByText("Main.java", """
+            |public class Main {
+            |  NotImported myNotImported;
+            |  a
+            |  AlsoNotImported myAlsoNotImported;
+            |}
+            """.trimMargin())
+
+        checkDiagnosticsFound(listOf(
+                Diagnostic(range(8, 8, 8, 19),
+                        "Cannot resolve symbol 'NotImported'", DiagnosticSeverity.Error, "intellij"),
+                Diagnostic(range(9, 8, 9, 23),
+                        "Cannot resolve symbol 'AlsoNotImported'", DiagnosticSeverity.Error, "intellij")
         ))
+    }
 }

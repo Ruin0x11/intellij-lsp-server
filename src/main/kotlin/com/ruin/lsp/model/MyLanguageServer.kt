@@ -3,7 +3,6 @@ package com.ruin.lsp.model
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiFile
@@ -14,6 +13,9 @@ import com.ruin.lsp.commands.document.diagnostics.DiagnosticsThread
 import com.ruin.lsp.commands.document.find.FindImplementationCommand
 import com.ruin.lsp.commands.project.dialog.OpenProjectStructureCommand
 import com.ruin.lsp.commands.project.dialog.ToggleFrameVisibilityCommand
+import com.ruin.lsp.commands.project.run.BuildProjectCommand
+import com.ruin.lsp.commands.project.run.RunConfigurationsCommand
+import com.ruin.lsp.commands.project.run.RunProjectCommand
 import com.ruin.lsp.util.*
 import com.ruin.lsp.values.DocumentUri
 import org.eclipse.lsp4j.*
@@ -35,7 +37,6 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     var myTextDocumentService = MyTextDocumentService(this)
     var myWorkspaceService = MyWorkspaceService(this)
 
-    var client: MyLanguageClient? = null
     var diagnosticsFutures: HashMap<DocumentUri, Future<*>> = HashMap()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
@@ -63,7 +64,7 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     override fun connect(client: LanguageClient?) {
-        this.client = client as MyLanguageClient
+        this.context.client = client as MyLanguageClient
     }
 
     fun computeAllDiagnostics() {
@@ -71,20 +72,22 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
     }
 
     fun computeDiagnostics(uri: DocumentUri) {
-        if (client == null) {
+        if (this.context.client == null) {
             return
         }
 
-        val (doc, file) = invokeAndWaitIfNeeded( Computable<Pair<Document, PsiFile>?> {
-            val file = resolvePsiFromUri(context.rootProject!!, uri) ?: return@Computable null
+        diagnosticsFutures[uri]?.cancel(true)
+
+        val (doc, file) = invokeAndWaitIfNeeded(Computable {
+            val tempDir = context.config["temporaryDirectory"]
+            val file = resolvePsiFromUri(context.rootProject!!, uri, tempDir)
+                ?: return@Computable null
             val doc = getDocument(file) ?: return@Computable null
             Pair(doc, file)
         }) ?: return
 
-        diagnosticsFutures[uri]?.cancel(true)
-
         diagnosticsFutures[uri] = ApplicationManager.getApplication()
-            .executeOnPooledThread(DiagnosticsThread(file, doc, client!!))
+            .executeOnPooledThread(DiagnosticsThread(file, doc, this, this.context.client!!))
     }
 
     override fun getTextDocumentService() = myTextDocumentService
@@ -94,69 +97,68 @@ class MyLanguageServer : LanguageServer, MyLanguageServerExtensions, LanguageCli
 
     // LSP protocol extensions for IDEA-specific features
 
-    override fun implementations(params: TextDocumentPositionParams): CompletableFuture<MutableList<Location>> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, FindImplementationCommand(params.position), client)
+    override fun runConfigurations(params: TextDocumentPositionParams): CompletableFuture<MutableList<RunConfigurationDescription>> =
+        asInvokeAndWaitFuture(context.rootProject!!, RunConfigurationsCommand())
 
-    override fun openProjectStructure(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, OpenProjectStructureCommand())
+    override fun buildProject(params: BuildProjectParams): CompletableFuture<BuildProjectResult> =
+        asInvokeAndWaitFuture(context.rootProject!!, BuildProjectCommand(params.id, params.forceMakeProject, params.ignoreErrors, this.context.client!!))
 
-    override fun toggleFrameVisibility(params: TextDocumentPositionParams): CompletableFuture<Boolean> =
-        asInvokeAndWaitFuture(context.rootProject!!, params.textDocument.uri, ToggleFrameVisibilityCommand())
+    override fun runProject(params: RunProjectParams): CompletableFuture<RunProjectCommandLine> =
+        asInvokeAndWaitFuture(context.rootProject!!, RunProjectCommand(params.id))
+
+    fun <T: Any?> asInvokeAndWaitFuture(
+        project: Project,
+        command: ProjectCommand<T>): CompletableFuture<T> =
+        CompletableFuture.supplyAsync {
+            synchronized(this) {
+                invokeAndWaitIfNeeded(Computable<T> {
+                    command.execute(project)
+                })
+            }
+        }
+
+    fun <T: Any?> asInvokeAndWaitFuture(
+        project: Project,
+        uri: DocumentUri,
+        command: DocumentCommand<T>): CompletableFuture<T> =
+        CompletableFuture.supplyAsync {
+            executeAndGetResult(project, uri, command, this.context, this)
+        }
+
+    fun <T: Any?> asCancellableInvokeAndWaitFuture(
+        project: Project,
+        uri: DocumentUri,
+        command: DocumentCommand<T>): CompletableFuture<T> =
+        CompletableFutures.computeAsync { cancelToken ->
+            executeAndGetResult(project, uri, command, this.context, this, cancelToken)
+        }
 }
-
-
-fun <T: Any> asInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: ProjectCommand<T>): CompletableFuture<T> =
-    CompletableFuture.supplyAsync {
-        invokeAndWaitIfNeeded(Computable<T> {
-            command.execute(project)
-        })
-    }
-
-fun <T: Any> asInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
-    server: LanguageServer? = null): CompletableFuture<T> =
-     CompletableFuture.supplyAsync {
-        executeAndGetResult(project, uri, command, client, server)
-    }
-
-fun <T: Any> asCancellableInvokeAndWaitFuture(
-    project: Project,
-    uri: DocumentUri,
-    command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
-    server: LanguageServer? = null): CompletableFuture<T> =
-    CompletableFutures.computeAsync { cancelToken ->
-        executeAndGetResult(project, uri, command, client, server, cancelToken)
-    }
 
 private val LOG = Logger.getInstance(MyLanguageServer::class.java)
 
-private fun <T : Any> executeAndGetResult(
+private fun <T : Any?> executeAndGetResult(
     project: Project,
     uri: DocumentUri,
     command: DocumentCommand<T>,
-    client: MyLanguageClient? = null,
-    server: LanguageServer? = null,
+    context: Context = Context(),
+    server: LanguageServer,
     cancelToken: CancelChecker? = null): T {
-    return invokeAndWaitIfNeeded(Computable<T> {
-        val file = ensurePsiFromUri(project, uri, client)
-        val profiler = if (client != null) startProfiler(client) else DUMMY
-        profiler.mark("Start ${command.javaClass.canonicalName}")
-        val context = ExecutionContext(project, file, client, server, profiler, cancelToken)
-        val result = command.execute(context)
-        command.dispose()
-        profiler.finish("Done ${command.javaClass.canonicalName}")
-        result
-    })
+    return synchronized(server) {
+        invokeAndWaitIfNeeded(Computable<T> {
+            val tempDir = context.config["temporaryDirectory"]
+            val file = ensurePsiFromUri(project, uri, tempDir)
+            val profiler = if (context.client != null) startProfiler(context.client!!) else DUMMY
+            profiler.mark("Start ${command.javaClass.canonicalName}")
+            val executionContext = ExecutionContext(project, file, context.client, server, profiler, cancelToken)
+            val result = command.execute(executionContext)
+            command.dispose()
+            profiler.finish("Done ${command.javaClass.canonicalName}")
+            result
+        })
+    }
 }
 
-fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
+fun <T: Any?> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand<T>,
                                   project: Project,
                                   file: PsiFile,
                                   client: LanguageClient? = null): T {
@@ -170,7 +172,7 @@ fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.DocumentCommand
     return result
 }
 
-fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<T>,
+fun <T: Any?> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<T>,
                                   project: Project): T {
     val result = invokeAndWaitIfNeeded(Computable {
         command.execute(project)
@@ -181,7 +183,7 @@ fun <T: Any> invokeCommandAndWait(command: com.ruin.lsp.commands.ProjectCommand<
 }
 
 fun defaultServerCapabilities() =
-     ServerCapabilities().apply {
+    ServerCapabilities().apply {
         textDocumentSync = Either.forRight(TextDocumentSyncOptions().apply {
             openClose = true
             this.change = TextDocumentSyncKind.Incremental
@@ -191,17 +193,19 @@ fun defaultServerCapabilities() =
         completionProvider = CompletionOptions(true, listOf(".", "@", "#"))
         signatureHelpProvider = null
         definitionProvider = true
+        typeDefinitionProvider = Either.forLeft(false)
+        implementationProvider = Either.forLeft(true)
         referencesProvider = true
         documentHighlightProvider = true
         documentSymbolProvider = true
         workspaceSymbolProvider = true
         codeActionProvider = false
-        codeLensProvider = null
+        codeLensProvider = CodeLensOptions(false)
         documentFormattingProvider = true
         documentRangeFormattingProvider = true
         documentOnTypeFormattingProvider = null
         renameProvider = false
         documentLinkProvider = null
-        executeCommandProvider = null
+        executeCommandProvider = ExecuteCommandOptions()
         experimental = null
     }

@@ -1,5 +1,6 @@
 package com.ruin.lsp.commands.document.find
 
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.fileEditor.FileEditor
@@ -81,6 +82,8 @@ internal fun newEditorComposite(file: VirtualFile?, project: Project): EditorWit
     return newComposite
 }
 
+typealias SwappedSourcePosition = com.intellij.openapi.util.Pair<VirtualFile, Int?>
+
 /**
  * Tries to find the corresponding source file location for this element.
  *
@@ -90,12 +93,12 @@ internal fun newEditorComposite(file: VirtualFile?, project: Project): EditorWit
 fun PsiElement.sourceLocationIfPossible(): Location {
     val doc = getDocument(this.containingFile)!!
     val uri = getURIForFile(this.containingFile)
-    val location = this.location(uri, doc)
+    var location = this.location(uri, doc)
 
     val editor = newEditorComposite(this.containingFile.virtualFile, this.project)
         ?: return location
     val swappers = Extensions.getExtensions(EditorFileSwapper.EP_NAME)
-    var newFilePair: com.intellij.openapi.util.Pair<VirtualFile, Int>? = null
+    var newFilePair: SwappedSourcePosition? = null
     val psiAwareEditor = EditorFileSwapper.findSinglePsiAwareEditor(editor.editors) ?: return location
     psiAwareEditor.editor.caretModel.moveToOffset(location.range.start.toOffset(doc))
     psiAwareEditor.editor.scrollingModel.scrollToCaret(ScrollType.CENTER)
@@ -105,13 +108,22 @@ fun PsiElement.sourceLocationIfPossible(): Location {
         if (newFilePair != null) return@forEach
     }
 
-    if (newFilePair == null || newFilePair?.first == null || newFilePair?.second == null) {
+    if (newFilePair == null || newFilePair?.first == null) {
         return location
     }
 
     val sourcePsiFile = getPsiFile(this.project, newFilePair!!.first) ?: return location
     val sourceDoc = getDocument(sourcePsiFile) ?: return location
-    location.range = Range(offsetToPosition(sourceDoc, newFilePair!!.second), offsetToPosition(sourceDoc, newFilePair!!.second))
+    location = newFilePair!!.location(sourceDoc)
 
     return location
+}
+
+private fun SwappedSourcePosition.location(sourceDoc: Document): Location {
+    val file = this.first
+    val offset = this.second ?: 0
+    return Location(
+        getURIForFile(file),
+        Range(offsetToPosition(sourceDoc, offset), offsetToPosition(sourceDoc, offset))
+    )
 }

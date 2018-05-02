@@ -2,8 +2,11 @@ package com.ruin.lsp.commands.document.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher
+import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
@@ -29,23 +32,33 @@ class CompletionCommand(val position: Position,
         val completionId = completionCache.incrementId()
 
         withEditor(this, ctx.file, position) { editor ->
-            val lookupElements: MutableList<LookupElement> = mutableListOf()
-            val params = makeCompletionParameters(editor, ctx.file, position)!!
+            val completionResults: MutableList<CompletionResult> = mutableListOf()
+            val params = makeCompletionParameters(editor, ctx.project) ?: return@withEditor
+
             val arranger = MyCompletionLookupArranger(params, CompletionLocation(params))
             val lookup = LookupImpl(ctx.project, editor, arranger)
 
             performCompletion(params, prefix, ctx.cancelToken, Consumer { completionResult ->
                 lookup.addItem(completionResult.lookupElement, CamelHumpMatcher(""))
-                arranger.addElement(completionResult)
 
                 val el = completionResult.lookupElement
 
-                lookupElements.add(el)
+                completionResults.add(completionResult)
                 ctx.profiler?.mark("Get elt $el")
             })
 
             val sorted: Ref<List<LookupElement>> = Ref(listOf())
+
+            // can't be run on dispatch thread, but only when not in unit test mode
+            if (ApplicationManager.getApplication().isUnitTestMode) {
+                completionResults.forEach { arranger.addElement(it) }
+            } else {
+                ProgressManager.getInstance().runProcessWithProgressSynchronously({
+                    completionResults.forEach { arranger.addElement(it) }
+                }, "Sort completion elements", false, ctx.project)
+            }
             sorted.set(arranger.arrangeItems(lookup, false).first)
+
             sortedLookupElements = sorted.get()
             ctx.profiler?.mark("Finish sorting")
         }

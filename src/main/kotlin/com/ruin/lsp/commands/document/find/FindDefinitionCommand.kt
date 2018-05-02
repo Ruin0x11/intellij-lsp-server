@@ -2,8 +2,10 @@ package com.ruin.lsp.commands.document.find
 
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
+import com.intellij.codeInsight.navigation.actions.GotoTypeDeclarationAction
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.project.IndexNotReadyException
+import com.intellij.openapi.util.Ref
 import com.intellij.psi.*
 import com.intellij.psi.search.ProjectScope.getProjectScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
@@ -47,8 +49,8 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         }
 
         return when {
-            ctx.file.fileType is KotlinFileType -> executeForKotlin(ctx, offset)
-            ctx.file.fileType is JavaFileType -> executeForJava(ctx, offset)
+            ctx.file.fileType is KotlinFileType -> findDefinitionForKotlin(ctx, offset)
+            ctx.file.fileType is JavaFileType -> forDefinitionForJava(ctx, offset)
             else -> mutableListOf()
         }
     }
@@ -56,13 +58,8 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
     private fun findDefinitionByReference(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
         var loc: MutableList<Location>? = null
         withEditor(this, ctx.file, offset) { editor ->
-            val ref = TargetElementUtil.findReference(editor, offset)
-            val resolvedElements = if (ref == null) emptyList<PsiElement>() else resolve(ref)
-            val resolvedElement = if (resolvedElements.size == 1) resolvedElements[0] else null
-
             val targetElements = GotoDeclarationAction.findTargetElementsNoVS(ctx.project, editor, offset, false)
-            val elementAtPointer = ctx.file.findElementAt(TargetElementUtil.adjustOffset(ctx.file, editor.document, offset))
-            val results = targetElements?.mapNotNull { it.sourceLocationIfPossible() }
+            val results = targetElements?.mapNotNull(PsiElement::sourceLocationIfPossible)
             loc = if (results?.isNotEmpty() == true) {
                 results.toMutableList()
             } else {
@@ -72,7 +69,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         return loc
     }
 
-    private fun executeForJava(ctx: ExecutionContext, offset: Int): MutableList<Location> {
+    private fun forDefinitionForJava(ctx: ExecutionContext, offset: Int): MutableList<Location> {
         var lookup: PsiElement? = null
         val element = ctx.file.findElementAt(offset)
         val parent = element?.parent
@@ -86,7 +83,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
             ?: mutableListOf()
     }
 
-    private fun executeForKotlin(ctx: ExecutionContext, offset: Int): MutableList<Location> {
+    private fun findDefinitionForKotlin(ctx: ExecutionContext, offset: Int): MutableList<Location> {
         try {
             var list = findKotlinDefinitionBySearcher(ctx, offset)
             if(list != null) {
@@ -102,23 +99,6 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         } catch (e: NoDescriptorForDeclarationException) {
             return mutableListOf()
         }
-    }
-
-    private fun resolve(ref: PsiReference): List<PsiElement> {
-        // IDEA-56727 try resolve first as in GotoDeclarationAction
-        val resolvedElement = ref.resolve()
-
-        if (resolvedElement == null && ref is PsiPolyVariantReference) {
-            val result = ArrayList<PsiElement>()
-            val psiElements = ref.multiResolve(false)
-            for (resolveResult in psiElements) {
-                if (resolveResult.element != null) {
-                    result.add(resolveResult.element!!)
-                }
-            }
-            return result
-        }
-        return if (resolvedElement == null) emptyList() else listOf(resolvedElement)
     }
 
     private fun findKotlinDefinitionBySearcher(ctx: ExecutionContext, offset: Int): MutableList<Location>? {
@@ -150,7 +130,7 @@ class FindDefinitionCommand(val position: Position) : DocumentCommand<MutableLis
         try {
             val descriptor = declaration.unsafeResolveToDescriptor(BodyResolveMode.PARTIAL)
             val superDeclarations = findSuperDeclarations(descriptor) ?: return null
-            return superDeclarations.map { it.sourceLocationIfPossible() }.toMutableList()
+            return superDeclarations.map(PsiElement::sourceLocationIfPossible).toMutableList()
         } catch (e: IndexNotReadyException) {
             return mutableListOf()
         }

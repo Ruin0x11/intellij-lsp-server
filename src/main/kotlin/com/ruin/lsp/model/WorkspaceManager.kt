@@ -5,10 +5,14 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.NewVirtualFileSystem
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.diff.Diff
 import com.ruin.lsp.util.*
@@ -21,9 +25,9 @@ private val LOG = Logger.getInstance(WorkspaceManager::class.java)
 /**
  * Manages files opened by LSP clients.
  *
- * The idea is that we want to deal withProfiler PSI files as little as possible due to threading constraints and the fact that
+ * The idea is that we want to deal with PSI files as little as possible due to threading constraints and the fact that
  * they constantly go invalid. Instead, this class keeps a separate ground truth, and when document changes come in, it
- * is possible to reload the corresponding PSI file withProfiler the changed contents.
+ * is possible to reload the corresponding PSI file with the changed contents.
  */
 class WorkspaceManager {
     val managedTextDocuments: HashMap<DocumentUri, ManagedTextDocument> = HashMap()
@@ -41,17 +45,26 @@ class WorkspaceManager {
         }
         LOG.debug("Handling textDocument/didOpen for ${textDocument.uri}")
 
+        val normalizedText = textDocument.text.replace("\r\n", "\n")
+
         val success = invokeAndWaitIfNeeded(asWriteAction(Computable<Boolean> {
-            val doc = getDocument(project, textDocument.uri) ?: return@Computable false
-            reloadDocument(doc, project)
+            val tempDir = server?.context?.config?.get("temporaryDirectory")
+            val psi = resolvePsiFromUri(project, textDocument.uri, tempDir) ?: return@Computable false
+            val doc = getDocument(psi) ?: return@Computable false
+
+            if (doc.isWritable) {
+                // set IDEA's copy of the document to have the text with potential unsaved in-memory changes from the client
+                doc.setText(normalizedText)
+                PsiDocumentManager.getInstance(project).commitDocument(doc)
+
+                assert(doc.text == normalizedText)
+            }
+
             if (client != null) {
-                if (server != null) {
-                    registerIndexNotifier(project, client, server)
-                }
+                server?.let { registerIndexNotifier(project, client, it) }
                 val projectSdk = ProjectRootManager.getInstance(project).projectSdk
                 if (projectSdk == null) {
-                    client.showMessage(MessageParams(MessageType.Warning,
-                        "Project SDK is not defined. Use idea/openProjectStructure to set it up."))
+                    warnNoJdk(client)
                 }
             }
             true
@@ -68,7 +81,7 @@ class WorkspaceManager {
                     uri = textDocument.uri
                     version = textDocument.version
                 },
-                textDocument.text.replace("\r\n", "\n")
+                normalizedText
             )
     }
 
@@ -124,24 +137,26 @@ class WorkspaceManager {
         val managedTextDoc = managedTextDocuments[textDocument.uri]!!
 
         ApplicationManager.getApplication().invokeAndWait(asWriteAction( Runnable {
-            val file = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
-            val document = getDocument(file) ?: return@Runnable
-            reloadDocument(document, project)
-            LOG.debug("Reloaded document at ${textDocument.uri}")
+            val psi = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
+            val doc = getDocument(psi) ?: return@Runnable
+
+            FileDocumentManager.getInstance().saveDocumentAsIs(doc)
+            PsiDocumentManager.getInstance(project).commitAllDocuments()
+            VirtualFileManager.getInstance().syncRefresh()
         }))
 
         if (text != null) {
             assert(managedTextDoc.contents == text, {
                 val change = Diff.buildChanges(managedTextDoc.contents, text)
-                LOG.debug("Difference: $change")
+                LOG.warn("Difference: $change")
                 "Ground truth differed upon save!"
             })
         }
     }
 
-        @Synchronized
+    @Synchronized
 
-        fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
+    fun onWorkspaceApplyEdit(label: String?, edit: WorkspaceEdit, project: Project): ApplyWorkspaceEditResponse {
         LOG.debug("Handling workspace/applyEdit")
         LOG.debug("label: $label")
         LOG.debug("edit: $edit")
@@ -237,8 +252,7 @@ class WorkspaceManager {
                 if (doc != null) {
                     if(managedTextDoc.contents != doc.text) {
                         val change = Diff.buildChanges(managedTextDoc.contents, doc.text)
-                        LOG.debug("Difference: $change")
-                        LOG.warn("Ground truth differed upon change!")
+                        LOG.error("Ground truth differed upon change! Old: \n${managedTextDoc.contents}\nNew: \n${doc.text}")
                         return@Runnable
                     }
                     LOG.debug("Doc before:\n\n${doc.text}\n\n")
