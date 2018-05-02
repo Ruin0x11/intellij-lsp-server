@@ -14,6 +14,7 @@ class LanguageServerStartupActivity : PreloadingActivity() {
         LOG.info("Preloading intellij-lsp-server")
         GeneralSettings.getInstance().isShowTipsOnStartup = false
         val server = LanguageServerRunnerImpl.getInstance()
-        server.run(8080)
+        val port = LanguageServerConfig.getInstance().portNumber
+        server.run(port)
     }
 }
