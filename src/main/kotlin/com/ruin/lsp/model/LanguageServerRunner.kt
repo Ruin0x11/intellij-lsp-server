@@ -33,6 +33,7 @@ class LanguageServerRunnerImpl : LanguageServerRunner {
 
     override fun run(port: Int) {
         if (!isStarted) {
+            LOG.info("Starting the LSP server on port $port.")
             serverSocket = ServerSocket(port, 50, InetAddress.getByName("127.0.0.1"))
             if (serverSocket != null) {
                 isStarted = true
@@ -104,8 +105,6 @@ open class LanguageServerService {
             LOG.warn("Server was already started.")
             return null
         }
-
-        LOG.info("Starting the LSP server.")
 
         return ApplicationManager.getApplication().executeOnPooledThread {
             val trace = LogPrintWriter(LOG, Level.DEBUG)

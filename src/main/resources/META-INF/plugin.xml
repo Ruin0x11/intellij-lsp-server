@@ -33,12 +33,20 @@
                             serviceImplementation="com.ruin.lsp.model.LanguageServerRunnerImpl" />
         <applicationService serviceImplementation="com.ruin.lsp.model.PreviousCompletionCacheService" />
         <preloadingActivity implementation="com.ruin.lsp.model.LanguageServerStartupActivity"/>
+        <applicationConfigurable
+        groupId="tools"
+        displayName="LSP Server"
+        id="com.ruin.lsp.settings"
+        instance="com.ruin.lsp.model.LanguageServerConfigurable"/>
     </extensions>
 
     <application-components>
         <component>
             <interface-class>com.ruin.lsp.model.LanguageServerService</interface-class>
             <implementation-class>com.ruin.lsp.model.LanguageServerService</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.ruin.lsp.model.LanguageServerConfig</implementation-class>
         </component>
     </application-components>
 
