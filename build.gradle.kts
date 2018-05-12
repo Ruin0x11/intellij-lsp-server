@@ -28,8 +28,6 @@ buildscript {
 
 val CI = System.getenv("CI") != null
 
-val channel = prop("publishChannel")
-
 plugins {
     idea
     kotlin("jvm") version "1.2.31"
@@ -91,10 +89,10 @@ allprojects {
     }
 }
 
-val versionSuffix = if (channel.isBlank()) "" else "-$channel"
+val pluginVersion = System.getenv("pluginVersion") ?: prop("pluginVersion")
 
 project(":") {
-    version = "0.2"
+    version = pluginVersion
     intellij {
         pluginName = "intellij-lsp-server"
     }
