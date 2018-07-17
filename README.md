@@ -21,7 +21,7 @@ Highlights read/write usage.
 
 ![Symbol usage highlighting](https://sub.god.jp/f/nieypg.png)
 ### Find usages
-![Find usages](my.mixtape.moe/jptlrs.gif)
+![Find usages](https://my.mixtape.moe/jptlrs.gif)
 ### Go to definition
 Can also find super method if available.
 
