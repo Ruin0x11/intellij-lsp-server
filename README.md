@@ -15,25 +15,25 @@ A plugin for IntelliJ IDEA that embeds a Language Server Protocol server, allowi
 ### Code completion with snippet parameters
 Snippet feature is provided by [company-lsp](https://github.com/tigersoldier/company-lsp).
 
-![Code completion with snippet parameters](https://sub.god.jp/f/uecray.gif)
+![Code completion with snippet parameters](https://my.mixtape.moe/gkrhey.gif)
 ### Symbol usage highlighting
 Highlights read/write usage.
 
 ![Symbol usage highlighting](https://sub.god.jp/f/nieypg.png)
 ### Find usages
-![Find usages](https://sub.god.jp/f/aeitpo.gif)
+![Find usages](my.mixtape.moe/jptlrs.gif)
 ### Go to definition
 Can also find super method if available.
 
-![Go to definition](https://sub.god.jp/f/lcocla.gif)
+![Go to definition](https://my.mixtape.moe/kklshd.gif)
 ### Go to implementation
-![Go to implementation](https://sub.god.jp/f/uighbt.gif)
+![Go to implementation](https://my.mixtape.moe/zgbddv.gif)
 ### Diagnostics
 Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
-![Diagnostics](https://sub.god.jp/f/ianlhr.gif)
+![Diagnostics](https://my.mixtape.moe/scoiql.gif)
 ### Kotlin support
-![Kotlin support](https://sub.god.jp/f/necrpl.gif)
+![Kotlin support](https://my.mixtape.moe/clrisu.gif)
 
 ## Feature list
 | Name                        | Method                            |                    | Emacs function                                         |
