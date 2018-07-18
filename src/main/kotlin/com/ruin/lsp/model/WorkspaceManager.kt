@@ -140,9 +140,9 @@ class WorkspaceManager {
             val psi = resolvePsiFromUri(project, textDocument.uri) ?: return@Runnable
             val doc = getDocument(psi) ?: return@Runnable
 
-            FileDocumentManager.getInstance().saveDocumentAsIs(doc)
-            PsiDocumentManager.getInstance(project).commitAllDocuments()
+            FileDocumentManager.getInstance().reloadFromDisk(doc)
             VirtualFileManager.getInstance().syncRefresh()
+            PsiDocumentManager.getInstance(project).commitAllDocuments()
         }))
 
         if (text != null) {
