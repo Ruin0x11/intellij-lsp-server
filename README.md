@@ -77,10 +77,10 @@ Sideline view is provided by [lsp-ui](https://github.com/emacs-lsp/lsp-ui).
 
 ## Installation
 ### Trying it out
-Run `./gradlew runIde` in the repo root to open a testing instance of IDEA.
+Run `./gradlew runIde` in the repository's top level to open a testing instance of IDEA.
 
 ### Installing the plugin
-Run `./gradlew clean buildPlugin` to create the plugin distribution. In IDEA, go to `File -> Settings... -> Plugins -> Install plugin from disk...` and select the `.zip` file that was output inside `build/distributions`.
+Run `./gradlew clean buildPlugin` in the repository's top level to create the plugin distribution. In IDEA, go to `File -> Settings... -> Plugins -> Install plugin from disk...` and select the `.zip` file that was output inside `build/distributions`.
 
 ## Usage
 The server will start automatically on TCP port 8080 when the IDE is loaded. You can configure the project SDK inside IDEA before connecting your client or execute the `Open Project Structure` command in the client (`lsp-intellij-open-project-structure` in Emacs) to open the Project Structure window remotely.
